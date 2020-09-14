@@ -1,0 +1,21 @@
+{
+  "Auth": {
+    "url": "/auth/password/login"
+  },
+  "Cycle": {
+    "url": "/v1/datatab/cycle",
+    "alt_url": "/api/cycle"
+  },
+  "MachineType": {
+    "url" : "/api/machinetype"
+  },
+  "Machine": {
+    "url" : "/api/machine"
+  },
+  "Parts": {
+    "url" : "/api/part"
+  },
+  "Downtime": {
+    "url" : "/api/downtime"
+  }
+}

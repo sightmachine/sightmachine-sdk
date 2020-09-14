@@ -1,0 +1,10 @@
+{
+  "auth_header-api-secret": "X-SM-API-Secret",
+  "auth_header-api-secret_old": "X-SM-API-Key",
+  "auth_header-api-key": "X-SM-API-Key-Id",
+  "keywords": {
+    "KEYWORD_MISSING_ACCOUNT": "No such account",
+    "KEYWORD_INCORRECT_PASSWORD": "password does not match",
+    "KEYWORD_REQUIRES_SSO": "Sign in with your Google Account"
+  }
+}

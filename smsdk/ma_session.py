@@ -57,6 +57,8 @@ class MaSession:
                 )
 
                 if response.text:
+                    if "error" in response.text:
+                        raise ValueError("Error - {}".format(response.text))
                     data = response.json()
                 else:
                     data = []

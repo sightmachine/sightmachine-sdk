@@ -1,0 +1,4 @@
+include README.md LICENSE
+include smsdk/config/*
+
+recursive-include tests *

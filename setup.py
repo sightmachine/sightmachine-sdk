@@ -4,10 +4,10 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 install_requires = [
-    "numpy==1.19.2",
+    "numpy==1.18.4",
     "requests==2.24.0",
     "pytest==6.0.2",
-    "pandas==1.1.2",
+    "pandas==0.25.3",
     "mock==4.0.2",
 ]
 

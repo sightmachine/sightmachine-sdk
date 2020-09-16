@@ -23,5 +23,5 @@ setup(
     author_email="support@sightmachine.com",
     url="http://sightmachine.com/",
     description="AI Data Pipeline tool",
-    python_requires=">=3.7",
+    python_requires=">=3.6.9",
 )

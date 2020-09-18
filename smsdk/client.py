@@ -16,6 +16,7 @@ from smsdk.utils import get_url
 from smsdk.Auth.auth import Authenticator
 from smsdk.tool_register import smsdkentities
 
+
 class Client(object):
     """Easy-to-use client to wrap all SDK functionality."""
 
@@ -98,7 +99,7 @@ class Client(object):
         if util_name in getattr(cls, "get_utilities")(*args, **kwargs):
 
             # warn message if enable_pagination and limit used together
-            if 'enable_pagination' in kwargs and '_limit' in kwargs:
+            if "enable_pagination" in kwargs and "_limit" in kwargs:
                 msg = "WARNING: enable_pagination overrides the _limit"
                 warnings.warn(msg, RuntimeWarning)
 

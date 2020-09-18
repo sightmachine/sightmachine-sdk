@@ -2,7 +2,15 @@
 # coding: utf-8
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
+
+import warnings
 import pandas as pd
+
+try:
+    from pandas.io.json import json_normalize
+except ImportError:
+    # for newer pandas versions >1.X
+    from pandas import json_normalize
 
 from smsdk.utils import get_url
 from smsdk.Auth.auth import Authenticator
@@ -69,7 +77,7 @@ class Client(object):
         """
         return [e.name for e in smsdkentities.list()]
 
-    def get_data(self, ename, util_name, *args, **kwargs):
+    def get_data(self, ename, util_name, normalize=False, *args, **kwargs):
         """
         Main data fetching function for all the entities
         :param ename: Name of the entities
@@ -89,12 +97,20 @@ class Client(object):
         # registerd utilites
         if util_name in getattr(cls, "get_utilities")(*args, **kwargs):
 
+            # warn message if enable_pagination and limit used together
+            if 'enable_pagination' in kwargs and '_limit' in kwargs:
+                msg = "WARNING: enable_pagination overrides the _limit"
+                warnings.warn(msg, RuntimeWarning)
+
             # call the utility function
             # all the dict params are passed as kwargs
             # dict params strictly follow {'key':'value'} format
             data = getattr(cls, util_name)(*args, **kwargs)
 
-            df = pd.DataFrame(data)
+            if normalize:
+                df = json_normalize(data)
+            else:
+                df = pd.DataFrame(data)
         else:
             # raise error if requested for unregistered utility
             raise ValueError("Error - {}".format("Not a registered utility"))

@@ -109,7 +109,18 @@ class Client(object):
             data = getattr(cls, util_name)(*args, **kwargs)
 
             if normalize:
-                df = json_normalize(data)
+                # special case to handle the 'stats' block
+                if data and 'stats' in data[0]:
+                    if isinstance(data[0]['stats'],dict):
+                        # part stats are dict
+                        df = json_normalize(data)
+                    else:
+                        # machine type stats are list
+                        cols = [*data[0]]
+                        cols.remove('stats')
+                        df = json_normalize(data, 'stats', cols, record_prefix='stats.')
+                else:
+                    df = json_normalize(data)
             else:
                 df = pd.DataFrame(data)
         else:

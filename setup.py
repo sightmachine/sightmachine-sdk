@@ -9,6 +9,7 @@ install_requires = [
     "pytest==6.0.2",
     #"pandas==0.23.4",
     "mock==4.0.2",
+    "importlib-resources==3.0.0"
 ]
 
 setup(

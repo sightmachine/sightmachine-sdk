@@ -82,6 +82,29 @@ The Sight Machine SDK supports a PyMongo-like query syntax. See the PyMongo Tuto
   cli.get_data('cycle', 'get_cycles', **QUERY)
   ```
 
+### Optional parameters for filtering 
+The following optional parameters can be supplied as per the requirements
+- enable_pagination
+  -  Type = Boolean
+  -  Values = True/False
+  -  Default = False
+  -  This option will fetch the records pagewise. The default page size is 2000.
+  -  If used alongwith parameter *_limit*, the *enable_pagination* would override the *_limit* 
+  ```
+  QUERY = {'enable_pagination':True}
+  ```
+  
+- normalize
+  -  Type = Boolean
+  -  Values = True/False
+  -  Default = False
+  -  If True, this option will normalize the nested data structure into separate columns in a data frame.
+  ```
+  QUERY = {'normalize':True}
+  or
+  QUERY = {'starttime__gte' : DATE_START, 'starttime__lte' : DATE_END, 'enable_pagination':True}
+  cli.get_data('cycle', 'get_cycles',normalize=True, **QUERY)
+  ```
 ### Todos
 
  - Write MORE Tests

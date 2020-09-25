@@ -90,12 +90,6 @@ class Client(object):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
 
-        # Python 3.6 requries that I get normalize out of kwargs (seems to be fine under 3.7)
-        try:
-            normalize = kwargs.pop('normalize')
-        except NameError:
-            pass
-        
         df = pd.DataFrame()
         # load the entity class and initialize it
         cls = smsdkentities.get(ename)(self.session, base_url)

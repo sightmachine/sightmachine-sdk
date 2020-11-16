@@ -7,11 +7,13 @@ except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
 
-
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
+
+import logging
+log = logging.getLogger(__name__)
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
@@ -43,6 +45,9 @@ class Cycle(SmsdkEntities, MaSession):
         Recommend to use 'enable_pagination':True for larger datasets
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Cycle"]["alt_url"])
+
+        if 'machine__source' not in kwargs:
+            log.warn('Machine source not specified.  Returned rows may have inconsistent formats.')
 
         self.session.headers = self.modify_header_style(url, self.session.headers)
 

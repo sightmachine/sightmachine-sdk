@@ -13,6 +13,9 @@ from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
 
+import logging
+log = logging.getLogger(__name__)
+
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
 @smsdkentities.register("downtime")

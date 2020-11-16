@@ -60,30 +60,6 @@ class Registry(Generic[T]):
     Each class in the registry is identified by a (name, version) pair.
     The version may be omitted; omitted versions are interpreted as version 1.
 
-    Example:
-
-        >>> class Actuator: pass
-        >>> actuators = Registry(Actuator)
-        >>> @actuators.register('upgoer')  # Same as .register('upgoer', version=1).
-        ... class UpGoer1(Actuator): pass
-        >>> @actuators.register('upgoer', version=2)
-        ... class UpGoer2(Actuator): pass
-        >>> actuators.list()
-        [ComponentInfo(name='upgoer', version=1),
-         ComponentInfo(name='upgoer', version=2)]
-        >>> actuators.get('upgoer')
-        <class 'factorytx.registry.UpGoer1'>
-        >>> actuators.get('upgoer', version=1)
-        <class 'factorytx.registry.UpGoer1'>
-        >>> actuators.get('upgoer', version=2)
-        <class 'factorytx.registry.UpGoer2'>
-        >>> try: actuators.get('parser')
-        ... except Exception as e: e
-        MissingComponentError('There is no component named "parser"')
-        >>> try: actuators.get('upgoer', version=3)
-        ... except Exception as e: e
-        MissingVersionError('There is no component named "upgoer" version 3')
-
     """
 
     def __init__(self, base_class: T) -> None:

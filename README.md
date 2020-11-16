@@ -24,14 +24,9 @@ The Sight Machine software development kit (SDK) complements the Sight Machine p
   
 ### Installation
 
-##### via PiP(Under Implementaion)
+##### via PiP from Github
 ```
-pip install smsdk
-```
-
-##### via setup.py
-```
-python setup.py install
+pip install git+https://github.com/sightmachine/sightmachine-sdk.git
 ```
 
 ##### Confirmation
@@ -69,7 +64,7 @@ import smsdk
 The SDK provides a simple interface for downloading data from models such as Cycles, Downtimes, Machine, MachineType etc.
 - To retrieve data:
   -  Generate a query to limit the data returned.
-The Sight Machine SDK supports a PyMongo-like query syntax. See the PyMongo Tutorial for examples. One notable difference is that the Sight Machine API does not support logical OR.
+The Sight Machine SDK supports a MongoEngine-like query syntax. See the MongoEngine Tutorial for examples. One notable limitation is that the Sight Machine API does not support logical OR when combining query parameters.
   ```
   params = {'_limit':1, '_only':'["source_type", "source_type_clean", "stats"]'}
   cli.get_data('machine_type', 'get_machine_types', **params)
@@ -78,21 +73,16 @@ The Sight Machine SDK supports a PyMongo-like query syntax. See the PyMongo Tuto
   ```
   DATE_START = datetime(2017, 8, 6)
   DATE_END   = datetime(2017, 8, 7)
-  QUERY = {'starttime__gte' : DATE_START, 'starttime__lte' : DATE_END, 'enable_pagination':True}
+  QUERY = {'endtime__gte' : DATE_START, 
+           'endtime__lte' : DATE_END, 
+           'order_by': '-endtime'}
   cli.get_data('cycle', 'get_cycles', **QUERY)
   ```
 
+IMPORTANT: We highly recommend setting time filters and ordering in all queries of the cycle model to ensure consistent data values are returned.  This minimizes the chances that changes to the database while the queries are running will result in data inconsistencies.
+
 ### Optional parameters for filtering 
 The following optional parameters can be supplied as per the requirements
-- enable_pagination
-  -  Type = Boolean
-  -  Values = True/False
-  -  Default = False
-  -  This option will fetch the records pagewise. The default page size is 2000.
-  -  If used alongwith parameter *_limit*, the *enable_pagination* would override the *_limit* 
-  ```
-  QUERY = {'enable_pagination':True}
-  ```
   
 - normalize
   -  Type = Boolean

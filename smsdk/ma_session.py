@@ -2,6 +2,8 @@ from typing import List
 import json
 import requests
 
+import numpy as np
+
 from requests.structures import CaseInsensitiveDict
 from requests.sessions import Session
 
@@ -19,6 +21,8 @@ SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
 
+import logging
+log = logging.getLogger(__name__)
 
 class MaSession:
     def __init__(self):
@@ -29,9 +33,8 @@ class MaSession:
         self,
         endpoint,
         method="get",
-        enable_pagination=False,
-        limit=2000,
-        offset=0,
+        _limit=np.Inf,
+        _offset=0,
         **url_params
     ):
         """
@@ -45,13 +48,23 @@ class MaSession:
         :param url_params: dict of params for API ex filtering, columns etc
         :return: List of records
         """
+        max_page_size = 5000
+        
         records: List = []
         while True:
             try:
-                if enable_pagination:
-                    url_params["_offset"] = offset
-                    url_params["_limit"] = limit
+                remaining_limit = _limit - len(records)
+                this_loop_limit = min(remaining_limit, max_page_size)
 
+                # If we exactly hit our desired number of records -- limit is 0 -- then can stop
+                if this_loop_limit == 0:
+                    return records
+
+                url_params["_offset"] = _offset
+                url_params["_limit"] = this_loop_limit
+
+                log.info(f'Pulling up to {this_loop_limit} records')
+                
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
@@ -61,15 +74,15 @@ class MaSession:
                         raise ValueError("Error - {}".format(response.text))
                     data = response.json()
                 else:
-                    data = []
-                if enable_pagination:
-                    if data:
-                        records.extend(data)
-                        offset += limit
-                    else:
-                        return records
-                else:
-                    return data
+                    log.warn('No records returned')
+                    return []
+                       
+                records.extend(data)
+                if len(data) < this_loop_limit:
+                    # Cursor exhausted, so just return
+                    return records
+                _offset += this_loop_limit
+                
             except:
                 import traceback
 

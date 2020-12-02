@@ -46,8 +46,9 @@ class Cycle(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Cycle"]["alt_url"])
 
-        if 'machine__source' not in kwargs:
-            log.warn('Machine source not specified.  Returned rows may have inconsistent formats.')
+        if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:
+            log.warn('Machine source not specified.')
+            return []
 
         self.session.headers = self.modify_header_style(url, self.session.headers)
 

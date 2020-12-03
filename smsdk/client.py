@@ -7,10 +7,10 @@ import warnings
 import pandas as pd
 
 try:
-    from pandas.io.json import json_normalize
-except ImportError:
     # for newer pandas versions >1.X
     from pandas import json_normalize
+except ImportError:
+    from pandas.io.json import json_normalize
 
 from smsdk.utils import get_url
 from smsdk.Auth.auth import Authenticator
@@ -190,7 +190,9 @@ class Client(object):
                 machine = machine[0]
 
             
-            mach_names = self.get_machine_names()
+            query_params = {'_only': ['source', 'source_clean', 'source_type'],
+                        '_order_by': 'source_clean'}
+            mach_names = self.get_machines(**query_params)
             machmap = {mach[1]['source_clean']: mach[1]['source'] for mach in mach_names.iterrows()}
             machine = machmap.get(machine, machine)
             
@@ -255,10 +257,9 @@ class Client(object):
             
             kwargs = translated_query
         
-        print(f'kwargs is now {kwargs}')
         df = self.get_data('cycle', 'get_cycles', normalize, *args, **kwargs)
 
-        if clean_strings_out:
+        if len(df) > 0 and clean_strings_out:
             df = self.clean_machine_titles(df)
             df = self.clean_machine_names(df)
 
@@ -270,12 +271,34 @@ class Client(object):
     def get_machines(self, normalize=True, *args, **kwargs):
         return self.get_data('machine', 'get_machines', normalize, *args, **kwargs)
 
-    def get_machine_names(self):
+    def get_machine_names(self, source_type = None, clean_strings_out=True):
         query_params = {'_only': ['source', 'source_clean', 'source_type'],
                         '_order_by': 'source_clean'}
-        return self.get_data('machine', 'get_machines', normalize=True, **query_params)
+        
+        if source_type:
+            # Double check the type
+            mt = self.get_machine_types(source_type=source_type)
+            # If it was found, then no action to take, otherwise try looking up from clean string
+            if not len(mt):
+                mt = self.get_machine_types(source_type_clean=source_type)
+                if len(mt):
+                    source_type = mt['source_type'][0]
+                else:
+                    log.error('Machine Type not found')
+                    return []
+            
+            query_params['source_type'] = source_type
 
-    def get_machine_schema(self, machine_source):
+
+        machines = self.get_data('machine', 'get_machines', normalize=True, **query_params)
+
+        if clean_strings_out:
+            return machines['source_clean'].to_list()
+        else:
+            return machines['source'].to_list()
+        
+
+    def get_machine_schema(self, machine_source, types = []):
     
         try:
             machine_type = self.get_machines(source=machine_source)['source_type'][0]
@@ -292,13 +315,24 @@ class Client(object):
         fields = []
         for stat in stats:
             if not stat.get('display', {}).get('ui_hidden', False):
-                fields.append({'name': stat['analytics']['columns'][0]['name'],
-                            'display': stat['display']['title_prefix'],
-                            'type': stat['analytics']['columns'][0]['type']})
+                if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
+                    fields.append({'name': stat['analytics']['columns'][0]['name'],
+                                'display': stat['display']['title_prefix'],
+                                'type': stat['analytics']['columns'][0]['type']})
         return pd.DataFrame(fields)
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
         return self.get_data('machine_type', 'get_machine_types', normalize, *args, **kwargs)
+
+    def get_machine_type_names(self, clean_strings_out=True):
+        query_params = {'_only': ['source_type', 'source_type_clean'],
+                        '_order_by': 'source_type_clean'}
+        machine_types = self.get_data('machine_type', 'get_machine_types', normalize=True, **query_params)
+
+        if clean_strings_out:
+            return machine_types['source_type_clean'].to_list()
+        else:
+            return machine_types['source_type'].to_list()
 
     def get_parts(self, normalize=True, *args, **kwargs):
         return self.get_data('part', 'get_parts', normalize, *args, **kwargs)
@@ -352,7 +386,9 @@ class Client(object):
             log.error('Unable to find Machine column to scrub')
             return table
 
-        mach_names = self.get_machine_names()
+        query_params = {'_only': ['source', 'source_clean', 'source_type'],
+                        '_order_by': 'source_clean'}
+        mach_names = self.get_machines(**query_params)
         machmap = {mach[1]['source']: mach[1]['source_clean'] for mach in mach_names.iterrows()}
 
         table.loc[:, machine_field] = table[machine_field].apply(lambda x: machmap.get(x, x))

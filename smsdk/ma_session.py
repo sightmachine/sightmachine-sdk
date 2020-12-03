@@ -74,7 +74,6 @@ class MaSession:
                         raise ValueError("Error - {}".format(response.text))
                     data = response.json()
                 else:
-                    log.warn('No records returned')
                     return []
                        
                 records.extend(data)

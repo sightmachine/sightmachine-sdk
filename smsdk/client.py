@@ -133,7 +133,6 @@ class Client(object):
             if '__in' in key:
                 kwargs[key] = str(val)
 
-
         # check if requested util_name belong the list of
         # registerd utilites
         if util_name in getattr(cls, "get_utilities")(*args, **kwargs):
@@ -174,99 +173,52 @@ class Client(object):
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
         Shortcut for retreiving cycle/machine data.  Pull data from the cycle model and cleans up headers, machine names
-        :param ename: Name of the entities
-        :param util_name: Name of the utility function
         :param normalize: Flatten nested data structures
         from which to retrieve the data
-        :param clean_strings: Replace Sight Machine internal column and machine names with user-facing names. 
+        :param clean_strings_in: Convert the UI-based names into the internal database names.
+        :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
         :return: pandas dataframe
         """
         
         if clean_strings_in:
-            machine = kwargs.get('machine__source', kwargs.get('Machine'))
-            if not machine:
-                # Possible that it is a machine__in.  If so, base on first machine
-                machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
-                machine = machine[0]
-
-            
-            query_params = {'_only': ['source', 'source_clean', 'source_type'],
-                        '_order_by': 'source_clean'}
-            mach_names = self.get_machines(**query_params)
-            machmap = {mach[1]['source_clean']: mach[1]['source'] for mach in mach_names.iterrows()}
-            machine = machmap.get(machine, machine)
-            
-            schema = self.get_machine_schema(machine)
-
-            colmap = {row[1]['display']: row[1]['name'] for row in schema.iterrows()}
-            colmap.update({'End Time': 'endtime',
-                           'Start Time': 'starttime',
-                           'Machine': 'machine__source'})
-        
-            translated_query = {}
-            for key, val in kwargs.items():
-                # Special handling for machine source
-                if key in ['Machine', 'machine__source']:
-                    key = 'machine__source'
-                    val = machmap.get(val, val)
-                elif key in ['Machine__in', 'machine__source__in']:
-                    key = 'machine__source__in'
-                    val = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
-                    val = [machmap.get(col, col) for col in val]
-
-                # Special handling for _order_by
-                elif key == '_order_by':
-                    new_orders = []
-                    cols = val.split(',')
-                    
-                    for col in cols:
-                        prefix = ''
-                        if col.startswith('-'):
-                            col = col[1:]
-                            prefix = '-'
-                        col = colmap.get(col, col)
-
-                        # For performance, currently only support order by time, machine
-                        if not col in ['endtime', 'starttime', 'machine__source']:
-                            log.warn('Only ordering by start time, end time, and machine source currently supported.')
-                            continue
-
-                        col = f'{prefix}{col}'
-                        new_orders.append(col)
-                    val = ','.join(new_orders)
-
-                # Special handling for _only
-                elif key == '_only':
-                    if isinstance(val, str):
-                        val = colmap(val, val)
-                    else:
-                        val = [colmap.get(col, col) for col in val]
-
-                #for all other params
-                else: 
-                    func = ''
-                    if '__' in key:
-                        key, func = key.split('__')
-                    
-                    key = colmap.get(key, key)
-                    
-                    if func:
-                        key = f'{key}__{func}'
-                    
-                translated_query[key] = val
-            
-            kwargs = translated_query
+            kwargs = self.clean_query_machine_titles(kwargs)
+            kwargs = self.clean_query_machine_names(kwargs)
         
         df = self.get_data('cycle', 'get_cycles', normalize, *args, **kwargs)
 
         if len(df) > 0 and clean_strings_out:
-            df = self.clean_machine_titles(df)
-            df = self.clean_machine_names(df)
+            df = self.clean_df_machine_titles(df)
+            df = self.clean_df_machine_names(df)
 
         return df
 
-    def get_downtimes(self, normalize=True, *args, **kwargs):
+    def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+        """
+        Get Downtime data.
+        :param normalize: Flatten nested data structures
+        :param clean_strings_in: Convert the UI-based names into the internal database names.
+        :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
+        :return: pandas dataframe
+        :return: pandas dataframe
+        """
+
+        
         return self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
+
+    def get_downtimes_with_cycles(self, normalize=True, *args, **kwargs):
+        """
+        Merges cycle and downtime data where each downtime record also has its preceeding cycle stats.  Parameters are 
+        identical to get_downtimes(), but the returned data structure will also have corresponding cycle data.
+        :param normalize: Flatten nested data structures
+        :param clean_strings_in: Convert the UI-based names into the internal database names.
+        :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
+        :return: pandas dataframe
+        :return: pandas dataframe
+        """
+
+
+        return
+
 
     def get_machines(self, normalize=True, *args, **kwargs):
         return self.get_data('machine', 'get_machines', normalize, *args, **kwargs)
@@ -337,7 +289,7 @@ class Client(object):
     def get_parts(self, normalize=True, *args, **kwargs):
         return self.get_data('part', 'get_parts', normalize, *args, **kwargs)
 
-    def clean_machine_titles(self, table, machine=None):
+    def clean_df_machine_titles(self, table, machine=None):
         """
         Convert the title names from the Sight Machine internal name to the user-friendly names.  
         If machine is not provided, assumes that there is a column named machine__source to lookup name from first row
@@ -367,7 +319,7 @@ class Client(object):
         table = table.rename(colmap, axis=1)
         return table
 
-    def clean_machine_names(self, table):
+    def clean_df_machine_names(self, table):
         """
         Convert the internal machine names to user-facing machine names
 
@@ -392,4 +344,86 @@ class Client(object):
         machmap = {mach[1]['source']: mach[1]['source_clean'] for mach in mach_names.iterrows()}
 
         table.loc[:, machine_field] = table[machine_field].apply(lambda x: machmap.get(x, x))
-        return table     
+        return table
+
+    def clean_query_machine_names(self, query):
+        query = query.copy()
+
+        machine_key = 'machine__source' if 'machine__source' in query else 'machine__source__in'
+        
+        query_params = {'_only': ['source', 'source_clean', 'source_type'],
+                        '_order_by': 'source_clean'}
+        mach_names = self.get_machines(**query_params)
+        machmap = {mach[1]['source_clean']: mach[1]['source'] for mach in mach_names.iterrows()}
+
+        machines = query[machine_key]
+    
+        if isinstance(machines, str):
+            query[machine_key] = machmap.get(machines, machines)
+        else:
+            query[machine_key] = [machmap.get(mach, mach) for mach in machines]
+
+        return query
+
+    def clean_query_machine_titles(self, query):
+        query = query.copy()
+
+        # First need to find the machine name
+        machine = query.get('machine__source', query.get('Machine'))
+        if not machine:
+        # Possible that it is a machine__in.  If so, base on first machine
+            machine = query.get('machine__source__in', query.get('Machine__in'))
+            machine = machine[0]
+
+        schema = self.get_machine_schema(machine)
+
+        colmap = {row[1]['display']: row[1]['name'] for row in schema.iterrows()}
+        colmap.update({'End Time': 'endtime',
+                        'Start Time': 'starttime',
+                        'Machine': 'machine__source'})
+    
+        translated_query = {}
+        for key, val in query.items():
+            
+            # Special handling for _order_by since the stat titles are in a list
+            if key == '_order_by':
+                
+                prefix = ''
+                if val.startswith('-'):
+                    val = val[1:]
+                    prefix = '-'
+                val = colmap.get(val, val)
+
+                # For performance, currently only support order by time, machine
+                if not val in ['endtime', 'starttime', 'machine__source']:
+                    log.warn('Only ordering by start time, end time, and machine source currently supported.')
+                    continue
+
+                val = f'{prefix}{val}'
+                
+            # Special handling for _only
+            elif key == '_only':
+                # To simplify the logic, always treat as a list of _only items 
+                if isinstance(val, str):
+                    val = [val]
+
+                val = [colmap.get(col, col) for col in val]
+
+            #for all other params
+            else: 
+                func = ''
+                if '__' in key:
+                    key, func = key.split('__')
+                    if not func in ['in', 'nin', 'gt', 'lt', 'gte', 'lte', 'exists', 'ne', 'eq']:
+                        # This isn't actually a function.  Probably another nested item like machine__source
+                        key = f'{key}__{func}'
+                        func = ''
+                        
+                key = colmap.get(key, key)
+                
+                if func:
+                    key = f'{key}__{func}'
+                
+            translated_query[key] = val
+
+        return translated_query

@@ -33,6 +33,25 @@ def time_string_to_epoch(time_string):
     return(endtime_epoch)
 
 
+# We don't have a downtime schema, so hard code one
+downmap = {'machine__source': 'Machine',
+           'starttime': 'Start Time',
+           'endtime': 'End Time',
+           'total': 'Duration',
+           'shift': 'Shift',
+           'metadata__reason': 'Downtime Reason', 
+           'metadata__category': 'Downtime Category',
+           'metadata__downtime_type': 'Downtime Type'}
+
+downmapinv = {'Machine': 'machine__source',
+              'Start Time': 'starttime',
+              'End Time': 'endtime',
+              'Duration': 'total',
+              'Shift': 'shift',
+              'Downtime Reason': 'metadata__reason', 
+              'Downtime Category': 'metadata__category',
+              'Downtime Type': 'metadata__downtime_type'}
+
 class Client(object):
     """Easy-to-use client to wrap all SDK functionality."""
 
@@ -113,7 +132,7 @@ class Client(object):
 
         # In the current API, filter by start/endtime + anything else is broken
         # But you can properly filter by epoch + other, so automatically convert those
-        for kw in ['endtime', 'endtime__gt', 'endtime__lt', 'starttime', 'starttime__gt', 'starttime__lt']:
+        for kw in ['endtime', 'endtime__gt', 'endtime__lt', 'endtime__gte', 'endtime__lte', 'starttime', 'starttime__gt', 'starttime__lt''starttime__gte', 'starttime__lte']:
             if kw in kwargs:
                 original_time = kwargs.pop(kw)
                 epoch_time = time_string_to_epoch(original_time)
@@ -180,6 +199,18 @@ class Client(object):
         :return: pandas dataframe
         """
         
+        if not '_only' in kwargs:
+            machine = kwargs.get('machine__source', kwargs.get('Machine'))
+            if not machine:
+            # Possible that it is a machine__in.  If so, base on first machine
+                machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
+                machine = machine[0]
+
+            schema = self.get_machine_schema(machine)['name'].tolist()
+            toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
+
+            kwargs['_only'] = schema + toplevel
+
         if clean_strings_in:
             kwargs = self.clean_query_machine_titles(kwargs)
             kwargs = self.clean_query_machine_names(kwargs)
@@ -202,10 +233,22 @@ class Client(object):
         :return: pandas dataframe
         """
 
-        
-        return self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
+        if not '_only' in kwargs:
+            kwargs['_only'] = downmap.keys()
 
-    def get_downtimes_with_cycles(self, normalize=True, *args, **kwargs):
+        if clean_strings_in:
+            kwargs = self.clean_query_downtime_titles(kwargs)
+            kwargs = self.clean_query_machine_names(kwargs)
+        
+        df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
+
+        if clean_strings_out:
+            df = self.clean_df_downtime_titles(df)
+            df = self.clean_df_machine_names(df)
+            
+        return df
+
+    def get_downtimes_with_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
         Merges cycle and downtime data where each downtime record also has its preceeding cycle stats.  Parameters are 
         identical to get_downtimes(), but the returned data structure will also have corresponding cycle data.
@@ -216,9 +259,32 @@ class Client(object):
         :return: pandas dataframe
         """
 
+        df = self.get_downtimes(normalize = normalize, clean_strings_in=clean_strings_in, clean_strings_out=clean_strings_out, **kwargs)
 
-        return
+        # Get the cycle before each downtime record
+        cycs = []
+        for row in df.iterrows():
+            query = {'machine__source': row[1].get('Machine', row[1].get('machine__source')),
+                    'starttime__lte': row[1].get('Start Time', row[1].get('starttime')),
+                    '_limit': 1,
+                    '_order_by': '-starttime'}
+            cycs.append(self.get_cycles(clean_strings_in=clean_strings_in, clean_strings_out=clean_strings_out, **query))
+        df_cyc = pd.concat(cycs)
 
+        # Just joining by row, so reset all the indexes to just the row number and get rid of the mongo object id
+        df = df.reset_index()
+        df = df.drop('id', axis = 1)
+        df_cyc = df_cyc.reset_index()
+        if clean_strings_out:
+            df_cyc = df_cyc.drop(['Machine', 'id', 'Shift'], axis = 1) # Also get rid of fields that are duplicate on both downtime and cycle
+            df_cyc = df_cyc.rename({'Start Time': 'Cycle Start Time', 'End Time': 'Cycle End Time'}, axis = 1)  # Retitle times so clear these are from the cycle
+        else:
+            df_cyc = df_cyc.drop(['machine__source', 'id', 'shift'], axis = 1) # Also get rid of fields that are duplicate on both downtime and cycle
+            df_cyc = df_cyc.rename({'starttime': 'cycle_starttime', 'End Time': 'cycle_endtime'}, axis = 1)  # Retitle times so clear these are from the cycle
+                
+        merged = df.merge(df_cyc, left_index = True, right_index = True)
+
+        return merged
 
     def get_machines(self, normalize=True, *args, **kwargs):
         return self.get_data('machine', 'get_machines', normalize, *args, **kwargs)
@@ -268,9 +334,10 @@ class Client(object):
         for stat in stats:
             if not stat.get('display', {}).get('ui_hidden', False):
                 if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
-                    fields.append({'name': stat['analytics']['columns'][0]['name'],
-                                'display': stat['display']['title_prefix'],
-                                'type': stat['analytics']['columns'][0]['type']})
+                    fields.append({'name': f'stats__{stat["title"]}__val',
+                                   #'name': stat['analytics']['columns'][0]['name'],
+                                   'display': stat['display']['title_prefix'],
+                                   'type': stat['analytics']['columns'][0]['type']})
         return pd.DataFrame(fields)
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
@@ -314,7 +381,14 @@ class Client(object):
         schema = self.get_machine_schema(machine)
 
         colmap = {row[1]['name']: row[1]['display'] for row in schema.iterrows()}
-        colmap.update({'endtime': 'End Time', 'machine__source': 'Machine'})
+        toplevelinv = {'endtime': 'End Time',
+                       'starttime': 'Start Time',
+                       'machine__source': 'Machine',
+                       'total': 'Cycle Time (Net)', 
+                       'record_time': 'Cycle Time (Gross)', 
+                       'shift': 'Shift', 
+                       'output': 'Output'}
+        colmap.update(toplevelinv)
 
         table = table.rename(colmap, axis=1)
         return table
@@ -348,7 +422,7 @@ class Client(object):
 
     def clean_query_machine_names(self, query):
         query = query.copy()
-
+        
         machine_key = 'machine__source' if 'machine__source' in query else 'machine__source__in'
         
         query_params = {'_only': ['source', 'source_clean', 'source_type'],
@@ -378,9 +452,14 @@ class Client(object):
         schema = self.get_machine_schema(machine)
 
         colmap = {row[1]['display']: row[1]['name'] for row in schema.iterrows()}
-        colmap.update({'End Time': 'endtime',
-                        'Start Time': 'starttime',
-                        'Machine': 'machine__source'})
+        toplevel = {'End Time': 'endtime',
+                    'Start Time': 'starttime',
+                    'Machine': 'machine__source',
+                    'Cycle Time (Net)': 'total', 
+                    'Cycle Time (Gross)': 'record_time', 
+                    'Shift': 'shift', 
+                    'Output': 'output'}
+        colmap.update(toplevel)
     
         translated_query = {}
         for key, val in query.items():
@@ -393,7 +472,7 @@ class Client(object):
                     val = val[1:]
                     prefix = '-'
                 val = colmap.get(val, val)
-
+                
                 # For performance, currently only support order by time, machine
                 if not val in ['endtime', 'starttime', 'machine__source']:
                     log.warn('Only ordering by start time, end time, and machine source currently supported.')
@@ -420,6 +499,61 @@ class Client(object):
                         func = ''
                         
                 key = colmap.get(key, key)
+                if key in colmap and key not in toplevel:
+                    key = f'stats__{key}__val'
+                
+                if func:
+                    key = f'{key}__{func}'
+                
+            translated_query[key] = val
+
+        return translated_query
+
+    def clean_df_downtime_titles(self, table):
+        table = table.rename(downmap, axis=1)
+        return(table)
+        
+
+    def clean_query_downtime_titles(self, query):
+        query = query.copy()
+
+        translated_query = {}
+        for key, val in query.items():    
+            # Special handling for _order_by since the stat titles are in a list
+            if key == '_order_by':
+                
+                prefix = ''
+                if val.startswith('-'):
+                    val = val[1:]
+                    prefix = '-'
+                val = downmapinv.get(val, val)
+                
+                # For performance, currently only support order by time, machine
+                if not val in ['endtime', 'starttime', 'machine__source']:
+                    log.warn('Only ordering by start time, end time, and machine source currently supported.')
+                    continue
+
+                val = f'{prefix}{val}'
+                
+            # Special handling for _only
+            elif key == '_only':
+                # To simplify the logic, always treat as a list of _only items 
+                if isinstance(val, str):
+                    val = [val]
+
+                val = [downmapinv.get(col, col) for col in val]
+
+            #for all other params
+            else: 
+                func = ''
+                if '__' in key:
+                    key, func = key.split('__')
+                    if not func in ['in', 'nin', 'gt', 'lt', 'gte', 'lte', 'exists', 'ne', 'eq']:
+                        # This isn't actually a function.  Probably another nested item like machine__source
+                        key = f'{key}__{func}'
+                        func = ''
+                        
+                key = downmapinv.get(key, key)
                 
                 if func:
                     key = f'{key}__{func}'

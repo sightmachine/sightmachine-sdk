@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 
 def time_string_to_epoch(time_string):
     try:
-        endtime_dt = pd.to_datetime(time_string)
-        endtime_epoch = (endtime_dt - pd.to_datetime('1970-01-01')).total_seconds() * 1000 # SM timestamps in ms
+        dt = pd.to_datetime(time_string)
+        time_epoch = (dt - pd.to_datetime('1970-01-01')).total_seconds() * 1000 # SM timestamps in ms
     except ValueError as e:
         log.error(f'Unable to parse time string {time_string}: {e}')
         return 0
@@ -30,7 +30,7 @@ def time_string_to_epoch(time_string):
         log.error(f'Bad date specified: {time_string}')
         return 0
     
-    return(endtime_epoch)
+    return(time_epoch)
 
 
 # We don't have a downtime schema, so hard code one
@@ -90,13 +90,13 @@ class Client(object):
 
         or
 
-        >>> cli.login('apikey', key='YwUuCl7lSP75HcU6GC1Hm5OIXOKcMcSkMEES3_Q1DMU')
+        >>> cli.login('apikey', key_id='api_key_string', secret_id='api_secret_string')
 
         :param method: The authentication method: apikey or basic
         :type method: :class:`string`
         :param kwargs:
             By method:
-                * apikey - key
+                * apikey - key_id, secret_id
                 * basic - email, password
         """
         return self.auth.login(method, **kwargs)
@@ -115,7 +115,7 @@ class Client(object):
 
     def get_data(self, ename, util_name, normalize=True, *args, **kwargs):
         """
-        Main data fetching function for all the entities
+        Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
         :param util_name: Name of the utility function
         :param normalize: Flatten nested data structures
@@ -230,7 +230,6 @@ class Client(object):
         :param clean_strings_in: Convert the UI-based names into the internal database names.
         :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
         :return: pandas dataframe
-        :return: pandas dataframe
         """
 
         if not '_only' in kwargs:
@@ -252,10 +251,12 @@ class Client(object):
         """
         Merges cycle and downtime data where each downtime record also has its preceeding cycle stats.  Parameters are 
         identical to get_downtimes(), but the returned data structure will also have corresponding cycle data.
+
+        Note this function takes time as it is handling many queries to assemble the resulting data frame.
+
         :param normalize: Flatten nested data structures
         :param clean_strings_in: Convert the UI-based names into the internal database names.
         :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
-        :return: pandas dataframe
         :return: pandas dataframe
         """
 
@@ -287,9 +288,22 @@ class Client(object):
         return merged
 
     def get_machines(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  Most use cases will likely want get_machine_names(). 
+        :param normalize: Flatten nested data structures
+        :return: pandas dataframe
+        """
         return self.get_data('machine', 'get_machines', normalize, *args, **kwargs)
 
     def get_machine_names(self, source_type = None, clean_strings_out=True):
+        """
+        Get a list of machines.  
+
+        :param source_type: filter the list to only the specified source_type
+        :param clean_strings_out: If true, return the list using the Machine's UI name.  If false, the list contains internal machine names.
+        :return: list
+        """
+
         query_params = {'_only': ['source', 'source_clean', 'source_type'],
                         '_order_by': 'source_clean'}
         
@@ -317,6 +331,13 @@ class Client(object):
         
 
     def get_machine_schema(self, machine_source, types = []):
+        """
+        Get a list of fields/tags on a given machine
+
+        :param machine_source: the name of the machine to get the list of tags for.
+        :param types: an option list of data types (float, int, string, boolean) to filter the list of fields based on their data type.
+        :return: pandas dataframe
+        """
     
         try:
             machine_type = self.get_machines(source=machine_source)['source_type'][0]
@@ -358,13 +379,15 @@ class Client(object):
 
     def clean_df_machine_titles(self, table, machine=None):
         """
-        Convert the title names from the Sight Machine internal name to the user-friendly names.  
-        If machine is not provided, assumes that there is a column named machine__source to lookup name from first row
+        Convert the dataframe column names on Cycle data from the Sight Machine internal name to the user-friendly names.  
+        If machine is not provided, assumes that there is a column named machine__source to lookup name from first row.
+        Function is used to clean up returned results from get_cycle() query requests.
 
         :param table: A pandas data table with cycle or part data
         :type table: class:`DataFrame`
         :param machine: Optional machine type for looking up the raw -> display column definitions
         :type machine: class:`string`
+        :return: pandas dataframe
         """
 
         if not machine:
@@ -395,10 +418,13 @@ class Client(object):
 
     def clean_df_machine_names(self, table):
         """
-        Convert the internal machine names to user-facing machine names
+        Convert the internal machine names to user-facing machine names.
+        Function is used to clean up returned results from get_cycle() or get_downtime() query requests.
 
         :param table: A pandas data table with cycle/machine data
         :type table: class:`DataFrame`
+
+        :return: pandas dataframe
         """
 
         table = table.copy() #.loc makes changes to original table, which isn't good.  So operate on a copy.
@@ -421,6 +447,13 @@ class Client(object):
         return table
 
     def clean_query_machine_names(self, query):
+        """
+        Given a query using the UI friendly machine names, convert them into the Sight Machine expected internal names
+
+        :param query: Dict kwargs passed as part of a query to the API
+        
+        :return: dict
+        """
         query = query.copy()
         
         machine_key = 'machine__source' if 'machine__source' in query else 'machine__source__in'
@@ -440,6 +473,13 @@ class Client(object):
         return query
 
     def clean_query_machine_titles(self, query):
+        """
+        Given a query for cycles that uses UI friendly tag/field names, convert the machines back into the internal Sight Machine names
+
+        :param query: Dict kwargs passed as part of a query to the API
+
+        :return: dict
+        """
         query = query.copy()
 
         # First need to find the machine name
@@ -510,11 +550,27 @@ class Client(object):
         return translated_query
 
     def clean_df_downtime_titles(self, table):
+        """
+        Convert the dataframe column names on Downtime data from the Sight Machine internal name to the user-friendly names.  
+        Function is used to clean up returned results from get_downtimes() query requests.
+
+        :param table: A pandas data table with cycle or part data
+        :type table: class:`DataFrame`
+        :return: pandas dataframe
+        """
+
         table = table.rename(downmap, axis=1)
         return(table)
         
-
     def clean_query_downtime_titles(self, query):
+        """
+        Given a query for downtimes that uses UI friendly tag/field names, convert the machines back into the internal Sight Machine names
+
+        :param query: Dict kwargs passed as part of a query to the API
+
+        :return: dict
+        """
+        
         query = query.copy()
 
         translated_query = {}

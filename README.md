@@ -33,7 +33,7 @@ To initialize a Client:
 
 ```
 from smsdk import client
-tenantname = 'demo'
+tenant = 'demo'
 cli = client.Client(tenant)
 ```
 
@@ -121,10 +121,10 @@ equivalent key/value pair is `{'temperature__gt': 100}`.
 - Note: one current limitation is that the Sight Machine API does not support logical OR when combining query parameters.  
 
 ```
-query = {'Machine': 'My Machine'
+query = {'Machine': 'My Machine',
          'End Time__gte' : datetime(2017, 8, 6), 
          'End Time__lte' : datetime(2017, 8, 7), 
-         'order_by': '-End Time'}
+         '_order_by': '-End Time'}
 cli.get_cycles(**query)
 ```
 

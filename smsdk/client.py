@@ -53,7 +53,7 @@ downmapinv = {'Machine': 'machine__source',
               'Downtime Type': 'metadata__downtime_type'}
 
 class Client(object):
-    """Easy-to-use client to wrap all SDK functionality."""
+    """Connection point to the Sight Machine platform to retrieve data"""
 
     session = None
     tenant = None
@@ -86,11 +86,11 @@ class Client(object):
         """
         Authenticate with the configured tenant and user credentials.
 
-        >>> cli.login('basic', email='user@domain.com', password='password')
+        cli.login('basic', email='user@domain.com', password='password')
 
         or
 
-        >>> cli.login('apikey', key_id='api_key_string', secret_id='api_secret_string')
+        cli.login('apikey', key_id='api_key_string', secret_id='api_secret_string')
 
         :param method: The authentication method: apikey or basic
         :type method: :class:`string`
@@ -109,7 +109,7 @@ class Client(object):
 
     def list_entities(self):
         """
-        Return the list of egistered entites
+        Return the list of registered entites.  Primarily used if making direct get_data calls.  Generally for internal use only.
         """
         return [e.name for e in smsdkentities.list()]
 
@@ -119,7 +119,6 @@ class Client(object):
         :param ename: Name of the entities
         :param util_name: Name of the utility function
         :param normalize: Flatten nested data structures
-        from which to retrieve the data
         :return: pandas dataframe
         """
         base_url = get_url(
@@ -191,11 +190,14 @@ class Client(object):
     # Some shortcut functions
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
-        Shortcut for retreiving cycle/machine data.  Pull data from the cycle model and cleans up headers, machine names
+        Retrieve cycle/machine data.  
+
         :param normalize: Flatten nested data structures
-        from which to retrieve the data
-        :param clean_strings_in: Convert the UI-based names into the internal database names.
-        :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
+        :type normalize: bool
+        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+        :type clean_strings_in: bool
+        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+        :type clean_strings_out: bool
         :return: pandas dataframe
         """
         
@@ -225,10 +227,14 @@ class Client(object):
 
     def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
-        Get Downtime data.
+        Retrieve Downtime data.  
+
         :param normalize: Flatten nested data structures
-        :param clean_strings_in: Convert the UI-based names into the internal database names.
-        :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
+        :type normalize: bool
+        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+        :type clean_strings_in: bool
+        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+        :type clean_strings_out: bool
         :return: pandas dataframe
         """
 
@@ -250,13 +256,16 @@ class Client(object):
     def get_downtimes_with_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
         Merges cycle and downtime data where each downtime record also has its preceeding cycle stats.  Parameters are 
-        identical to get_downtimes(), but the returned data structure will also have corresponding cycle data.
+        identical to get_downtimes(), but the returned data structure will also have corresponding cycle data from immediately before each downtime.
 
         Note this function takes time as it is handling many queries to assemble the resulting data frame.
 
         :param normalize: Flatten nested data structures
-        :param clean_strings_in: Convert the UI-based names into the internal database names.
-        :param clean_strings_out: Replace Sight Machine internal column and machine names with user-facing names. 
+        :type normalize: bool
+        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+        :type clean_strings_in: bool
+        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+        :type clean_strings_out: bool
         :return: pandas dataframe
         """
 
@@ -289,18 +298,22 @@ class Client(object):
 
     def get_machines(self, normalize=True, *args, **kwargs):
         """
-        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  Most use cases will likely want get_machine_names(). 
+        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
+        then see also get_machine_names(). 
+
         :param normalize: Flatten nested data structures
+        :type normalize: bool
         :return: pandas dataframe
         """
         return self.get_data('machine', 'get_machines', normalize, *args, **kwargs)
 
     def get_machine_names(self, source_type = None, clean_strings_out=True):
         """
-        Get a list of machines.  
+        Get a list of machine names.  This is a simplified version of get_machines().  
 
         :param source_type: filter the list to only the specified source_type
-        :param clean_strings_out: If true, return the list using the Machine's UI name.  If false, the list contains internal machine names.
+        :type source_type: str
+        :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine names.
         :return: list
         """
 
@@ -332,10 +345,12 @@ class Client(object):
 
     def get_machine_schema(self, machine_source, types = []):
         """
-        Get a list of fields/tags on a given machine
+        Get a list of fields/tags on a given machine, including the Sight Machine internal name, UI display name, and data type.
 
         :param machine_source: the name of the machine to get the list of tags for.
-        :param types: an option list of data types (float, int, string, boolean) to filter the list of fields based on their data type.
+        :type machine_source: str
+        :param types: an optional list of strings of the type to filter the list of fields based on their data type.  Allowed options are float, int, string, boolean.
+        :type types: list
         :return: pandas dataframe
         """
     
@@ -362,9 +377,24 @@ class Client(object):
         return pd.DataFrame(fields)
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
+        then see also get_machine_type_names(). 
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+
         return self.get_data('machine_type', 'get_machine_types', normalize, *args, **kwargs)
 
     def get_machine_type_names(self, clean_strings_out=True):
+        """
+        Get a list of machine type names.  This is a simplified version of get_machine_types().  
+
+        :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
+        :return: list
+        """
         query_params = {'_only': ['source_type', 'source_type_clean'],
                         '_order_by': 'source_type_clean'}
         machine_types = self.get_data('machine_type', 'get_machine_types', normalize=True, **query_params)

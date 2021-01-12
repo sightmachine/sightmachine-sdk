@@ -327,7 +327,7 @@ class Client(object):
             if not len(mt):
                 mt = self.get_machine_types(source_type_clean=source_type)
                 if len(mt):
-                    source_type = mt['source_type'][0]
+                    source_type = mt['source_type'].iloc[0]
                 else:
                     log.error('Machine Type not found')
                     return []

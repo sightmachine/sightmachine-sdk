@@ -427,6 +427,7 @@ class Client(object):
             except KeyError as e:
                 try:
                     # Maybe it was already cleaned
+                    print(table.columns)
                     machine = table.loc[:, 'Machine'][0]
                 except KeyError as e:
                     log.error(f'Unable to lookup source type for schema: {e}')
@@ -563,7 +564,10 @@ class Client(object):
             else: 
                 func = ''
                 if '__' in key:
-                    key, func = key.split('__')
+                    parts = key.split('__')
+                    key = '__'.join(parts[:-1]) 
+                    func = parts[-1]
+
                     if not func in ['in', 'nin', 'gt', 'lt', 'gte', 'lte', 'exists', 'ne', 'eq']:
                         # This isn't actually a function.  Probably another nested item like machine__source
                         key = f'{key}__{func}'

@@ -158,6 +158,7 @@ class Client(object):
             # call the utility function
             # all the dict params are passed as kwargs
             # dict params strictly follow {'key':'value'} format
+
             data = getattr(cls, util_name)(*args, **kwargs)
             
             if normalize:
@@ -185,6 +186,12 @@ class Client(object):
         else:
             # raise error if requested for unregistered utility
             raise ValueError("Error - {}".format("Not a registered utility"))
+
+        if 'endtime' in df.columns:
+            df['endtime'] = pd.to_datetime(df['endtime'])
+        if 'starttime' in df.columns:
+            df['starttime'] = pd.to_datetime(df['starttime'])
+
         return df
 
     # Some shortcut functions
@@ -427,7 +434,6 @@ class Client(object):
             except KeyError as e:
                 try:
                     # Maybe it was already cleaned
-                    print(table.columns)
                     machine = table.loc[:, 'Machine'][0]
                 except KeyError as e:
                     log.error(f'Unable to lookup source type for schema: {e}')
@@ -544,9 +550,14 @@ class Client(object):
                     val = val[1:]
                     prefix = '-'
                 val = colmap.get(val, val)
+
+                if val == 'endtime':
+                    val = 'endtime_epoch'
+                if val == 'starttime':
+                    val = 'starttime_epoch'
                 
                 # For performance, currently only support order by time, machine
-                if not val in ['endtime', 'starttime', 'machine__source']:
+                if not val in ['endtime_epoch', 'starttime_epoch', 'machine__source']:
                     log.warn('Only ordering by start time, end time, and machine source currently supported.')
                     continue
 

@@ -7,7 +7,7 @@ install_requires = [
     "numpy==1.18.4",
     "requests==2.24.0",
     "pytest==6.0.2",
-    #"pandas==0.23.4",
+    "pandas==0.25.2",
     "mock==4.0.2",
     "importlib-resources==3.0.0"
 ]

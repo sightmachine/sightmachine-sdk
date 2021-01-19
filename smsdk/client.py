@@ -202,13 +202,14 @@ class Client(object):
         """
         
         if not '_only' in kwargs:
+            print('_only not specified.  Selecting first 50 fields.')
             machine = kwargs.get('machine__source', kwargs.get('Machine'))
             if not machine:
             # Possible that it is a machine__in.  If so, base on first machine
                 machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
                 machine = machine[0]
 
-            schema = self.get_machine_schema(machine)['name'].tolist()
+            schema = self.get_machine_schema(machine)['name'].tolist()[:50]
             toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
 
             kwargs['_only'] = schema + toplevel

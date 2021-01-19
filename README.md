@@ -1,6 +1,6 @@
 # Sight Machine Python SDK
 
-The Sight Machine software development kit (SDK) complements the Sight Machine platform by providing advanced users with the ability to retrieve data from the platform.  It is designed primarily for data analyts or data scientists who are interested in retrieving data from Sight Machine so they can perform their own custom analytics.  
+The Sight Machine software development kit (SDK) complements the Sight Machine platform by providing advanced users with the ability to retrieve data from the platform.  It is designed primarily for data analysts or data scientists who are interested in retrieving data from Sight Machine so they can perform their own custom analytics.  
 
 
 ## Installation
@@ -21,7 +21,7 @@ import smsdk
 ## Quick Start
 
 The following quick start guide will get you up and running with a common use case of connecting to the Sight Machine platform, authenticating,
-selecting the desired machines, and retriving data for cycles on those machines.
+selecting the desired machines, and retrieving data for cycles on those machines.
 
 ### Client
 
@@ -43,7 +43,7 @@ Sight Machine currently supports two methods of authentication via the SDK:
 - *basic*: Username and password authentication.  This is the preferred method if you are accessing the data in an interactive format such as Jupyter notebooks
 or user interactive scripts.
 - *apikey*: Using an API Key generated in the platform.  This method is used for automated data retrievals where there is no user to interact with a password prompt.  To generate an API Key:
-  - Log into the Sight machine Platform
+  - Log into the Sight Machine Platform
   - From the hamburger menu (three lines icon) on the right, click the Profile link
   - In the API Key section, click the button that says "+ Create API Key"
   - It will generate the API Secret and Key.  You will need both keys to authenticate.  
@@ -74,7 +74,7 @@ The typical workflow for getting data from Sight Machine is:
 - Retrieve data for the selected machine(s)
 
 Note that you can skip to the final step if you already know the name of the machine(s), but the SDK provides various functions to also list
-machine names and types.  These are particularly use if creating an interactive application where the user selects their data sources from 
+machine names and types.  These are particularly useful if creating an interactive application where the user selects their data sources from 
 dropdown boxes.
 
 #### Selecting Machine Types
@@ -89,7 +89,7 @@ This returns a python list with the machine type names.
 
 #### Selecting Machines
 
-The easiest way to get a list of Machine is with:
+The easiest way to get a list of Machines is with:
 
 ```
 cli.get_machine_names(source_type=machine_type)

@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from typing import List
 import json
 import requests
@@ -72,7 +73,11 @@ class MaSession:
                 if response.text:
                     if "error" in response.text:
                         raise ValueError("Error - {}".format(response.text))
-                    data = response.json()
+                    try:
+                        data = response.json()
+                    except JSONDecodeError as e:
+                        print(f'No valid JSON returned {e}')
+                        return []
                 else:
                     return []
                        

@@ -65,6 +65,22 @@ secret = api_secret_from_platform
 cli.login('apikey', secret_id=secret, key_id=key)
 ```
 
+### Proxy Servers and CA Certs
+
+If your network uses a proxy server to access the Internet, please set environment variables for 
+ HTTP_PROXY and HTTPS_PROXY to point to your proxy server.  
+
+```
+HTTP_PROXY="http://10.0.1.2:8080"
+HTTPS_PROXY="http://10.0.1.2:8080"
+```
+
+Similarly, if you need to use your own CA Certificates, set the CURL_CA_BUNDLE environment variable specifying the path to those certificates.
+
+```
+CURL_CA_BUNDLE="/path/to/my/certificates"
+```
+
 ### Retrieving Data
 
 The typical workflow for getting data from Sight Machine is:
@@ -129,6 +145,9 @@ cli.get_cycles(**query)
 ```
 
 IMPORTANT: We highly recommend setting time filters and ordering in all queries of the cycle model to ensure consistent data values are returned.  This minimizes the chances that changes to the database while the queries are running will result in data inconsistencies.
+
+You can use the `_only` parameter to provide a list of column names to retrieve.  If you do not
+specify the list of columns, it will default to pulling the first 50 columns of data from the machine type.  This is to prevent unexpectedly large and slow queries for machines with many columns of data.  To pull more than these 50 columns, please specificy all desired columns.
 
 ----
 

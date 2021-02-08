@@ -221,6 +221,18 @@ class Client(object):
 
             kwargs['_only'] = schema + toplevel
 
+        if kwargs['_only'] == '*':
+            machine = kwargs.get('machine__source', kwargs.get('Machine'))
+            if not machine:
+            # Possible that it is a machine__in.  If so, base on first machine
+                machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
+                machine = machine[0]
+
+            schema = self.get_machine_schema(machine)['name'].tolist()
+            toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
+
+            kwargs['_only'] = schema + toplevel
+
         if clean_strings_in:
             kwargs = self.clean_query_machine_titles(kwargs)
             kwargs = self.clean_query_machine_names(kwargs)

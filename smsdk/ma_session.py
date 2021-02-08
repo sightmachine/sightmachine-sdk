@@ -49,7 +49,7 @@ class MaSession:
         :param url_params: dict of params for API ex filtering, columns etc
         :return: List of records
         """
-        max_page_size = 5000
+        max_page_size = 2000
         
         records: List = []
         while True:
@@ -64,7 +64,7 @@ class MaSession:
                 url_params["_offset"] = _offset
                 url_params["_limit"] = this_loop_limit
 
-                log.info(f'Pulling up to {this_loop_limit} records')
+                #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
@@ -89,11 +89,10 @@ class MaSession:
                 
             except:
                 import traceback
-
+                
                 print(traceback.print_exc())
                 return records
-        return records
-
+        
     def get_json_headers(self):
         """
         Headers for json requests

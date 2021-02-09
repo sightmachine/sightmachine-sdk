@@ -3,3 +3,7 @@
 *.py~
 __pycache__
 .pytest_cache
+build
+dist
+smsdk.egg-info
+

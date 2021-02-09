@@ -5,6 +5,7 @@ from __future__ import unicode_literals, absolute_import
 
 import warnings
 import pandas as pd
+import numpy as np
 
 try:
     # for newer pandas versions >1.X
@@ -31,6 +32,28 @@ def time_string_to_epoch(time_string):
         return 0
     
     return(time_epoch)
+
+def dict_to_df(data, normalize = True):
+    if normalize:
+        # special case to handle the 'stats' block
+        if data and 'stats' in data[0]:
+            if isinstance(data[0]['stats'],dict):
+                # part stats are dict
+                df = json_normalize(data)
+            else:
+                # machine type stats are list
+                cols = [*data[0]]
+                cols.remove('stats')
+                df = json_normalize(data, 'stats', cols, record_prefix='stats.')
+        else:
+            df = json_normalize(data)
+    else:
+        df = pd.DataFrame(data)    
+
+    if len(df) > 0:
+        df.set_index('id', inplace=True)
+
+    return df
 
 
 # We don't have a downtime schema, so hard code one
@@ -113,6 +136,23 @@ class Client(object):
         """
         return [e.name for e in smsdkentities.list()]
 
+    def fix_only(self, kwargs):
+        if not '_only' in kwargs:
+            return [kwargs]
+        
+        only_size = len(str(kwargs['_only']))
+        num_chunks = np.ceil(only_size / 1500)
+        # assume string size corresponds roughtly to number of entries
+        chunk_sz = int(np.ceil(len(kwargs['_only']) / num_chunks))
+
+        chunks = []
+        for x in range(0, len(kwargs['_only']), chunk_sz):
+            kw = kwargs.copy()
+            kw['_only'] = str(kw['_only'][x:x+chunk_sz])
+            chunks.append(kw)    
+
+        return chunks
+
     def get_data(self, ename, util_name, normalize=True, *args, **kwargs):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
@@ -144,7 +184,7 @@ class Client(object):
             new_cols = []
             for colname in kwargs.pop('_only'):
                 new_cols.append(colname.replace('__', '.'))
-            kwargs['_only'] = str(new_cols)
+            kwargs['_only'] = new_cols
 
         # Fix format for __in commands
         for key, val in kwargs.items():
@@ -159,40 +199,33 @@ class Client(object):
             # all the dict params are passed as kwargs
             # dict params strictly follow {'key':'value'} format
 
-            data = getattr(cls, util_name)(*args, **kwargs)
+            sub_kwargs = self.fix_only(kwargs)
             
-            if normalize:
-                # special case to handle the 'stats' block
-                if data and 'stats' in data[0]:
-                    if isinstance(data[0]['stats'],dict):
-                        # part stats are dict
-                        df = json_normalize(data)
-                    else:
-                        # machine type stats are list
-                        cols = [*data[0]]
-                        cols.remove('stats')
-                        df = json_normalize(data, 'stats', cols, record_prefix='stats.')
-                else:
-                    df = json_normalize(data)
+            if len(sub_kwargs) == 1:
+                data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
             else:
-                df = pd.DataFrame(data)
+                data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
+                
+                for sub in sub_kwargs[1:]:
+                    sub_data = dict_to_df(getattr(cls, util_name)(*args, **sub), normalize)
+                    data = data.join(sub_data, rsuffix='__joined')
 
-            if len(df) > 0:
-                df.set_index('id', inplace=True)
-
+                    joined_cols = [col for col in data.columns if '__joined' in col]
+                    data.drop(joined_cols, axis = 1)
+            
             # To keep consistent, rename columns back from '.' to '__'
-            df.columns = [name.replace('.', '__') for name in df.columns]
+            data.columns = [name.replace('.', '__') for name in data.columns]
 
         else:
             # raise error if requested for unregistered utility
             raise ValueError("Error - {}".format("Not a registered utility"))
 
-        if 'endtime' in df.columns:
-            df['endtime'] = pd.to_datetime(df['endtime'])
-        if 'starttime' in df.columns:
-            df['starttime'] = pd.to_datetime(df['starttime'])
+        if 'endtime' in data.columns:
+            data['endtime'] = pd.to_datetime(data['endtime'])
+        if 'starttime' in data.columns:
+            data['starttime'] = pd.to_datetime(data['starttime'])
 
-        return df
+        return data
 
     # Some shortcut functions
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):

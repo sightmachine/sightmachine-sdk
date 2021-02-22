@@ -52,7 +52,58 @@ class Cycle(SmsdkEntities, MaSession):
 
         self.session.headers = self.modify_header_style(url, self.session.headers)
 
+        print("+++++++++++++++++++++++++++++++++++++++++++++++")
+        print(url)
+        print(kwargs)
+        print("+++++++++++++++++++++++++++++++++++++++++++++++")
         records = self._get_records(url, **kwargs)
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records
+
+
+@smsdkentities.register("cycle_v1")
+class CycleV1(SmsdkEntities, MaSession):
+
+    # Decorator to register a function as utility
+    # Only the registered utilites would be accessible
+    # to outside world via client.get_data()
+    mod_util = module_utility()
+
+
+    def __init__(self, session, base_url) -> None:
+        self.session = session
+        self.base_url = base_url
+
+    @mod_util
+    def get_utilities(self, *args, **kwargs) -> List:
+        """
+        Get the list of registered utilites by name
+        """
+        return [*self.mod_util.all]
+
+    @mod_util
+    def get_cycles(self, *args, **kwargs):
+        """
+        Utility function to get the cycles
+        from MA API
+        Recommend to use 'enable_pagination':True for larger datasets
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["Cycle"]["url"])
+        print(url)
+        print(kwargs)
+
+        # if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:
+        #     log.warn('Machine source not specified.')
+        #     return []
+
+        self.session.headers = self.modify_header_style(url, self.session.headers)
+        print(f">>>>>>>>>>>>>>>{self.session.headers}")
+        print(f">>>>>>>>>>>>>>>{url}")
+        print(f">>>>>>>>>>>>>>>{kwargs}")
+
+        records = self._get_records_v1(url,method='post', **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records

@@ -46,7 +46,11 @@ def dict_to_df(data, normalize = True):
                 cols.remove('stats')
                 df = json_normalize(data, 'stats', cols, record_prefix='stats.')
         else:
-            df = json_normalize(data)
+            try:
+                df = json_normalize(data)
+            except:
+                # From cases like _distinct which don't have a "normal" return format
+                return pd.DataFrame({'values': data})
     else:
         df = pd.DataFrame(data)    
 
@@ -241,6 +245,9 @@ class Client(object):
         :return: pandas dataframe
         """
         
+        if not '_limit' in kwargs:
+            '_limit not specified.  Maximum of 5000 rows will be returned.'
+
         if not '_only' in kwargs:
             print('_only not specified.  Selecting first 50 fields.')
             machine = kwargs.get('machine__source', kwargs.get('Machine'))
@@ -296,6 +303,19 @@ class Client(object):
             df = self.clean_df_machine_names(df)
             
         return df
+
+    def get_downtime_reasons(self, machine=None):
+        query = {'_distinct': 'metadata.reason'}
+
+        if machine:
+            query['Machine'] = machine
+
+        reason_df = self.get_downtimes(clean_strings_out=False, **query)
+
+        if 'values' in reason_df.keys():
+            return reason_df['values'].to_list()
+        else:
+            return []
 
     def get_downtimes_with_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """

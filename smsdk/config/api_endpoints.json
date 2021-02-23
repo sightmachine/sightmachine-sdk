@@ -3,14 +3,15 @@
     "url": "/auth/password/login"
   },
   "Cycle": {
-    "url": "/v1/datatab/cycle",
-    "alt_url": "/api/cycle"
+    "url_v1": "/v1/datatab/cycle",
+    "url": "/api/cycle"
   },
   "MachineType": {
     "url" : "/api/machinetype"
   },
   "Machine": {
-    "url" : "/api/machine"
+    "url" : "/api/machine",
+    "url_v1": "/v1/obj/machine"
   },
   "Parts": {
     "url" : "/api/part"

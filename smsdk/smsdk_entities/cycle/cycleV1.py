@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
 
-@smsdkentities.register("cycle_v2")
+@smsdkentities.register("cycle_v1")
 class Cycle(SmsdkEntities, MaSession):
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
@@ -72,8 +72,8 @@ class Cycle(SmsdkEntities, MaSession):
 
         new_kwargs["time_selection"] = {
             "time_type": "absolute",
-            "start_time": kwargs.get('End Time__gte').isoformat(),
-            "end_time": kwargs.get('End Time__lte').isoformat(),
+            "start_time": kwargs.get('endtime__gte').isoformat(),
+            "end_time": kwargs.get('endtime__lte').isoformat(),
             "time_zone": "UTC"
         }
         new_kwargs['select'] = [{'name':i} for i in kwargs['_only']]

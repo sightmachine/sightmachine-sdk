@@ -4,19 +4,22 @@
   },
   "Cycle": {
     "url_v1": "/v1/datatab/cycle",
-    "url": "/api/cycle"
+    "url": "/api/cycle",
+    "alt_url": "/api/cycle"
   },
   "MachineType": {
     "url" : "/api/machinetype"
   },
   "Machine": {
-    "url" : "/api/machine",
-    "url_v1": "/v1/obj/machine"
+    "url" : "/api/machine"
   },
   "Parts": {
-    "url" : "/api/part"
+    "url" : "/api/part",
+    "url_v1": "/v1/datatab/part"
   },
   "Downtime": {
-    "url" : "/api/downtime"
+    "url" : "/api/downtime",
+    "url_v1" : "/v1/datatab/downtime"
+
   }
 }

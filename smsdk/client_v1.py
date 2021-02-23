@@ -142,7 +142,6 @@ class ClientV1(Client):
 
         # check if requested util_name belong the list of
         # registerd utilites
-        print(f"UTILS----{util_name}")
         if util_name in getattr(cls, "get_utilities")(*args, **kwargs):
 
             # call the utility function

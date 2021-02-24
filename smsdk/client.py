@@ -227,7 +227,45 @@ class Client(object):
 
         return data
 
+    """
+    HLO Decorators, that can be used by both V0 & V1 if logic will be similar before processing  
+    """
+    def cycle_decorator(func):
+
+        def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+
+            if not '_only' in kwargs:
+                print('_only not specified.  Selecting first 50 fields.')
+                machine = kwargs.get('machine__source', kwargs.get('Machine'))
+                if not machine:
+                    # Possible that it is a machine__in.  If so, base on first machine
+                    machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
+                    machine = machine[0]
+
+                schema = self.get_machine_schema(machine)['name'].tolist()[:50]
+                toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
+
+                kwargs['_only'] = schema + toplevel
+
+            if kwargs['_only'] == '*':
+                kwargs.pop('_only')
+
+            if clean_strings_in:
+                kwargs = self.clean_query_machine_titles(kwargs)
+                kwargs = self.clean_query_machine_names(kwargs)
+
+            df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
+
+
+            if len(df) > 0 and clean_strings_out:
+                df = self.clean_df_machine_titles(df)
+                df = self.clean_df_machine_names(df)
+            return df
+
+        return inner
+
     # Some shortcut functions
+    @cycle_decorator
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
         Retrieve cycle/machine data.  
@@ -240,32 +278,8 @@ class Client(object):
         :type clean_strings_out: bool
         :return: pandas dataframe
         """
-        
-        if not '_only' in kwargs:
-            print('_only not specified.  Selecting first 50 fields.')
-            machine = kwargs.get('machine__source', kwargs.get('Machine'))
-            if not machine:
-            # Possible that it is a machine__in.  If so, base on first machine
-                machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
-                machine = machine[0]
 
-            schema = self.get_machine_schema(machine)['name'].tolist()[:50]
-            toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
-
-            kwargs['_only'] = schema + toplevel
-
-        if kwargs['_only'] == '*':
-            kwargs.pop('_only')
-
-        if clean_strings_in:
-            kwargs = self.clean_query_machine_titles(kwargs)
-            kwargs = self.clean_query_machine_names(kwargs)
-        
         df = self.get_data('cycle', 'get_cycles', normalize, *args, **kwargs)
-
-        if len(df) > 0 and clean_strings_out:
-            df = self.clean_df_machine_titles(df)
-            df = self.clean_df_machine_names(df)
 
         return df
 

@@ -478,7 +478,11 @@ class Client(object):
             return machine_types['source_type'].to_list()
 
     def get_parts(self, normalize=True, *args, **kwargs):
-        return self.get_data('part', 'get_parts', normalize, *args, **kwargs)
+        data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
+
+        # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
+        # return part_schema
+        return data
 
     def clean_df_machine_titles(self, table, machine=None):
         """

@@ -1,6 +1,8 @@
 from typing import List
 import json
 
+import pandas as pd
+
 try:
     import importlib.resources as pkg_resources
 except ImportError:
@@ -41,6 +43,20 @@ class Parts(SmsdkEntities, MaSession):
 
         self.session.headers = self.modify_header_style(url, self.session.headers)
 
+        records = self._get_records(url, **kwargs)
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records
+
+    @mod_util
+    def get_part_schema(self, *args, **kwargs):
+        """
+        https://essex-torreon-spxim-97.sightmachine.io/v1/selector/datatab/part/pt_area_300/field?db_mode=sql&strip_aliases=false
+        :return:
+        """
+        endpoint = f"/v1/selector/datatab/part/{kwargs.get('type__part_type')}/field?db_mode=sql&strip_aliases=false"
+        url = "{}{}".format(self.base_url, endpoint)
+        self.session.headers = self.modify_header_style(url, self.session.headers)
         records = self._get_records(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

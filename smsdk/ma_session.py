@@ -65,22 +65,29 @@ class MaSession:
                 url_params["_limit"] = this_loop_limit
 
                 #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
-                
+                print(f"method -- {method}")
+                print(f"endpoint -- {endpoint}")
+                print(f"url params -- {url_params}")
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
+                # print(f"response text -- {response.text}")
 
                 if response.text:
                     if "error" in response.text:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()
+
+                        if 'results' in data:
+                            data = data['results']
+
                     except JSONDecodeError as e:
                         print(f'No valid JSON returned {e}')
                         return []
                 else:
                     return []
-                       
+
                 records.extend(data)
                 if len(data) < this_loop_limit:
                     # Cursor exhausted, so just return

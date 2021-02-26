@@ -149,7 +149,7 @@ class ClientV1(Client):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            if util_name == 'get_cycles':
+            if util_name in ['get_cycles','get_downtime']:
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
@@ -182,5 +182,13 @@ class ClientV1(Client):
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
 
         df = self.get_data_v1('cycle_v1', 'get_cycles', normalize, *args, **kwargs)
+
+        return df
+
+
+    @Client.downtime_decorator
+    def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+
+        df = self.get_data_v1('downtime_v1', 'get_downtime', normalize, *args, **kwargs)
 
         return df

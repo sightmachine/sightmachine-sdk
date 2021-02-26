@@ -264,6 +264,30 @@ class Client(object):
 
         return inner
 
+    def downtime_decorator(func):
+
+        def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+
+            if not '_only' in kwargs:
+                kwargs['_only'] = downmap.keys()
+
+            if clean_strings_in:
+                kwargs = self.clean_query_downtime_titles(kwargs)
+                kwargs = self.clean_query_machine_names(kwargs)
+
+            # df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
+            df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
+
+            # if clean_strings_out:
+            if len(df) > 0 and clean_strings_out:
+
+                df = self.clean_df_downtime_titles(df)
+                df = self.clean_df_machine_names(df)
+
+            return df
+
+        return inner
+
     # Some shortcut functions
     @cycle_decorator
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
@@ -283,6 +307,7 @@ class Client(object):
 
         return df
 
+    @downtime_decorator
     def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """
         Retrieve Downtime data.  
@@ -296,20 +321,10 @@ class Client(object):
         :return: pandas dataframe
         """
 
-        if not '_only' in kwargs:
-            kwargs['_only'] = downmap.keys()
-
-        if clean_strings_in:
-            kwargs = self.clean_query_downtime_titles(kwargs)
-            kwargs = self.clean_query_machine_names(kwargs)
-        
         df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
 
-        if clean_strings_out:
-            df = self.clean_df_downtime_titles(df)
-            df = self.clean_df_machine_names(df)
-            
         return df
+
 
     def get_downtimes_with_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """

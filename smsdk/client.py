@@ -51,7 +51,11 @@ def dict_to_df(data, normalize = True):
         df = pd.DataFrame(data)    
 
     if len(df) > 0:
-        df.set_index('id', inplace=True)
+        if '_id' in df.columns:
+            df.set_index('_id', inplace=True)
+
+        if 'id' in df.columns:
+                df.set_index('id', inplace=True)
 
     return df
 
@@ -288,6 +292,50 @@ class Client(object):
 
         return inner
 
+
+    def part_decorator(func):
+
+        # def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=False, *args, **kwargs):
+        def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=False, *args, **kwargs):
+
+            """ Accessing default value of datatab_api because for V0 it'll be False and for V1 it'll be true"""
+            datatab_api = func.__defaults__[3]
+
+            if "_only" not in kwargs:
+                print('_only not specified.  Selecting first 50 fields.')
+                part = kwargs.get('type__part_type', kwargs.get('Part'))
+                if not part:
+                    part = kwargs.get('type__part_type__in', kwargs.get('Part__in'))
+                    part = part[0]
+
+                kwargs['type__part_type'] = part
+
+                part_input = {"type__part_type":part}
+                part_schema = self.get_part_schema(**part_input)
+
+                if datatab_api:
+                    cols = part_schema['sql_field'].tolist()[:50]
+                else:
+                    cols = part_schema['mongo_field'].tolist()[:50]
+
+                toplevel = ['type__part_type', 'serial', 'starttime', 'endtime', 'production_date_start', 'production_date_end', 'metadata__nettime', 'state']
+
+                kwargs["_only"] = toplevel + cols
+
+            if clean_strings_in:
+                kwargs = self.clean_query_part_titles(kwargs)
+
+            # df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
+            df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
+
+            # if clean_strings_out:
+            if len(df) > 0 and clean_strings_out:
+                df = self.clean_df_part_titles(df, part_schema, datatab_api)
+
+            return df
+
+        return inner
+
     # Some shortcut functions
     @cycle_decorator
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
@@ -324,6 +372,28 @@ class Client(object):
         df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
 
         return df
+
+    @part_decorator
+    def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+        """
+        Retrieve Downtime data.
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+        :type clean_strings_in: bool
+        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+        :type clean_strings_out: bool
+        :return: pandas dataframe
+        """
+        # kwargs, part_schema = self.clean_query_part_titles(kwargs)
+        data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
+
+        # data = self.clean_df_part_titles(data, part_schema)
+
+        # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
+        # return part_schema
+        return data
 
 
     def get_downtimes_with_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
@@ -477,12 +547,150 @@ class Client(object):
         else:
             return machine_types['source_type'].to_list()
 
-    def get_parts(self, normalize=True, *args, **kwargs):
-        data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
+    # def get_parts(self, normalize=True, *args, **kwargs):
+    #
+    #     kwargs, part_schema = self.clean_query_part_titles(kwargs)
+    #     data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
+    #
+    #     data = self.clean_df_part_titles(data, part_schema)
+    #
+    #     # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
+    #     # return part_schema
+    #     return data
 
-        # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
-        # return part_schema
-        return data
+    def clean_df_part_titles(self, table, part_schema, datatab_api=False):
+        """
+        Convert the dataframe column names on Cycle data from the Sight Machine internal name to the user-friendly names.
+        If machine is not provided, assumes that there is a column named machine__source to lookup name from first row.
+        Function is used to clean up returned results from get_cycle() query requests.
+
+        :param table: A pandas data table with cycle or part data
+        :type table: class:`DataFrame`
+        :param machine: Optional machine type for looking up the raw -> display column definitions
+        :type machine: class:`string`
+        :return: pandas dataframe
+        """
+
+        part_schema = part_schema[['display_name', 'mongo_field', 'sql_field']].to_dict('records')
+
+        if datatab_api:
+            colmap = {i['sql_field']: i['display_name'] for i in part_schema}
+        else:
+            colmap = {i['mongo_field']: i['display_name'] for i in part_schema}
+
+        toplevelinv = {'endtime': 'Cycle End Time',
+                       'starttime': 'Cycle Start Time',
+                       'type__part_type': 'Part',
+                       'metadata__nettime': 'Total Cycle Time (Net)',
+                       'serial':'Serial',
+                       'production_date_start':'Production Day Start',
+                       'production_date_end':'Production Day End',
+                       'state':'State (Pass / Fail)'
+                       }
+        colmap.update(toplevelinv)
+
+        table = table.rename(colmap, axis=1)
+        return table
+
+    def get_part_schema(self, **query):
+        part_schema = self.get_data('parts','get_part_schema', False, **query)
+        part_schema = part_schema.dropna(subset=['mongo_field','sql_field'])
+        return part_schema
+
+
+    def clean_query_part_titles(self, query, datatab_api=False):
+        """
+        Given a query for cycles that uses UI friendly tag/field names, convert the machines back into the internal Sight Machine names
+
+        :param query: Dict kwargs passed as part of a query to the API
+
+        :return: dict
+        """
+        query = query.copy()
+
+        # First need to find the machine name
+        part = query.get('type__part_type', query.get('Part'))
+        if not part:
+            # Possible that it is a machine__in.  If so, base on first machine
+            part = query.get('type__part_type__in', query.get('Part__in'))
+            part = part[0]
+
+        # schema = self.get_machine_schema(part)
+        # schema = self.get_data('parts','get_part_schema', False, **query)
+        schema = self.get_part_schema(**query)
+        part_schema = schema[['display_name', 'mongo_field', 'sql_field']].to_dict('records')
+
+        if datatab_api:
+            colmap = {i['display_name']: i['sql_field'] for i in part_schema}
+        else:
+            colmap = {i['display_name']: i['mongo_field'] for i in part_schema}
+
+
+        # colmap = {row[1]['display']: row[1]['name'] for row in schema.iterrows()}
+        toplevel = {'End Time': 'endtime',
+                    'Start Time': 'starttime',
+                    'Machine': 'machine__source',
+                    'Cycle Time (Net)': 'total',
+                    'Cycle Time (Gross)': 'record_time',
+                    'Shift': 'shift',
+                    'Output': 'output'}
+        colmap.update(toplevel)
+
+        translated_query = {}
+        for key, val in query.items():
+
+            # Special handling for _order_by since the stat titles are in a list
+            if key == '_order_by':
+
+                prefix = ''
+                if val.startswith('-'):
+                    val = val[1:]
+                    prefix = '-'
+                val = colmap.get(val, val)
+
+                if val == 'endtime':
+                    val = 'endtime_epoch'
+                if val == 'starttime':
+                    val = 'starttime_epoch'
+
+                # For performance, currently only support order by time, machine
+                if not val in ['endtime_epoch', 'starttime_epoch', 'machine__source']:
+                    log.warn('Only ordering by start time, end time, and machine source currently supported.')
+                    continue
+
+                val = f'{prefix}{val}'
+
+            # Special handling for _only
+            elif key == '_only':
+                # To simplify the logic, always treat as a list of _only items
+                if isinstance(val, str):
+                    val = [val]
+
+                val = [colmap.get(col, col) for col in val]
+
+            # for all other params
+            else:
+                func = ''
+                if '__' in key:
+                    parts = key.split('__')
+                    key = '__'.join(parts[:-1])
+                    func = parts[-1]
+
+                    if not func in ['in', 'nin', 'gt', 'lt', 'gte', 'lte', 'exists', 'ne', 'eq']:
+                        # This isn't actually a function.  Probably another nested item like machine__source
+                        key = f'{key}__{func}'
+                        func = ''
+
+                key = colmap.get(key, key)
+                if key in colmap and key not in toplevel:
+                    key = f'stats__{key}__val'
+
+                if func:
+                    key = f'{key}__{func}'
+
+            translated_query[key] = val
+
+        return translated_query
 
     def clean_df_machine_titles(self, table, machine=None):
         """

@@ -65,9 +65,6 @@ class MaSession:
                 url_params["_limit"] = this_loop_limit
 
                 #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
-                print(f"method -- {method}")
-                print(f"endpoint -- {endpoint}")
-                print(f"url params -- {url_params}")
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )

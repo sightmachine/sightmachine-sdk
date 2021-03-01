@@ -53,8 +53,12 @@ def dict_to_df(data, normalize=True):
     else:
         df = pd.DataFrame(data)
 
-    # if len(df) > 0:
-    #     df.set_index('_id', inplace=True)
+    if len(df) > 0:
+        if '_id' in df.columns:
+            df.set_index('_id', inplace=True)
+
+        if 'id' in df.columns:
+                df.set_index('id', inplace=True)
 
     return df
 
@@ -149,7 +153,7 @@ class ClientV1(Client):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            if util_name in ['get_cycles','get_downtime']:
+            if util_name in ['get_cycles','get_downtime','get_parts']:
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
@@ -190,5 +194,14 @@ class ClientV1(Client):
     def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
 
         df = self.get_data_v1('downtime_v1', 'get_downtime', normalize, *args, **kwargs)
+
+        return df
+
+
+
+    @Client.part_decorator
+    def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True, *args, **kwargs):
+
+        df = self.get_data_v1('part_v1', 'get_parts', normalize, *args, **kwargs)
 
         return df

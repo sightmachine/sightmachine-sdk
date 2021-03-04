@@ -63,7 +63,7 @@ class Downtime(SmsdkEntities, MaSession):
         new_kwargs = {}
         new_kwargs['asset_selection'] = {
             "machine_source": [kwargs.get('machine__source','')],
-            "machine_type": "mt_200e"
+            "machine_type": kwargs.get('machine_type','')
         }
 
         new_kwargs["time_selection"] = {

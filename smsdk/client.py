@@ -237,7 +237,7 @@ class Client(object):
     def cycle_decorator(func):
 
         def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
-
+            machine_type = ""
             if not '_only' in kwargs:
                 print('_only not specified.  Selecting first 50 fields.')
                 machine = kwargs.get('machine__source', kwargs.get('Machine'))
@@ -246,7 +246,8 @@ class Client(object):
                     machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
                     machine = machine[0]
 
-                schema = self.get_machine_schema(machine)['name'].tolist()[:50]
+                machine_type, schema = self.get_machine_schema(machine)
+                schema = schema['name'].tolist()[:50]
                 toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
 
                 kwargs['_only'] = schema + toplevel
@@ -258,6 +259,7 @@ class Client(object):
                 kwargs = self.clean_query_machine_titles(kwargs)
                 kwargs = self.clean_query_machine_names(kwargs)
 
+            kwargs.update({'machine_type':machine_type})
             df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
 
 
@@ -271,14 +273,23 @@ class Client(object):
     def downtime_decorator(func):
 
         def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
-
+            machine_type = ""
             if not '_only' in kwargs:
                 kwargs['_only'] = downmap.keys()
 
+                machine = kwargs.get('machine__source', kwargs.get('Machine'))
+                if not machine:
+                    # Possible that it is a machine__in.  If so, base on first machine
+                    machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
+                    machine = machine[0]
+
+                machine_type, schema = self.get_machine_schema(machine)
+                # schema = schema['name'].tolist()[:50]
             if clean_strings_in:
                 kwargs = self.clean_query_downtime_titles(kwargs)
                 kwargs = self.clean_query_machine_names(kwargs)
 
+            kwargs.update({'machine_type':machine_type})
             # df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
             df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
 
@@ -517,7 +528,7 @@ class Client(object):
                                    #'name': stat['analytics']['columns'][0]['name'],
                                    'display': stat['display']['title_prefix'],
                                    'type': stat['analytics']['columns'][0]['type']})
-        return pd.DataFrame(fields)
+        return machine_type, pd.DataFrame(fields)
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
         """
@@ -716,7 +727,7 @@ class Client(object):
                     log.error(f'Unable to lookup source type for schema: {e}')
                     return table
             
-        schema = self.get_machine_schema(machine)
+        machie_type, schema = self.get_machine_schema(machine)
 
         colmap = {row[1]['name']: row[1]['display'] for row in schema.iterrows()}
         toplevelinv = {'endtime': 'End Time',
@@ -804,7 +815,7 @@ class Client(object):
             machine = query.get('machine__source__in', query.get('Machine__in'))
             machine = machine[0]
 
-        schema = self.get_machine_schema(machine)
+        machine_type, schema = self.get_machine_schema(machine)
 
         colmap = {row[1]['display']: row[1]['name'] for row in schema.iterrows()}
         toplevel = {'End Time': 'endtime',

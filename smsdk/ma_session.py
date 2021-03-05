@@ -49,6 +49,8 @@ class MaSession:
         :param url_params: dict of params for API ex filtering, columns etc
         :return: List of records
         """
+        if 'machine_type' in url_params:
+            url_params.pop('machine_type')
         max_page_size = 2000
         
         records: List = []

@@ -46,7 +46,11 @@ def dict_to_df(data, normalize = True):
                 cols.remove('stats')
                 df = json_normalize(data, 'stats', cols, record_prefix='stats.')
         else:
-            df = json_normalize(data)
+            try:
+                df = json_normalize(data)
+            except:
+                # From cases like _distinct which don't have a "normal" return format
+                return pd.DataFrame({'values': data})
     else:
         df = pd.DataFrame(data)    
 
@@ -246,6 +250,9 @@ class Client(object):
             kwargs['machine__source'] = machine
             machine_type, schema = self.get_machine_schema(machine, return_mtype=True)
 
+            if not '_limit' in kwargs:
+                '_limit not specified.  Maximum of 5000 rows will be returned.'
+
             if not '_only' in kwargs:
                 schema = schema['name'].tolist()[:50]
                 toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
@@ -273,6 +280,7 @@ class Client(object):
     def downtime_decorator(func):
 
         def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+
 
             if not '_only' in kwargs:
                 kwargs['_only'] = downmap.keys()
@@ -384,6 +392,19 @@ class Client(object):
         df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
 
         return df
+
+    def get_downtime_reasons(self, machine=None):
+        query = {'_distinct': 'metadata.reason'}
+
+        if machine:
+            query['Machine'] = machine
+
+        reason_df = self.get_downtimes(clean_strings_out=False, **query)
+
+        if 'values' in reason_df.keys():
+            return reason_df['values'].to_list()
+        else:
+            return []
 
     @part_decorator
     def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):

@@ -11,6 +11,7 @@ from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
+from datetime import datetime, timedelta
 
 import logging
 
@@ -64,7 +65,8 @@ class Cycle(SmsdkEntities, MaSession):
 
     def modify_input_params(self, **kwargs):
         new_kwargs = {}
-
+        etime = datetime.now()
+        stime = etime-timedelta(days=1)
         new_kwargs['asset_selection'] = {
             "machine_source": [kwargs.get('machine__source','')],
             "machine_type": kwargs.get('machine_type','')
@@ -72,8 +74,8 @@ class Cycle(SmsdkEntities, MaSession):
 
         new_kwargs["time_selection"] = {
             "time_type": "absolute",
-            "start_time": kwargs.get('endtime__gte').isoformat(),
-            "end_time": kwargs.get('endtime__lte').isoformat(),
+            "start_time": kwargs.get('endtime__gte', stime).isoformat(),
+            "end_time": kwargs.get('endtime__lte', etime).isoformat(),
             "time_zone": "UTC"
         }
         new_kwargs['select'] = [{'name':i} for i in kwargs['_only']]

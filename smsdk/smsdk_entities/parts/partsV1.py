@@ -1,5 +1,7 @@
 from typing import List
 import json
+from datetime import datetime, timedelta
+
 
 import pandas as pd
 
@@ -51,13 +53,14 @@ class Parts(SmsdkEntities, MaSession):
 
     def modify_input_params(self, **kwargs):
         new_kwargs = {}
-
+        etime = datetime.now()
+        stime = etime-timedelta(days=1)
         new_kwargs['asset_selection'] = {}
 
         new_kwargs["time_selection"] = {
             "time_type": "absolute",
-            "start_time": kwargs.get('endtime__gte').isoformat(),
-            "end_time": kwargs.get('endtime__lte').isoformat(),
+            "start_time": kwargs.get('endtime__gte', stime).isoformat(),
+            "end_time": kwargs.get('endtime__lte', etime).isoformat(),
             "time_zone": "UTC"
         }
 

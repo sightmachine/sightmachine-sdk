@@ -1,5 +1,7 @@
 from typing import List
 import json
+from datetime import datetime, timedelta
+
 
 import pandas as pd
 
@@ -17,7 +19,7 @@ from smsdk.ma_session import MaSession
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
-@smsdkentities.register("parts")
+@smsdkentities.register("part_v1")
 class Parts(SmsdkEntities, MaSession):
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
@@ -39,25 +41,35 @@ class Parts(SmsdkEntities, MaSession):
         from the ma machine API
         Recommend to use 'enable_pagination':True for larger datasets
         """
-        url = "{}{}".format(self.base_url, ENDPOINTS["Parts"]["url"])
+        url = "{}{}".format(self.base_url, ENDPOINTS["Parts"]["url_v1"])
 
         self.session.headers = self.modify_header_style(url, self.session.headers)
 
-        records = self._get_records(url, **kwargs)
+        kwargs = self.modify_input_params(**kwargs)
+        records = self._get_records_v1(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
 
-    @mod_util
-    def get_part_schema(self, *args, **kwargs):
-        """
-        https://essex-torreon-spxim-97.sightmachine.io/v1/selector/datatab/part/pt_area_300/field?db_mode=sql&strip_aliases=false
-        :return:
-        """
-        endpoint = f"/v1/selector/datatab/part/{kwargs.get('type__part_type')}/field?db_mode=sql&strip_aliases=false"
-        url = "{}{}".format(self.base_url, endpoint)
-        self.session.headers = self.modify_header_style(url, self.session.headers)
-        records = self._get_records(url, **kwargs)
-        if not isinstance(records, List):
-            raise ValueError("Error - {}".format(records))
-        return records
+    def modify_input_params(self, **kwargs):
+        new_kwargs = {}
+        etime = datetime.now()
+        stime = etime-timedelta(days=1)
+        new_kwargs['asset_selection'] = {}
+
+        new_kwargs["time_selection"] = {
+            "time_type": "absolute",
+            "start_time": kwargs.get('endtime__gte', stime).isoformat(),
+            "end_time": kwargs.get('endtime__lte', etime).isoformat(),
+            "time_zone": "UTC"
+        }
+
+        new_kwargs["where"] = [{
+            "name": "type__part_type",
+            "op": "eq",
+            "value": kwargs.get('type__part_type')
+        }]
+
+        new_kwargs['select'] = [{'name':i} for i in kwargs['_only']]
+
+        return new_kwargs

@@ -49,7 +49,11 @@ def dict_to_df(data, normalize=True):
                 cols.remove('stats')
                 df = json_normalize(data, 'stats', cols, record_prefix='stats.')
         else:
-            df = json_normalize(data)
+            try:
+                df = json_normalize(data)
+            except:
+                # From cases like _distinct which don't have a "normal" return format
+                return pd.DataFrame({'values': data})
     else:
         df = pd.DataFrame(data)
 
@@ -189,15 +193,12 @@ class Client(ClientV0):
 
         return df
 
-
     @ClientV0.downtime_decorator
     def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
 
         df = self.get_data_v1('downtime_v1', 'get_downtime', normalize, *args, **kwargs)
 
         return df
-
-
 
     @ClientV0.part_decorator
     def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True, *args, **kwargs):

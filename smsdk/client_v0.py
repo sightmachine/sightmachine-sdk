@@ -178,7 +178,7 @@ class ClientV0(object):
                     continue
                 if isinstance(kwargs[key], list):
                     if not (key.endswith('__in') or key.endswith('__nin')):
-                        msg = f"key <{key}> should have '__in' or '__nin' in it, if datatype of value of list"
+                        msg = f"Key <{key}> should have '__in' or '__nin' in it if datatype is list"
                         raise ValueError(msg)
             return func(*args, **kwargs)
 

@@ -3,7 +3,6 @@
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
 
-import numpy as np
 import pandas as pd
 
 try:
@@ -62,7 +61,7 @@ def dict_to_df(data, normalize=True):
             df.set_index('_id', inplace=True)
 
         if 'id' in df.columns:
-                df.set_index('id', inplace=True)
+            df.set_index('id', inplace=True)
 
     return df
 
@@ -134,7 +133,6 @@ class Client(ClientV0):
         # load the entity class and initialize it
         cls = smsdkentities.get(ename)(self.session, base_url)
 
-
         # The current API is inconsistent where most paramters use the MongoEngine-like __ notation for ., but _only requires .
         # So let the user enter '__', but convert those to '.' for API compatibility
         # if '_only' in kwargs:
@@ -157,7 +155,7 @@ class Client(ClientV0):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            if util_name in ['get_cycles','get_downtime','get_parts']:
+            if util_name in ['get_cycles', 'get_downtime', 'get_parts']:
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
@@ -186,6 +184,7 @@ class Client(ClientV0):
 
         return data
 
+    @ClientV0.validate_input
     @ClientV0.cycle_decorator
     def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
 
@@ -193,6 +192,7 @@ class Client(ClientV0):
 
         return df
 
+    @ClientV0.validate_input
     @ClientV0.downtime_decorator
     def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
 
@@ -200,8 +200,10 @@ class Client(ClientV0):
 
         return df
 
+    @ClientV0.validate_input
     @ClientV0.part_decorator
-    def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True, *args, **kwargs):
+    def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True, *args,
+                  **kwargs):
 
         df = self.get_data_v1('part_v1', 'get_parts', normalize, *args, **kwargs)
 

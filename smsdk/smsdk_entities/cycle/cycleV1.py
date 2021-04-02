@@ -64,11 +64,17 @@ class Cycle(SmsdkEntities, MaSession):
         return records
 
     def modify_input_params(self, **kwargs):
+        
+        # Special handling for EF type names
+        machine = kwargs.get('machine__source','')
+        if machine[0] == "'":
+            machine = machine[1:-1]
+
         new_kwargs = {}
         etime = datetime.now()
         stime = etime-timedelta(days=1)
         new_kwargs['asset_selection'] = {
-            "machine_source": [kwargs.get('machine__source','')],
+            "machine_source": [machine],
             "machine_type": kwargs.get('machine_type','')
         }
 

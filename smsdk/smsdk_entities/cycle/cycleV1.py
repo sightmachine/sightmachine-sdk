@@ -12,6 +12,7 @@ from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
 from datetime import datetime, timedelta
+import numpy as np
 
 import logging
 
@@ -72,10 +73,10 @@ class Cycle(SmsdkEntities, MaSession):
 
         new_kwargs = {}
         etime = datetime.now()
-        stime = etime-timedelta(days=1)
+        stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {
             "machine_source": [machine],
-            "machine_type": kwargs.get('machine_type','')
+            "machine_type": kwargs.get('machine_type', '')
         }
 
         new_kwargs["time_selection"] = {
@@ -84,6 +85,8 @@ class Cycle(SmsdkEntities, MaSession):
             "end_time": kwargs.get('endtime__lte', etime).isoformat(),
             "time_zone": "UTC"
         }
-        new_kwargs['select'] = [{'name':i} for i in kwargs['_only']]
+        new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
+        new_kwargs['offset'] = kwargs.get('_offset', 0)
+        new_kwargs['limit'] = kwargs.get('_limit', np.Inf)
 
         return new_kwargs

@@ -1,9 +1,8 @@
-from typing import List
 import json
 from datetime import datetime, timedelta
+from typing import List
 
-
-import pandas as pd
+import numpy as np
 
 try:
     import importlib.resources as pkg_resources
@@ -11,13 +10,13 @@ except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
 
-
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
+
 
 @smsdkentities.register("part_v1")
 class Parts(SmsdkEntities, MaSession):
@@ -54,7 +53,7 @@ class Parts(SmsdkEntities, MaSession):
     def modify_input_params(self, **kwargs):
         new_kwargs = {}
         etime = datetime.now()
-        stime = etime-timedelta(days=1)
+        stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {}
 
         new_kwargs["time_selection"] = {
@@ -70,6 +69,8 @@ class Parts(SmsdkEntities, MaSession):
             "value": kwargs.get('type__part_type')
         }]
 
-        new_kwargs['select'] = [{'name':i} for i in kwargs['_only']]
+        new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
+        new_kwargs['offset'] = kwargs.get('_offset', 0)
+        new_kwargs['limit'] = kwargs.get('_limit', np.Inf)
 
         return new_kwargs

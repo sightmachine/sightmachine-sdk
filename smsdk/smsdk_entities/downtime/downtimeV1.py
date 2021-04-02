@@ -1,7 +1,8 @@
-from typing import List
 import json
 from datetime import datetime, timedelta
+from typing import List
 
+import numpy as np
 
 try:
     import importlib.resources as pkg_resources
@@ -9,20 +10,20 @@ except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
 
-
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
 
 import logging
+
 log = logging.getLogger(__name__)
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+
 @smsdkentities.register("downtime_v1")
 class Downtime(SmsdkEntities, MaSession):
-
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
     # to outside world via client.get_data()
@@ -64,10 +65,10 @@ class Downtime(SmsdkEntities, MaSession):
 
         new_kwargs = {}
         etime = datetime.now()
-        stime = etime-timedelta(days=1)
+        stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {
-            "machine_source": [kwargs.get('machine__source','')],
-            "machine_type": kwargs.get('machine_type','')
+            "machine_source": [kwargs.get('machine__source', '')],
+            "machine_type": kwargs.get('machine_type', '')
         }
 
         new_kwargs["time_selection"] = {
@@ -76,6 +77,8 @@ class Downtime(SmsdkEntities, MaSession):
             "end_time": kwargs.get('endtime__lte', etime).isoformat(),
             "time_zone": "UTC"
         }
-        new_kwargs['select'] = [{'name':i} for i in kwargs['_only']]
+        new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
+        new_kwargs['offset'] = kwargs.get('_offset', 0)
+        new_kwargs['limit'] = kwargs.get('_limit', np.Inf)
 
         return new_kwargs

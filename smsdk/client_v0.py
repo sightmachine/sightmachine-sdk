@@ -789,6 +789,10 @@ class ClientV0(object):
                     log.error(f'Unable to lookup source type for schema: {e}')
                     return table
 
+        # Handle EF type machine names
+        if len(machine) == 5 and machine[:3].isnumeric():
+            machine = f"'{machine}'"
+
         schema = self.get_machine_schema(machine)
 
         colmap = {row[1]['name']: row[1]['display'] for row in schema.iterrows()}

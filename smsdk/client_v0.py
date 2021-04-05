@@ -787,7 +787,7 @@ class ClientV0(object):
                     return table
             
         # Handle EF type machine names
-        if len(machine) == 5 and machine[:3].isnumeric():
+        if len(machine) <= 6 and machine[:3].isnumeric():
             machine = f"'{machine}'"
 
         schema = self.get_machine_schema(machine)

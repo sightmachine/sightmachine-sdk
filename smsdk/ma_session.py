@@ -164,6 +164,76 @@ class MaSession:
                 print(traceback.print_exc())
                 return records
 
+
+    def _get_task_id(
+            self,
+            endpoint,
+            method="post",
+            db_mode='sql',
+            **url_params
+    ):
+        """
+        Function to fetch async task if
+        :param endpoint: complete url endpoint
+        :param method: Reqested method. Default = POST
+        :param db_mode: Default sql
+        :param url_params: dict of params for API ex filtering, columns etc
+        :return: task id
+        """
+
+        url_params["db_mode"] = db_mode
+
+        # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
+        response = getattr(self.session, method.lower())(
+            endpoint, json=url_params
+        )
+        if response.text:
+            if "error" in response.text:
+                raise ValueError("Error - {}".format(response.text))
+            try:
+                data = response.json()
+                task_id = data['response']['task_id']
+                return task_id
+            except JSONDecodeError as e:
+                print(f'No valid JSON returned {e}')
+                return ""
+        else:
+            return ""
+
+    def _get_task_response(
+            self,
+            endpoint,
+            task_id,
+            method='get',
+            **url_params
+    ):
+        """
+        Function to fetch async task's response
+        :param endpoint: complete url endpoint
+        :param method: Reqested method. Default = GET
+        :param task_id:
+        :param url_params: dict of params for API ex filtering, columns etc
+        :return: Response dict
+        """
+
+        endpoint += f"/{task_id}"
+
+        response = getattr(self.session, method.lower())(
+            endpoint, json=url_params
+        )
+        if response.text:
+            if "error" in response.text:
+                raise ValueError("Error - {}".format(response.text))
+            try:
+                data = response.json()
+                return data['response']
+            except JSONDecodeError as e:
+                print(f'No valid JSON returned {e}')
+                return {}
+        else:
+            return {}
+
+
     def get_json_headers(self):
         """
         Headers for json requests

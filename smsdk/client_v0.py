@@ -5,6 +5,7 @@ from __future__ import unicode_literals, absolute_import
 
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 try:
     # for newer pandas versions >1.X
@@ -1010,3 +1011,79 @@ class ClientV0(object):
             translated_query[key] = val
 
         return translated_query
+
+    # DATAVIZ UTILS
+
+    def get_cycle_count(self, machine_type=None):
+
+        cycle_count_schema = {
+            "model": "cycle",
+            "asset_selection": {
+                "machine_source": [], # TODO : Fetch beased on machine_type
+                "machine_type": "" # TODO : If provided in input the fetch machine source for it else process for all available
+            },
+            "d_vars": [{
+                "name": "cycle_count",
+                "aggregate": ["sum"]
+            }],
+            "i_vars": [{
+                "name": "endtime",
+                "time_resolution": "day",
+                "query_tz": "UTC",
+                "output_tz": "UTC",
+                "bin_strategy": "user_defined2",
+                "bin_count": 50
+            }, {
+                "name": "machine__source",
+                "bin_strategy": "user_defined2",
+                "bin_count": 50
+            }],
+            "time_selection": {
+                "time_type": "relative",
+                "relative_start": 7, #TODO :- Should it be an input and keep defalut to 7 ?
+                "relative_unit": "day",
+                "ctime_tz": "UTC"
+            },
+            "where": [],
+            "db_mode": "sql"
+        }
+
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        cls = smsdkentities.get("dataviz_cycle")(self.session, base_url)
+
+        all_machines = self.get_machines()
+        all_machines= all_machines.to_dict('records')
+        source_machine_map = {}
+        for machine in all_machines:
+            if machine['source_type'] not in source_machine_map:
+                source_machine_map[machine['source_type']] = [machine['source']]
+            else:
+                source_machine_map[machine['source_type']].append(machine['source'])
+
+
+        if machine_type and source_machine_map.get(machine_type):
+            cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]
+            cycle_count_schema['asset_selection']['machine_type'] = machine_type
+            cycle_count_records = cls.cycle_count(**cycle_count_schema)
+            schema = self.get_machine_schema(cycle_count_records[0]['source'])
+            columns = schema.shape[0]
+            for i in cycle_count_records:
+                i.update({"columns": columns})
+
+        else:
+            cycle_count_records = []
+            for machine_type in source_machine_map:
+                input_schema = deepcopy(cycle_count_schema)
+                input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]
+                input_schema['asset_selection']['machine_type'] = machine_type
+                records = cls.cycle_count(**input_schema)
+
+                schema = self.get_machine_schema(source_machine_map[machine_type][0])
+                columns = schema.shape[0]
+                for i in records:
+                    i.update({"columns": columns})
+                cycle_count_records.extend(records)
+
+        return pd.DataFrame(cycle_count_records)

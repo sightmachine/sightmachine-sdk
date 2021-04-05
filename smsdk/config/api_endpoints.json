@@ -21,5 +21,9 @@
     "url" : "/api/downtime",
     "url_v1" : "/v1/datatab/downtime"
 
+  },
+  "DataViz": {
+    "async": "/v1/datavis/task/async",
+    "async_resp": "/v1/datavis/task/async"
   }
 }

@@ -66,8 +66,10 @@ class Cycle(SmsdkEntities, MaSession):
 
     def modify_input_params(self, **kwargs):
 
+        
         # Special handling for EF type names
-        machine = kwargs.get('machine__source', '')
+        machine = kwargs.get('machine__source','')
+
         if machine[0] == "'":
             machine = machine[1:-1]
 

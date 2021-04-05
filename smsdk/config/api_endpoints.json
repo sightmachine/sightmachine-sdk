@@ -23,7 +23,6 @@
 
   },
   "DataViz": {
-    "async": "/v1/datavis/task/async",
-    "async_resp": "/v1/datavis/task/async"
+    "estimate_cycle": "/v1/selector/datavis/estimate/cycle"
   }
 }

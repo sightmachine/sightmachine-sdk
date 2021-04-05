@@ -97,8 +97,12 @@ class DataViz(SmsdkEntities, MaSession):
                       '_count': 913}]}
         """
 
-        records = [{'endtime': i['i_vals']['endtime']['bin_avg'], 'source': i['i_vals']['machine__source']['bin_avg'],
-                    "rows": i['_count']} for i in response['results']]
+        try:
+            records = [{'endtime': i['i_vals']['endtime']['bin_avg'], 'source': i['i_vals']['machine__source']['bin_avg'],
+                        "rows": i['_count']} for i in response['results']]
+        except Exception as e:
+            logging.warning(response)
+            raise ValueError("Error - {}".format(repr(e)))
 
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

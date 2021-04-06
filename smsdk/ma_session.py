@@ -146,6 +146,8 @@ class MaSession:
                     try:
                         data = response.json()
                         data = data['results']
+                        if isinstance(data, dict):
+                            data = [data]
                     except JSONDecodeError as e:
                         print(f'No valid JSON returned {e}')
                         return []

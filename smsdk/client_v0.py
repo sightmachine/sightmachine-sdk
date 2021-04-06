@@ -3,6 +3,8 @@
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
 
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 
@@ -16,6 +18,7 @@ from smsdk.utils import get_url
 from smsdk.Auth.auth import Authenticator
 from smsdk.tool_register import smsdkentities
 
+from datetime import datetime
 import logging
 import functools
 
@@ -790,6 +793,10 @@ class ClientV0(object):
         if len(machine) <= 6 and machine[:3].isnumeric():
             machine = f"'{machine}'"
 
+        # Handle EF type machine names
+        if len(machine) == 5 and machine[:3].isnumeric():
+            machine = f"'{machine}'"
+
         schema = self.get_machine_schema(machine)
 
         colmap = {row[1]['name']: row[1]['display'] for row in schema.iterrows()}
@@ -1014,3 +1021,72 @@ class ClientV0(object):
             translated_query[key] = val
 
         return translated_query
+
+    # DATAVIZ UTILS
+
+    def get_cycle_count(self, start_time="", end_time="", machine_type=None):
+        """
+
+        Ref: https://sightmachine.atlassian.net/browse/DATA-573
+        :param start_time: Starttime from which we want to count cycles default : 1st Jan 2017
+        :param end_time: Endtime till we want to count cycles Default : current time
+        :param machine_type: machine type
+        :return: Dataframe that consists cycle count and column counts
+        """
+
+        if not start_time:
+            start_time = "2017-01-01T00:00:00"
+        if not end_time:
+            end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+        column_sequence = ["machine_type", "cycle_count", "column_count"]
+
+        cycle_count_schema = {
+            "model": "",
+            "asset_selection": {
+                "machine_source": [],
+            },
+            "time_selection": {
+                "time_type": "absolute",
+                "start_time": start_time,
+                "end_time": end_time
+            }}
+
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        cls = smsdkentities.get("dataviz_cycle")(self.session, base_url)
+
+        all_machines = self.get_machines()
+        all_machines = all_machines.to_dict('records')
+        source_machine_map = {}
+        for machine in all_machines:
+            if machine['source_type'] not in source_machine_map:
+                source_machine_map[machine['source_type']] = [machine['source']]
+            else:
+                source_machine_map[machine['source_type']].append(machine['source'])
+
+        if machine_type and source_machine_map.get(machine_type):
+            cycle_count_schema['model'] = "cycle:" + machine_type
+            cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]
+            cycle_count_records = cls.cycle_count(**cycle_count_schema)
+            schema = self.get_machine_schema(source_machine_map[machine_type][0])
+            columns = schema.shape[0]
+            cycle_count_records.update({"machine_type": machine_type, "column_count": columns})
+            return pd.DataFrame([cycle_count_records])
+
+
+        else:
+            cycle_count_records = []
+            for machine_type in source_machine_map:
+                input_schema = deepcopy(cycle_count_schema)
+                input_schema['model'] = "cycle:" + machine_type
+                input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]
+                records = cls.cycle_count(**input_schema)
+
+                schema = self.get_machine_schema(source_machine_map[machine_type][0])
+                columns = schema.shape[0]
+                records.update({"machine_type": machine_type, "column_count": columns})
+                cycle_count_records.append(records)
+
+            return pd.DataFrame(cycle_count_records, columns=column_sequence)

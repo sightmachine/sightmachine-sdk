@@ -669,7 +669,7 @@ class ClientV0(object):
 
     def get_part_schema(self, **query):
         part_schema = self.get_data('parts', 'get_part_schema', False, **query)
-        part_schema = part_schema.dropna(subset=['mongo_field', 'sql_field'])
+        # part_schema = part_schema.dropna(subset=['mongo_field', 'sql_field'])
         return part_schema
 
     def clean_query_part_titles(self, query, datatab_api=False):
@@ -1090,3 +1090,67 @@ class ClientV0(object):
                 cycle_count_records.append(records)
 
             return pd.DataFrame(cycle_count_records, columns=column_sequence)
+
+
+    def get_all_parts(self, **query):
+        all_parts = self.get_data('parts', 'get_all_parts', False, **query)
+        return all_parts
+
+
+    def get_part_count(self, start_time="", end_time="", part_type=None, **kwargs):
+        """
+
+        Ref: https://sightmachine.atlassian.net/browse/DATA-573
+        :param start_time: Starttime from which we want to count cycles default : 1st Jan 2017
+        :param end_time: Endtime till we want to count cycles Default : current time
+        :param machine_type: part_type
+        :return: Dataframe that consists cycle count and column counts
+        """
+
+        if not start_time:
+            start_time = "2017-01-01T00:00:00"
+        if not end_time:
+            end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+        column_sequence = ['part_type', 'column_count']
+
+
+        part_count_schema = {
+            "model": "",
+            "asset_selection": {},
+            "time_selection": {
+                "time_type": "absolute",
+                "start_time": start_time,
+                "end_time": end_time
+            }}
+
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        cls = smsdkentities.get("dataviz_part")(self.session, base_url)
+
+        all_parts = self.get_all_parts(**kwargs)
+        all_parts = all_parts[column_sequence]
+        all_parts = all_parts.to_dict('records')
+        all_part_types = [i['part_type'] for i in all_parts]
+
+        if part_type and (part_type in all_part_types):
+            column_count = [i['column_count'] for i in all_parts if i['part_type'] == part_type][0]
+            part_count_schema['model'] = "part:" + part_type
+            part_count_records = cls.part_count(**part_count_schema)
+            part_count_records.update({"part_type": part_type, "column_count": column_count})
+            return pd.DataFrame([part_count_records])
+
+        else:
+            part_count_records = []
+            for parts in all_parts:
+                part_type = parts['part_type']
+                column_count = [i['column_count'] for i in all_parts if i['part_type'] == part_type][0]
+
+                input_schema = deepcopy(part_count_schema)
+                input_schema['model'] = "part:" + part_type
+                records = cls.part_count(**input_schema)
+                records.update({"part_type": part_type, "column_count": column_count})
+                part_count_records.append(records)
+            column_sequence.append('part_count')
+            return pd.DataFrame(part_count_records, columns=column_sequence)

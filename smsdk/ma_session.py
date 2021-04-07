@@ -99,6 +99,45 @@ class MaSession:
                 print(traceback.print_exc())
                 return records
 
+    def _get_schema(
+            self,
+            endpoint,
+            method="get",
+            **url_params
+    ):
+        """
+        This function can be used to fetch HLO schemas like AIDP
+        Function to get api call and fetch data from MA APIs
+        :param endpoint: complete url endpoint
+        :param method: Reqested method. Default = get
+        :param url_params: dict of params for API ex filtering, columns etc
+        :return: List of records
+        """
+        if 'machine_type' in url_params:
+            url_params.pop('machine_type')
+
+
+        response = getattr(self.session, method.lower())(
+            endpoint, params=url_params
+        )
+
+        if response.text:
+            if "error" in response.text:
+                raise ValueError("Error - {}".format(response.text))
+            try:
+                data = response.json()
+
+                if 'objects' in data:
+                    data = data['objects']
+
+                return data
+            except JSONDecodeError as e:
+                print(f'No valid JSON returned {e}')
+                return []
+        else:
+            return []
+
+
     def _get_records_v1(
             self,
             endpoint,

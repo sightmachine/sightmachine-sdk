@@ -15,7 +15,8 @@
   },
   "Parts": {
     "url" : "/api/part",
-    "url_v1": "/v1/datatab/part"
+    "url_v1": "/v1/datatab/part",
+    "part_schema": "/v1/obj/part_type"
   },
   "Downtime": {
     "url" : "/api/downtime",
@@ -23,6 +24,7 @@
 
   },
   "DataViz": {
-    "estimate_cycle": "/v1/selector/datavis/estimate/cycle"
+    "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
+    "estimate_part": "/v1/selector/datavis/estimate/part"
   }
 }

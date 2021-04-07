@@ -61,3 +61,20 @@ class Parts(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
+
+    @mod_util
+    def get_all_parts(self, **kwargs):
+        endpoint = ENDPOINTS["Parts"]["part_schema"]
+        url = "{}{}".format(self.base_url, endpoint)
+        self.session.headers = self.modify_header_style(url, self.session.headers)
+        records = self._get_schema(url, **kwargs)
+
+        # Adding new fields in response named column_count that will count all the columns associated with any part
+        for each_part_type in records:
+            stats = each_part_type['stats']
+            stats_count = sum([len(each_part_type['stats'][i]) for i in stats])
+            each_part_type.update({"column_count":stats_count})
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records

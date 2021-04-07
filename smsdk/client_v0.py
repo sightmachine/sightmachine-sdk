@@ -669,7 +669,7 @@ class ClientV0(object):
 
     def get_part_schema(self, **query):
         part_schema = self.get_data('parts', 'get_part_schema', False, **query)
-        # part_schema = part_schema.dropna(subset=['mongo_field', 'sql_field'])
+        part_schema = part_schema.dropna(subset=['mongo_field', 'sql_field'])
         return part_schema
 
     def clean_query_part_titles(self, query, datatab_api=False):

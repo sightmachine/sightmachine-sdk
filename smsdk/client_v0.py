@@ -585,10 +585,15 @@ class ClientV0(object):
         for stat in stats:
             if not stat.get('display', {}).get('ui_hidden', False):
                 if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
-                    fields.append({'name': f'stats__{stat["title"]}__val',
-                                   # 'name': stat['analytics']['columns'][0]['name'],
-                                   'display': stat['display']['title_prefix'],
-                                   'type': stat['analytics']['columns'][0]['type']})
+                    try:
+                        fields.append({'name': f'stats__{stat["title"]}__val',
+                                       # 'name': stat['analytics']['columns'][0]['name'],
+                                       'display': stat['display']['title_prefix'],
+                                       'type': stat['analytics']['columns'][0]['type']})
+                    except:
+                        log.warning(
+                            f"Unknow stat schema identified :: machine_type {machine_type} - "
+                            f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         if return_mtype:
             return machine_type, pd.DataFrame(fields)
 
@@ -788,7 +793,7 @@ class ClientV0(object):
                 except KeyError as e:
                     log.error(f'Unable to lookup source type for schema: {e}')
                     return table
-            
+
         # Handle EF type machine names
         if len(machine) <= 6 and machine[:3].isnumeric():
             machine = f"'{machine}'"
@@ -1091,11 +1096,9 @@ class ClientV0(object):
 
             return pd.DataFrame(cycle_count_records, columns=column_sequence)
 
-
     def get_all_parts(self, **query):
         all_parts = self.get_data('parts', 'get_all_parts', False, **query)
         return all_parts
-
 
     def get_part_count(self, start_time="", end_time="", part_type=None, **kwargs):
         """
@@ -1113,7 +1116,6 @@ class ClientV0(object):
             end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
         column_sequence = ['part_type', 'column_count']
-
 
         part_count_schema = {
             "model": "",

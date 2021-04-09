@@ -56,10 +56,13 @@ class Parts(SmsdkEntities, MaSession):
         stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {}
 
+        start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
+        starttime = kwargs.get(start_key, "") if start_key else stime
+        endtime = kwargs.get(end_key, "") if end_key else stime
         new_kwargs["time_selection"] = {
             "time_type": "absolute",
-            "start_time": kwargs.get('endtime__gte', stime).isoformat(),
-            "end_time": kwargs.get('endtime__lte', etime).isoformat(),
+            "start_time": starttime.isoformat(),
+            "end_time": endtime.isoformat(),
             "time_zone": "UTC"
         }
 

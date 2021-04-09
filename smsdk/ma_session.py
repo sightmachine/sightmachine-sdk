@@ -235,3 +235,28 @@ class MaSession:
                 SM_AUTH_HEADER_SECRET_ID_OLD
             )
         return headers
+
+    def get_starttime_endtime_keys(self, **kwargs):
+        """
+        This function takes kwargs as input and tried to identify starttime and endtime key provided by user and returns
+        :param kwargs:
+        :return:
+        """
+        starttime_key = ""
+        endtime_key = ""
+
+        times = {i: kwargs[i] for i in kwargs if 'time' in i.lower()}
+
+        if times:
+            starttime = min(times.values())
+            endtime = max(times.values())
+
+            for key in times:
+                if times[key] == starttime:
+                    starttime_key = key
+                elif times[key] == endtime:
+                    endtime_key = key
+                else:
+                    continue
+
+        return starttime_key, endtime_key

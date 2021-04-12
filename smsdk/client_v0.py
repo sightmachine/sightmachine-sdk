@@ -1029,7 +1029,7 @@ class ClientV0(object):
 
     # DATAVIZ UTILS
 
-    def get_cycle_count(self, start_time="", end_time="", machine_type=None):
+    def get_cycle_count(self, start_time="", end_time="", field_count=True,  machine_type=None):
         """
 
         Ref: https://sightmachine.atlassian.net/browse/DATA-573
@@ -1072,12 +1072,14 @@ class ClientV0(object):
             else:
                 source_machine_map[machine['source_type']]['source'].append(machine['source'])
 
+        columns = 1 # Default value 1, so will not break any calculation in case field_count=False
         if machine_type and source_machine_map.get(machine_type):
             cycle_count_schema['model'] = "cycle:" + machine_type
             cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
             cycle_count_records = cls.cycle_count(**cycle_count_schema)
-            schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
-            columns = schema.shape[0]
+            if field_count:
+                schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
+                columns = schema.shape[0]
             cycle_count_records.update(
                 {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
                  "column_count": columns})
@@ -1091,9 +1093,9 @@ class ClientV0(object):
                 input_schema['model'] = "cycle:" + machine_type
                 input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
                 records = cls.cycle_count(**input_schema)
-
-                schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
-                columns = schema.shape[0]
+                if field_count:
+                    schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
+                    columns = schema.shape[0]
                 records.update(
                     {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
                      "column_count": columns})

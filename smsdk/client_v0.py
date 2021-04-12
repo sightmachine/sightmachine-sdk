@@ -1044,7 +1044,7 @@ class ClientV0(object):
         if not end_time:
             end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-        column_sequence = ["machine_type", "cycle_count", "column_count"]
+        column_sequence = ["machine_type", "source_clean", "cycle_count", "column_count"]
 
         cycle_count_schema = {
             "model": "",
@@ -1067,17 +1067,20 @@ class ClientV0(object):
         source_machine_map = {}
         for machine in all_machines:
             if machine['source_type'] not in source_machine_map:
-                source_machine_map[machine['source_type']] = [machine['source']]
+                source_machine_map[machine['source_type']] = {'source': [machine['source']],
+                                                              'source_clean': machine['source_clean']}
             else:
-                source_machine_map[machine['source_type']].append(machine['source'])
+                source_machine_map[machine['source_type']]['source'].append(machine['source'])
 
         if machine_type and source_machine_map.get(machine_type):
             cycle_count_schema['model'] = "cycle:" + machine_type
-            cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]
+            cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
             cycle_count_records = cls.cycle_count(**cycle_count_schema)
-            schema = self.get_machine_schema(source_machine_map[machine_type][0])
+            schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
             columns = schema.shape[0]
-            cycle_count_records.update({"machine_type": machine_type, "column_count": columns})
+            cycle_count_records.update(
+                {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
+                 "column_count": columns})
             return pd.DataFrame([cycle_count_records])
 
 
@@ -1086,12 +1089,14 @@ class ClientV0(object):
             for machine_type in source_machine_map:
                 input_schema = deepcopy(cycle_count_schema)
                 input_schema['model'] = "cycle:" + machine_type
-                input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]
+                input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
                 records = cls.cycle_count(**input_schema)
 
-                schema = self.get_machine_schema(source_machine_map[machine_type][0])
+                schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
                 columns = schema.shape[0]
-                records.update({"machine_type": machine_type, "column_count": columns})
+                records.update(
+                    {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
+                     "column_count": columns})
                 cycle_count_records.append(records)
 
             return pd.DataFrame(cycle_count_records, columns=column_sequence)
@@ -1115,7 +1120,7 @@ class ClientV0(object):
         if not end_time:
             end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-        column_sequence = ['part_type', 'column_count']
+        column_sequence = ['part_type', 'part_type_clean', 'column_count']
 
         part_count_schema = {
             "model": "",
@@ -1134,13 +1139,14 @@ class ClientV0(object):
         all_parts = self.get_all_parts(**kwargs)
         all_parts = all_parts[column_sequence]
         all_parts = all_parts.to_dict('records')
-        all_part_types = [i['part_type'] for i in all_parts]
+        all_part_types = {i['part_type']: i['part_type_clean'] for i in all_parts}
 
         if part_type and (part_type in all_part_types):
             column_count = [i['column_count'] for i in all_parts if i['part_type'] == part_type][0]
             part_count_schema['model'] = "part:" + part_type
             part_count_records = cls.part_count(**part_count_schema)
-            part_count_records.update({"part_type": part_type, "column_count": column_count})
+            part_count_records.update(
+                {"part_type": part_type, "part_type_clean": all_part_types[part_type], "column_count": column_count})
             return pd.DataFrame([part_count_records])
 
         else:
@@ -1152,7 +1158,8 @@ class ClientV0(object):
                 input_schema = deepcopy(part_count_schema)
                 input_schema['model'] = "part:" + part_type
                 records = cls.part_count(**input_schema)
-                records.update({"part_type": part_type, "column_count": column_count})
+                records.update(
+                    {"part_type": part_type, "part_type_clean": all_part_types[part_type], "column_count": column_count})
                 part_count_records.append(records)
             column_sequence.append('part_count')
             return pd.DataFrame(part_count_records, columns=column_sequence)

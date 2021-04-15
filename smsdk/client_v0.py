@@ -283,10 +283,10 @@ class ClientV0(object):
                 '_limit not specified.  Maximum of 5000 rows will be returned.'
 
             if not '_only' in kwargs:
-                schema = schema['name'].tolist()[:50]
+                only_names = schema['name'].tolist()[:50]
                 toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
 
-                kwargs['_only'] = schema + toplevel
+                kwargs['_only'] = only_names + toplevel
             else:
                 if ('Machine' not in kwargs['_only']) and ('machine__source' not in kwargs['_only']):
                     print("please provide Machine / machine__source in _only field")
@@ -294,6 +294,18 @@ class ClientV0(object):
 
             if kwargs['_only'] == '*':
                 kwargs.pop('_only')
+
+            if '_only' in kwargs:
+                available_names = set(schema['name'].to_list() + 
+                                      schema['display'].to_list() + 
+                                      ['record_time', 'endtime', 'total', 'machine__source', 'starttime', 'output', 'shift'] +
+                                      ['Cycle Time (Gross)', 'End Time', 'Cycle Time(Net)', 'Machine', 'Start Time', 'Output', 'Shift'])
+                used_names = set(kwargs['_only'])
+                different_names = used_names.difference(available_names)
+
+                if len(different_names) > 0:
+                    print(f'Dropping invalid column names: {", ".join(different_names)}.')
+                    kwargs['_only'] = used_names.intersection(available_names)
 
             if clean_strings_in:
                 kwargs = self.clean_query_machine_titles(kwargs)

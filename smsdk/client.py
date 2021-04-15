@@ -117,7 +117,6 @@ class Client(ClientV0):
         self.session = self.auth.session
 
     def get_data_v1(self, ename, util_name, normalize=True, *args, **kwargs):
-
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities

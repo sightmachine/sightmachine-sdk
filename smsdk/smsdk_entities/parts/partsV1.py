@@ -56,19 +56,34 @@ class Parts(SmsdkEntities, MaSession):
         stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {}
 
-        new_kwargs["time_selection"] = {
-            "time_type": "absolute",
-            "start_time": kwargs.get('endtime__gte', stime).isoformat(),
-            "end_time": kwargs.get('endtime__lte', etime).isoformat(),
-            "time_zone": "UTC"
-        }
+        start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
 
-        new_kwargs["where"] = [{
+        where = [{
             "name": "type__part_type",
             "op": "eq",
             "value": kwargs.get('type__part_type')
         }]
 
+        # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
+        if start_key:
+            starttime = kwargs.get(start_key, "") if start_key else stime
+            where.append(
+                {'name': start_key.split('__')[0], 'op': start_key.split('__')[-1], 'value': starttime.isoformat()})
+
+        if end_key:
+            endtime = kwargs.get(end_key, "") if end_key else stime
+            where.append({'name': end_key.split('__')[0], 'op': end_key.split('__')[-1], 'value': endtime.isoformat()})
+
+        if kwargs.get("_order_by", ""):
+            order_key = kwargs["_order_by"].replace("_epoch", "")
+            if order_key.startswith('-'):
+                order_type = 'desc'
+                order_key = order_key[1:]
+            else:
+                order_type = 'asc'
+            new_kwargs['order_by'] = [{'name': order_key, 'order': order_type}]
+
+        new_kwargs['where'] = where
         new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
         new_kwargs['offset'] = kwargs.get('_offset', 0)
         new_kwargs['limit'] = kwargs.get('_limit', np.Inf)

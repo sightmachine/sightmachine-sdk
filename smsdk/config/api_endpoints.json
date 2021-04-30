@@ -25,6 +25,7 @@
   },
   "DataViz": {
     "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
-    "estimate_part": "/v1/selector/datavis/estimate/part"
+    "estimate_part": "/v1/selector/datavis/estimate/part",
+    "async": "/v1/datavis/task/async"
   }
 }

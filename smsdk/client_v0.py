@@ -296,10 +296,12 @@ class ClientV0(object):
                 kwargs.pop('_only')
 
             if '_only' in kwargs:
-                available_names = set(schema['name'].to_list() + 
-                                      schema['display'].to_list() + 
-                                      ['record_time', 'endtime', 'total', 'machine__source', 'starttime', 'output', 'shift'] +
-                                      ['Cycle Time (Gross)', 'End Time', 'Cycle Time(Net)', 'Machine', 'Start Time', 'Output', 'Shift'])
+                available_names = set(schema['name'].to_list() +
+                                      schema['display'].to_list() +
+                                      ['record_time', 'endtime', 'total', 'machine__source', 'starttime', 'output',
+                                       'shift'] +
+                                      ['Cycle Time (Gross)', 'End Time', 'Cycle Time(Net)', 'Machine', 'Start Time',
+                                       'Output', 'Shift'])
                 used_names = set(kwargs['_only'])
                 different_names = used_names.difference(available_names)
 
@@ -1173,7 +1175,144 @@ class ClientV0(object):
                 input_schema['model'] = "part:" + part_type
                 records = cls.part_count(**input_schema)
                 records.update(
-                    {"part_type": part_type, "part_type_clean": all_part_types[part_type], "column_count": column_count})
+                    {"part_type": part_type, "part_type_clean": all_part_types[part_type],
+                     "column_count": column_count})
                 part_count_records.append(records)
             column_sequence.append('part_count')
             return pd.DataFrame(part_count_records, columns=column_sequence)
+
+    def get_cycle_count_from_async(self, field_count=True, machine_type=None):
+        """
+
+        Ref: https://sightmachine.atlassian.net/browse/DATA-573
+        :param start_time: Starttime from which we want to count cycles default : 1st Jan 2017
+        :param end_time: Endtime till we want to count cycles Default : current time
+        :param machine_type: machine type
+        :return: Dataframe that consists cycle count and column counts
+        """
+
+        # cycle_count_schema = {
+        #     "model": "cycle",
+        #     "asset_selection": {
+        #         "machine_source": ["F1_010_BodyMaker_1", "F1_010_BodyMaker_2", "F1_010_BodyMaker_3",
+        #                            "F1_010_BodyMaker_4", "F1_010_BodyMaker_5", "F1_010_BodyMaker_6",
+        #                            "F1_010_BodyMaker_7", "F1_010_BodyMaker_8", "F2_010_BodyMaker_1",
+        #                            "F2_010_BodyMaker_2", "F2_010_BodyMaker_3", "F2_010_BodyMaker_4",
+        #                            "F2_010_BodyMaker_5", "F2_010_BodyMaker_6", "F2_010_BodyMaker_7",
+        #                            "F2_010_BodyMaker_8", "F3_010_BodyMaker_1", "F3_010_BodyMaker_2",
+        #                            "F3_010_BodyMaker_3", "F3_010_BodyMaker_4", "F3_010_BodyMaker_5",
+        #                            "F3_010_BodyMaker_6", "F3_010_BodyMaker_7", "F3_010_BodyMaker_8"],
+        #         "machine_type": "Body_Maker"
+        #     },
+        #     "d_vars": [{
+        #         "name": "cycle_count",
+        #         "aggregate": ["sum"]
+        #     }],
+        #     "i_vars": [{
+        #         "name": "endtime",
+        #         "time_resolution": "day",
+        #         "query_tz": "UTC",
+        #         "output_tz": "UTC",
+        #         "bin_strategy": "user_defined2",
+        #         "bin_count": 50
+        #     }],
+        #     "time_selection": {
+        #         "time_type": "relative",
+        #         "relative_start": 1,
+        #         "relative_unit": "month",
+        #         "ctime_tz": "UTC"
+        #     },
+        #     "where": [],
+        #     "db_mode": "sql"
+        # }
+
+        cycle_count_schema = {
+            "model": "cycle",
+            "asset_selection": {},
+            "d_vars": [{
+                "name": "cycle_count",
+                "aggregate": ["sum"]
+            }],
+            "i_vars": [{
+                "name": "endtime",
+                "time_resolution": "day",
+                "query_tz": "UTC",
+                "output_tz": "UTC",
+                "bin_strategy": "user_defined2",
+                "bin_count": 50
+            }],
+            "time_selection": {
+                "time_type": "relative",
+                "relative_start": 1,
+                "relative_unit": "month",
+                "ctime_tz": "UTC"
+            },
+            "where": [],
+            "db_mode": "sql"
+        }
+
+
+
+        # if not start_time:
+        #     start_time = "2017-01-01T00:00:00"
+        # if not end_time:
+        #     end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        #
+        # column_sequence = ["machine_type", "source_clean", "cycle_count", "column_count"]
+        #
+        # cycle_count_schema = {
+        #     "model": "",
+        #     "asset_selection": {
+        #         "machine_source": [],
+        #     },
+        #     "time_selection": {
+        #         "time_type": "absolute",
+        #         "start_time": start_time,
+        #         "end_time": end_time
+        #     }}
+
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        cls = smsdkentities.get("dataviz_cycle")(self.session, base_url)
+
+        all_machines = self.get_machines()
+        all_machines = all_machines.to_dict('records')
+        source_machine_map = {}
+        for machine in all_machines:
+            if machine['source_type'] not in source_machine_map:
+                source_machine_map[machine['source_type']] = {'source': [machine['source']],
+                                                              'source_clean': machine['source_clean']}
+            else:
+                source_machine_map[machine['source_type']]['source'].append(machine['source'])
+
+        columns = 1  # Default value 1, so will not break any calculation in case field_count=False
+        if machine_type and source_machine_map.get(machine_type):
+            cycle_count_schema['asset_selection']['machine_type'] = machine_type
+            cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
+            cycle_count_records = cls.cycle_count_async(**cycle_count_schema)
+            if field_count:
+                schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
+                columns = schema.shape[0]
+            cycle_count_records.update(
+                {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
+                 "column_count": columns})
+            return pd.DataFrame([cycle_count_records])
+
+
+        else:
+            cycle_count_records = []
+            for machine_type in source_machine_map:
+                input_schema = deepcopy(cycle_count_schema)
+                input_schema['asset_selection']['machine_type'] = machine_type
+                input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
+                records = cls.cycle_count_async(**input_schema)
+                if field_count:
+                    schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
+                    columns = schema.shape[0]
+                records.update(
+                    {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
+                     "column_count": columns})
+                cycle_count_records.append(records)
+
+            return pd.DataFrame(cycle_count_records)

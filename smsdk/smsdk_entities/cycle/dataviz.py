@@ -48,3 +48,15 @@ class DataViz(SmsdkEntities, MaSession):
         records = self._get_records_v1(url, limit=1, **kwargs)
 
         return records[0]
+
+    @mod_util
+    def cycle_count_async(self, *args, **kwargs):
+        url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["async"])
+
+        self.session.headers = self.modify_header_style(url, self.session.headers)
+
+        records = self._get_async_task_response(url, **kwargs)
+
+        total_counts = [i['d_vals']['cycle_count']['sum'] for i in records]
+        total_count = sum(total_counts)
+        return {"cycle_count":total_count}

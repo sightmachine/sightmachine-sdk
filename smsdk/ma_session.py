@@ -1,13 +1,12 @@
+import json
 from json.decoder import JSONDecodeError
 from typing import List
-import json
-import requests
 
 import numpy as np
-
-from requests.structures import CaseInsensitiveDict
+import requests
 from requests.sessions import Session
-
+from requests.structures import CaseInsensitiveDict
+import time
 try:
     import importlib.resources as pkg_resources
 except ImportError:
@@ -23,7 +22,9 @@ SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 class MaSession:
     def __init__(self):
@@ -31,12 +32,12 @@ class MaSession:
         self.session = Session()
 
     def _get_records(
-        self,
-        endpoint,
-        method="get",
-        _limit=np.Inf,
-        _offset=0,
-        **url_params
+            self,
+            endpoint,
+            method="get",
+            _limit=np.Inf,
+            _offset=0,
+            **url_params
     ):
         """
         Function to get api call and fetch data from MA APIs
@@ -52,7 +53,7 @@ class MaSession:
         if 'machine_type' in url_params:
             url_params.pop('machine_type')
         max_page_size = 2000
-        
+
         records: List = []
         while True:
             try:
@@ -66,7 +67,7 @@ class MaSession:
                 url_params["_offset"] = _offset
                 url_params["_limit"] = this_loop_limit
 
-                #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
+                # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
@@ -92,10 +93,10 @@ class MaSession:
                     # Cursor exhausted, so just return
                     return records
                 _offset += this_loop_limit
-                
+
             except:
                 import traceback
-                
+
                 print(traceback.print_exc())
                 return records
 
@@ -116,7 +117,6 @@ class MaSession:
         if 'machine_type' in url_params:
             url_params.pop('machine_type')
 
-
         response = getattr(self.session, method.lower())(
             endpoint, params=url_params
         )
@@ -136,7 +136,6 @@ class MaSession:
                 return []
         else:
             return []
-
 
     def _get_records_v1(
             self,
@@ -204,6 +203,44 @@ class MaSession:
 
                 print(traceback.print_exc())
                 return records
+
+
+    def _get_async_task_response(self,
+                        endpoint,
+                        method="post",
+                        **url_params
+                        ):
+
+        response = getattr(self.session, method.lower())(
+            endpoint, json=url_params
+        )
+
+        if response.text:
+            if "error" in response.text:
+                raise ValueError("Error - {}".format(response.text))
+            try:
+                data = response.json()
+                task_id = data['response']['task_id']
+                state = data['response']['state']
+            except JSONDecodeError as e:
+                print(f'No valid JSON returned {e}')
+                return []
+
+            while state != "SUCCESS":
+                time.sleep(0.5)
+                response = getattr(self.session, "get")(
+                    endpoint+"/"+task_id, json=url_params
+                )
+                try:
+                    data = response.json()
+                    state = data['response']['state']
+                except JSONDecodeError as e:
+                    print(f'No valid JSON returned {e}')
+                    return []
+            return data['response']['meta']['results']
+        else:
+            return []
+
 
     def get_json_headers(self):
         """

@@ -17,7 +17,7 @@ except ImportError:
 from smsdk.utils import get_url
 from smsdk.Auth.auth import Authenticator
 from smsdk.tool_register import smsdkentities
-
+from multiprocessing.pool import Pool
 from datetime import datetime
 import logging
 import functools
@@ -88,6 +88,17 @@ downmapinv = {'Machine': 'machine__source',
               'Downtime Reason': 'metadata__reason',
               'Downtime Category': 'metadata__category',
               'Downtime Type': 'metadata__downtime_type'}
+
+
+def get_count(input_schema):
+    input_schema = input_schema[0]
+    cls = smsdkentities.get("dataviz_cycle")(input_schema["session"], input_schema["url"])
+    records = cls.cycle_count(**input_schema["schema"])
+    mtype = input_schema['schema']['model'].split(':')[-1]
+    records.update({"machine_type": mtype, "source_clean": input_schema['source_machine_map'][mtype]['source_clean']})
+    if input_schema.get('columns'):
+        records.update({"column_count": input_schema.get('columns')})
+    return records
 
 
 class ClientV0(object):
@@ -1043,7 +1054,7 @@ class ClientV0(object):
 
     # DATAVIZ UTILS
 
-    def get_cycle_count(self, start_time="", end_time="", field_count=True,  machine_type=None):
+    def get_cycle_count(self, start_time="", end_time="", field_count=True, machine_type=None):
         """
 
         Ref: https://sightmachine.atlassian.net/browse/DATA-573
@@ -1086,7 +1097,7 @@ class ClientV0(object):
             else:
                 source_machine_map[machine['source_type']]['source'].append(machine['source'])
 
-        columns = 1 # Default value 1, so will not break any calculation in case field_count=False
+        columns = 1  # Default value 1, so will not break any calculation in case field_count=False
         if machine_type and source_machine_map.get(machine_type):
             cycle_count_schema['model'] = "cycle:" + machine_type
             cycle_count_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
@@ -1099,23 +1110,37 @@ class ClientV0(object):
                  "column_count": columns})
             return pd.DataFrame([cycle_count_records])
 
-
         else:
-            cycle_count_records = []
+            tasks = list()
             for machine_type in source_machine_map:
                 input_schema = deepcopy(cycle_count_schema)
                 input_schema['model'] = "cycle:" + machine_type
                 input_schema['asset_selection']['machine_source'] = source_machine_map[machine_type]['source']
-                records = cls.cycle_count(**input_schema)
                 if field_count:
                     schema = self.get_machine_schema(source_machine_map[machine_type]['source'][0])
                     columns = schema.shape[0]
-                records.update(
-                    {"machine_type": machine_type, "source_clean": source_machine_map[machine_type]['source_clean'],
-                     "column_count": columns})
-                cycle_count_records.append(records)
+                    tasks.append(((
+                        {"schema": input_schema,
+                         "url": base_url,
+                         "session": self.session,
+                         'field_count': True,
+                         "source_machine_map": source_machine_map,
+                         "columns": columns})))
+                else:
+                    tasks.append((({
+                        "schema": input_schema,
+                        "url": base_url,
+                        "session": self.session,
+                        "source_machine_map": source_machine_map})))
 
-            return pd.DataFrame(cycle_count_records, columns=column_sequence)
+            pool = Pool(len(tasks))
+            try:
+                cycle_count_records = pool.map(get_count, [[i] for i in tasks])
+            finally:  # To make sure processes are closed in the end, even if errors happen
+                pool.close()
+                pool.join()
+
+            return pd.DataFrame(cycle_count_records)
 
     def get_all_parts(self, **query):
         all_parts = self.get_data('parts', 'get_all_parts', False, **query)
@@ -1250,8 +1275,6 @@ class ClientV0(object):
             "where": [],
             "db_mode": "sql"
         }
-
-
 
         # if not start_time:
         #     start_time = "2017-01-01T00:00:00"

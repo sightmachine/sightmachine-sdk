@@ -7,6 +7,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
+import pathos
 
 try:
     # for newer pandas versions >1.X
@@ -271,6 +272,11 @@ class ClientV0(object):
         @functools.wraps(func)
         def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
 
+            # When processing in batch
+            if args and (not kwargs):
+                kwargs = args[0]
+
+
             machine = kwargs.get('machine__source', kwargs.get('Machine'))
             if not machine:
                 # Possible that it is a machine__in.  If so, base on first machine
@@ -296,8 +302,8 @@ class ClientV0(object):
                 kwargs.pop('_only')
 
             if '_only' in kwargs:
-                available_names = set(schema['name'].to_list() + 
-                                      schema['display'].to_list() + 
+                available_names = set(schema['name'].to_list() +
+                                      schema['display'].to_list() +
                                       ['record_time', 'endtime', 'total', 'machine__source', 'starttime', 'output', 'shift'] +
                                       ['Cycle Time (Gross)', 'End Time', 'Cycle Time(Net)', 'Machine', 'Start Time', 'Output', 'Shift'])
                 used_names = set(kwargs['_only'])
@@ -312,7 +318,7 @@ class ClientV0(object):
                 kwargs = self.clean_query_machine_names(kwargs)
 
             kwargs.update({'machine_type': machine_type})
-            df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
+            df = func(self, normalize, clean_strings_in, clean_strings_out, *args, **kwargs)
 
             if len(df) > 0 and clean_strings_out:
                 df = self.clean_df_machine_titles(df)
@@ -325,6 +331,11 @@ class ClientV0(object):
 
         @functools.wraps(func)
         def inner(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+
+            # When processing in batch
+            if args and (not kwargs):
+                kwargs = args[0]
+
 
             if not '_only' in kwargs:
                 kwargs['_only'] = downmap.keys()
@@ -365,6 +376,10 @@ class ClientV0(object):
             """ Accessing default value of datatab_api because for V0 it'll be False and for V1 it'll be true"""
             datatab_api = func.__defaults__[3]
 
+            # When processing in batch
+            if args and (not kwargs):
+                kwargs = args[0]
+
             if "_only" not in kwargs:
                 print('_only not specified.  Selecting first 50 fields.')
                 part = kwargs.get('type__part_type', kwargs.get('Part'))
@@ -391,7 +406,7 @@ class ClientV0(object):
                 kwargs = self.clean_query_part_titles(kwargs)
 
             # df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
-            df = func(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs)
+            df = func(self, normalize, clean_strings_in, clean_strings_out, *args, **kwargs)
 
             # if clean_strings_out:
             if len(df) > 0 and clean_strings_out:
@@ -1177,3 +1192,35 @@ class ClientV0(object):
                 part_count_records.append(records)
             column_sequence.append('part_count')
             return pd.DataFrame(part_count_records, columns=column_sequence)
+
+    def get_cycles_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True):
+        # https://pathos.readthedocs.io/en/latest/pathos.html
+        pool = pathos.pools.ProcessPool(nodes=4)
+        response = pool.map(self.get_cycles,
+                            [normalize] * len(query_list),
+                            [clean_strings_in] * len(query_list),
+                            [clean_strings_out] * len(query_list),
+                            query_list
+                            )
+        return response
+
+    def get_downtimes_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True):
+        pool = pathos.pools.ProcessPool(nodes=4)
+        response = pool.map(self.get_cycles,
+                            [normalize] * len(query_list),
+                            [clean_strings_in] * len(query_list),
+                            [clean_strings_out] * len(query_list),
+                            query_list
+                            )
+        return response
+
+    def get_parts_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True):
+        pool = pathos.pools.ProcessPool(nodes=4)
+        response = pool.map(self.get_parts,
+                            [normalize] * len(query_list),
+                            [clean_strings_in] * len(query_list),
+                            [clean_strings_out] * len(query_list),
+                            [datatab_api] * len(query_list),
+                            query_list
+                            )
+        return response

@@ -60,13 +60,14 @@ class MaSession:
                 this_loop_limit = min(remaining_limit, max_page_size)
 
                 # If we exactly hit our desired number of records -- limit is 0 -- then can stop
-                if this_loop_limit == 0:
+                if this_loop_limit <= 0:
                     return records
 
                 url_params["_offset"] = _offset
                 url_params["_limit"] = this_loop_limit
 
                 #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
+                print(f'ping {endpoint}')
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
@@ -88,6 +89,7 @@ class MaSession:
                     return []
 
                 records.extend(data)
+                print(f'sizes {len(data)} vs {this_loop_limit}')
                 if len(data) < this_loop_limit:
                     # Cursor exhausted, so just return
                     return records

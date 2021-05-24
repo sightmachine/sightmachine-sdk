@@ -281,7 +281,6 @@ class ClientV0(object):
             if not machine:
                 # Possible that it is a machine__in.  If so, base on first machine
                 machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
-                machine = machine[0]
             kwargs['machine__source'] = machine
             machine_type, schema = self.get_machine_schema(machine, return_mtype=True)
 
@@ -344,7 +343,6 @@ class ClientV0(object):
             if not machine:
                 # Possible that it is a machine__in.  If so, base on first machine
                 machine = kwargs.get('machine__source__in', kwargs.get('Machine__in'))
-                machine = machine[0]
             kwargs['machine__source'] = machine
 
             machine_type, schema = self.get_machine_schema(machine, return_mtype=True)
@@ -1039,7 +1037,9 @@ class ClientV0(object):
             else:
                 func = ''
                 if '__' in key:
-                    key, func = key.split('__')
+                    splitted_key = key.split('__')
+                    key = '__'.join(splitted_key[:-1])
+                    func = splitted_key[-1]
                     if not func in ['in', 'nin', 'gt', 'lt', 'gte', 'lte', 'exists', 'ne', 'eq']:
                         # This isn't actually a function.  Probably another nested item like machine__source
                         key = f'{key}__{func}'

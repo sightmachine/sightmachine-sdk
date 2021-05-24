@@ -77,7 +77,7 @@ class Cycle(SmsdkEntities, MaSession):
         etime = datetime.now()
         stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {
-            "machine_source": [machine],
+            "machine_source": machine,
             "machine_type": kwargs.get('machine_type', '')
         }
 

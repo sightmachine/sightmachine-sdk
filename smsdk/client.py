@@ -93,7 +93,7 @@ class Client(ClientV0):
     tenant = None
     config = None
 
-    def __init__(self, tenant, site_domain="sightmachine.io"):
+    def __init__(self, tenant, site_domain="sightmachine.io", protocol = "https"):
         """
         Initialize the client.
 
@@ -109,7 +109,7 @@ class Client(ClientV0):
 
         # Handle internal configuration
         self.config = {}
-        self.config["protocol"] = "https"
+        self.config["protocol"] = protocol
         self.config["site.domain"] = site_domain
 
         # Setup Authenticator

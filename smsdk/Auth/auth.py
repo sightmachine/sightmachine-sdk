@@ -102,6 +102,7 @@ class Authenticator(MaSession):
 
         self.session.headers = self.get_json_headers()
         self.session.headers.update({SM_AUTH_HEADER_SECRET_ID: secret_id})
+        self.session.headers.update({SM_AUTH_HEADER_SECRET_ID_OLD: secret_id}) #add v0/v1 compat
         self.session.headers.update({SM_AUTH_HEADER_KEY_ID: key_id})
 
         if not self.check_auth():

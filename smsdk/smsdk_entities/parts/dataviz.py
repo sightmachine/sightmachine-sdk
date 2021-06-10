@@ -43,8 +43,6 @@ class DataVizPart(SmsdkEntities, MaSession):
     def part_count(self, *args, **kwargs):
         url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["estimate_part"])
 
-        self.session.headers = self.modify_header_style(url, self.session.headers)
-
         records = self._get_records_v1(url, limit=1, **kwargs)
 
         return records[0]

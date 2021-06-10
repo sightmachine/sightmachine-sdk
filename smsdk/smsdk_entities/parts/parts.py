@@ -41,8 +41,6 @@ class Parts(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Parts"]["url"])
 
-        self.session.headers = self.modify_header_style(url, self.session.headers)
-
         records = self._get_records(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
@@ -56,7 +54,6 @@ class Parts(SmsdkEntities, MaSession):
         """
         endpoint = f"/v1/selector/datatab/part/{kwargs.get('type__part_type')}/field?db_mode=sql&strip_aliases=false"
         url = "{}{}".format(self.base_url, endpoint)
-        self.session.headers = self.modify_header_style(url, self.session.headers)
         records = self._get_records(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
@@ -66,7 +63,6 @@ class Parts(SmsdkEntities, MaSession):
     def get_all_parts(self, **kwargs):
         endpoint = ENDPOINTS["Parts"]["part_schema"]
         url = "{}{}".format(self.base_url, endpoint)
-        self.session.headers = self.modify_header_style(url, self.session.headers)
         records = self._get_schema(url, **kwargs)
 
         # Adding new fields in response named column_count that will count all the columns associated with any part

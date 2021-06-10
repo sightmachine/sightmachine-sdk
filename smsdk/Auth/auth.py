@@ -102,6 +102,7 @@ class Authenticator(MaSession):
 
         self.session.headers = self.get_json_headers()
         self.session.headers.update({SM_AUTH_HEADER_SECRET_ID: secret_id})
+        self.session.headers.update({SM_AUTH_HEADER_SECRET_ID_OLD: secret_id}) #add v0/v1 compat
         self.session.headers.update({SM_AUTH_HEADER_KEY_ID: key_id})
 
         if not self.check_auth():
@@ -161,7 +162,6 @@ class Authenticator(MaSession):
         """
         try:
             url = "{}{}".format(self.host, ENDPOINTS["Cycle"]["alt_url"])
-            self.session.headers = self.modify_header_style(url, self.session.headers)
             resp = self._get_records(url, _limit=1, _only=["_id"])
             return isinstance(resp, list) and "error" not in resp
         except Exception:  # pylint:disable=broad-except

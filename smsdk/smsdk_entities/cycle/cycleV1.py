@@ -52,8 +52,6 @@ class Cycle(SmsdkEntities, MaSession):
         #     log.warn('Machine source not specified.')
         #     return []
 
-        self.session.headers = self.modify_header_style(url, self.session.headers)
-
         if '/api/cycle' in url:
             records = self._get_records(url, **kwargs)
         else:

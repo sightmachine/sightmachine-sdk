@@ -218,24 +218,6 @@ class MaSession:
             }
         )
 
-    def modify_header_style(self, url, headers):
-        """
-        Modify request header keys
-        V0 style- X-SM-API-Key, X-SM-API-Key-Id
-        V1 style- X-SM-API-Secret, X-SM-API-Key-Id
-        """
-        if headers == None or {}:
-            return self.get_json_headers()
-
-        if "v1" not in url and SM_AUTH_HEADER_SECRET_ID in headers:
-            headers[SM_AUTH_HEADER_SECRET_ID_OLD] = headers.pop(
-                SM_AUTH_HEADER_SECRET_ID
-            )
-        elif "v1" in url and SM_AUTH_HEADER_SECRET_ID_OLD in headers:
-            headers[SM_AUTH_HEADER_SECRET_ID] = headers.pop(
-                SM_AUTH_HEADER_SECRET_ID_OLD
-            )
-        return headers
 
     def get_starttime_endtime_keys(self, **kwargs):
         """

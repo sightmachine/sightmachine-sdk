@@ -414,6 +414,35 @@ class ClientV0(object):
 
         return inner
 
+
+    def get_machine_schema_dec(func):
+
+        @functools.wraps(func)
+        def inner(self, machine_source, types=[], return_mtype=False, **kwargs):
+
+            try:
+                machine_type = self.get_machines(source=machine_source)['source_type'][0]
+            except KeyError:
+                try:
+                    # Possible that this was done on a clean string
+                    machine_type = self.get_machines(source_clean=machine_source)['source_type'][0]
+                except KeyError:
+                    log.error(f'Unable to find machine type for {machine_source}')
+                    return
+
+            stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
+            kwargs['stats'] = stats
+
+            fields = func(self, machine_source, types=[], return_mtype=False, **kwargs)
+
+            if return_mtype:
+                return machine_type, pd.DataFrame(fields)
+
+            return pd.DataFrame(fields)
+
+        return inner
+
+
     # Some shortcut functions
     @validate_input
     @cycle_decorator
@@ -583,29 +612,9 @@ class ClientV0(object):
         else:
             return machines['source'].to_list()
 
-    def get_machine_schema(self, machine_source, types=[], return_mtype=False):
-        """
-        Get a list of fields/tags on a given machine, including the Sight Machine internal name, UI display name, and data type.
-
-        :param machine_source: the name of the machine to get the list of tags for.
-        :type machine_source: str
-        :param types: an optional list of strings of the type to filter the list of fields based on their data type.  Allowed options are float, int, string, boolean.
-        :type types: list
-        :return: pandas dataframe
-        """
-
-        try:
-            machine_type = self.get_machines(source=machine_source)['source_type'][0]
-        except KeyError:
-            try:
-                # Possible that this was done on a clean string
-                machine_type = self.get_machines(source_clean=machine_source)['source_type'][0]
-            except KeyError:
-                log.error(f'Unable to find machine type for {machine_source}')
-                return
-
-        stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
-
+    @get_machine_schema_dec
+    def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
+        stats = kwargs.get('stats', [])
         fields = []
         for stat in stats:
             if not stat.get('display', {}).get('ui_hidden', False):
@@ -617,12 +626,9 @@ class ClientV0(object):
                                        'type': stat['analytics']['columns'][0]['type']})
                     except:
                         log.warning(
-                            f"Unknow stat schema identified :: machine_type {machine_type} - "
+                            f"Unknow stat schema identified :: machine_type {machine_source} - "
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
-        if return_mtype:
-            return machine_type, pd.DataFrame(fields)
-
-        return pd.DataFrame(fields)
+        return fields
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
         """
@@ -828,6 +834,9 @@ class ClientV0(object):
             machine = f"'{machine}'"
 
         schema = self.get_machine_schema(machine)
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
+        print(schema)
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
 
         colmap = {row[1]['name']: row[1]['display'] for row in schema.iterrows()}
         toplevelinv = {'endtime': 'End Time',

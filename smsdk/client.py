@@ -207,3 +207,21 @@ class Client(ClientV0):
         df = self.get_data_v1('part_v1', 'get_parts', normalize, *args, **kwargs)
 
         return df
+
+
+    @ClientV0.get_machine_schema_dec
+    def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
+        stats = kwargs.get('stats', [])
+        fields = []
+        for stat in stats:
+            if not stat.get('display', {}).get('ui_hidden', False):
+                if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
+                    try:
+                        fields.append({'name': stat['analytics']['columns'][0]['name'],
+                                       'display': stat['display']['title_prefix'],
+                                       'type': stat['analytics']['columns'][0]['type']})
+                    except:
+                        log.warning(
+                            f"Unknow stat schema identified :: machine_type {machine_source} - "
+                            f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
+        return fields

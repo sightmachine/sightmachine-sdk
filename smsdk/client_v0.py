@@ -834,9 +834,6 @@ class ClientV0(object):
             machine = f"'{machine}'"
 
         schema = self.get_machine_schema(machine)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(schema)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
 
         colmap = {row[1]['name']: row[1]['display'] for row in schema.iterrows()}
         toplevelinv = {'endtime': 'End Time',

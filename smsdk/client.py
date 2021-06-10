@@ -209,7 +209,7 @@ class Client(ClientV0):
         return df
 
 
-    @ClientV0.get_machine_schema_dec
+    @ClientV0.get_machine_schema_decorator
     def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
         stats = kwargs.get('stats', [])
         fields = []

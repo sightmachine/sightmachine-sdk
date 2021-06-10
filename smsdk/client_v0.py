@@ -414,8 +414,7 @@ class ClientV0(object):
 
         return inner
 
-
-    def get_machine_schema_dec(func):
+    def get_machine_schema_decorator(func):
 
         @functools.wraps(func)
         def inner(self, machine_source, types=[], return_mtype=False, **kwargs):
@@ -441,7 +440,6 @@ class ClientV0(object):
             return pd.DataFrame(fields)
 
         return inner
-
 
     # Some shortcut functions
     @validate_input
@@ -612,7 +610,7 @@ class ClientV0(object):
         else:
             return machines['source'].to_list()
 
-    @get_machine_schema_dec
+    @get_machine_schema_decorator
     def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
         stats = kwargs.get('stats', [])
         fields = []

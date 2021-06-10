@@ -50,8 +50,6 @@ class Cycle(SmsdkEntities, MaSession):
             log.warn('Machine source not specified.')
             return []
 
-        self.session.headers = self.modify_header_style(url, self.session.headers)
-
         records = self._get_records(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

@@ -42,8 +42,6 @@ class Parts(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Parts"]["url_v1"])
 
-        self.session.headers = self.modify_header_style(url, self.session.headers)
-
         kwargs = self.modify_input_params(**kwargs)
         records = self._get_records_v1(url, **kwargs)
         if not isinstance(records, List):

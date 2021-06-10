@@ -39,7 +39,6 @@ class MachineType(SmsdkEntities, MaSession):
         Recommend to use 'enable_pagination':True for larger datasets
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["MachineType"]["url"])
-        self.session.headers = self.modify_header_style(url, self.session.headers)
         records = self._get_records(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

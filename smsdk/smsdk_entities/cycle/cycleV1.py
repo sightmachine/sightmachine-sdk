@@ -91,6 +91,26 @@ class Cycle(SmsdkEntities, MaSession):
             endtime = kwargs.get(end_key, "") if end_key else stime
             where.append({'name': end_key.split('__')[0], 'op': end_key.split('__')[-1], 'value': endtime.isoformat()})
 
+        for kw in kwargs:
+            if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
+                if '__' not in kw:
+                    where.append({'name': kw, 'op': 'eq', 'value': kwargs[kw]})
+                else:
+                    key = '__'.join(kw.split('__')[:-1])
+                    op = kw.split('__')[-1]
+
+                    if op == 'val':
+                        op = 'eq'
+                        key += '__val'
+
+                    if op != 'exists':
+                        where.append({'name': key, 'op': op, 'value': kwargs[kw]})
+                    else:
+                        if kwargs[kw]:
+                            where.append({'name': key, 'op': 'ne', 'value': None})
+                        else:
+                            where.append({'name': key, 'op': 'eq', 'value': None})
+
         new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
         new_kwargs['offset'] = kwargs.get('_offset', 0)
         new_kwargs['limit'] = kwargs.get('_limit', np.Inf)

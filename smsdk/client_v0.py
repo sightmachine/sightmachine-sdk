@@ -1137,6 +1137,16 @@ class ClientV0(object):
     def get_all_parts(self, **query):
         all_parts = self.get_data('parts', 'get_all_parts', False, **query)
         return all_parts
+    
+    def get_part_type_names(self, clean_strings_out=True):
+        query_params = {'_only': ['part_type', 'part_type_clean'],
+                '_order_by': 'part_type_clean'}
+        part_types = self.get_data('parts', 'get_all_parts', normalize=True, **query_params)
+
+        if clean_strings_out:
+            return part_types['part_type_clean'].to_list()
+        else:
+            return part_types['part_type'].to_list()
 
     def get_part_count(self, start_time="", end_time="", part_type=None, **kwargs):
         """

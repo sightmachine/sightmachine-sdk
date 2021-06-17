@@ -1142,7 +1142,6 @@ class ClientV0(object):
         query_params = {'_only': ['part_type', 'part_type_clean'],
                 '_order_by': 'part_type_clean'}
         part_types = self.get_data('parts', 'get_all_parts', normalize=True, **query_params)
-
         if clean_strings_out:
             return part_types['part_type_clean'].to_list()
         else:

@@ -386,21 +386,17 @@ class ClientV0(object):
                     part = part[0]
 
                 kwargs['type__part_type'] = part
+                part_schema = self.get_part_schema(part)
 
-                part_input = {"type__part_type": part}
-                part_schema = self.get_part_schema(**part_input)
-
-                if datatab_api:
-                    cols = part_schema['sql_field'].tolist()[:50]
-                else:
-                    cols = part_schema['mongo_field'].tolist()[:50]
-
+                cols = part_schema['name'].tolist()[:50]
+                
                 toplevel = ['type__part_type', 'serial', 'starttime', 'endtime', 'production_date_start',
                             'production_date_end', 'metadata__nettime', 'state']
 
                 kwargs["_only"] = toplevel + cols
 
             if clean_strings_in:
+                kwargs = self.clean_query_part_names(kwargs)
                 kwargs = self.clean_query_part_titles(kwargs)
 
             # df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
@@ -408,6 +404,7 @@ class ClientV0(object):
 
             # if clean_strings_out:
             if len(df) > 0 and clean_strings_out:
+                df = self.clean_df_part_names(df)
                 df = self.clean_df_part_titles(df, part_schema, datatab_api)
 
             return df
@@ -656,16 +653,13 @@ class ClientV0(object):
         else:
             return machine_types['source_type'].to_list()
 
-    # def get_parts(self, normalize=True, *args, **kwargs):
-    #
-    #     kwargs, part_schema = self.clean_query_part_titles(kwargs)
-    #     data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
-    #
-    #     data = self.clean_df_part_titles(data, part_schema)
-    #
-    #     # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
-    #     # return part_schema
-    #     return data
+    def clean_df_part_names(self, table):
+        part_names = self.get_data('parts', 'get_all_parts', normalize=False)[['part_type', 'part_type_clean']].to_dict(orient='records')
+        part_map = {ptn['part_type']: ptn['part_type_clean'] for ptn in part_names}
+        
+        table['type__part_type'] = table['type__part_type'].apply(lambda pt: part_map.get(pt, pt))
+        
+        return table
 
     def clean_df_part_titles(self, table, part_schema, datatab_api=False):
         """
@@ -680,13 +674,9 @@ class ClientV0(object):
         :return: pandas dataframe
         """
 
-        part_schema = part_schema[['display_name', 'mongo_field', 'sql_field']].to_dict('records')
+        part_schema = part_schema[['display', 'name']].to_dict('records')
 
-        if datatab_api:
-            colmap = {i['sql_field']: i['display_name'] for i in part_schema}
-        else:
-            colmap = {i['mongo_field']: i['display_name'] for i in part_schema}
-
+        colmap = {i['name']: i['display'] for i in part_schema}
         toplevelinv = {'endtime': 'Cycle End Time',
                        'starttime': 'Cycle Start Time',
                        'type__part_type': 'Part',
@@ -701,12 +691,40 @@ class ClientV0(object):
         table = table.rename(colmap, axis=1)
         return table
 
-    def get_part_schema(self, **query):
-        part_schema = self.get_data('parts', 'get_part_schema', False, **query)
-        part_schema = part_schema.dropna(subset=['mongo_field', 'sql_field'])
+    def get_part_schema(self, part_type, types=[], **kwargs):
+        fields = []
+
+        all_parts = self.get_data('parts', 'get_all_parts', normalize=False)
+        pt = part_type or kwargs.get('Part Type', kwargs.get('type__part_type', None))
+        if not pt:
+            print('No Part Type Specified')
+
+        stats = all_parts.loc[(all_parts.part_type==pt) | (all_parts.part_type_clean == pt), 'stats'][0]
+
+        for machine in stats.keys():
+            m_stats = stats[machine]
+
+            for m_stat in m_stats.values():
+                if not m_stat.get('display', {}).get('ui_hidden', False):
+                    if len(types) == 0 or m_stat['analytics']['columns'][0]['type'] in types:
+                        fields.append({'name': f'stats__{m_stat["title"]}__val',
+                                        # 'name': stat['analytics']['columns'][0]['name'],
+                                        'display': m_stat['display']['title_prefix'],
+                                        'type': m_stat['analytics']['columns'][0]['type']})
+        part_schema = pd.DataFrame(fields)
+        
         return part_schema
 
-    def clean_query_part_titles(self, query, datatab_api=False):
+    def clean_query_part_names(self, query):
+        part_names = self.get_data('parts', 'get_all_parts', normalize=False)[['part_type', 'part_type_clean']].to_dict(orient='records')
+        part_map = {ptn['part_type_clean']: ptn['part_type'] for ptn in part_names}
+        pt = query['type__part_type']
+
+        query['type__part_type'] = part_map.get(pt, pt)
+                
+        return query
+
+    def clean_query_part_titles(self, query):
         """
         Given a query for cycles that uses UI friendly tag/field names, convert the machines back into the internal Sight Machine names
 
@@ -725,18 +743,14 @@ class ClientV0(object):
 
         # schema = self.get_machine_schema(part)
         # schema = self.get_data('parts','get_part_schema', False, **query)
-        schema = self.get_part_schema(**query)
-        part_schema = schema[['display_name', 'mongo_field', 'sql_field']].to_dict('records')
+        schema = self.get_part_schema(part)
+        part_schema = schema.to_dict('records')
 
-        if datatab_api:
-            colmap = {i['display_name']: i['sql_field'] for i in part_schema}
-        else:
-            colmap = {i['display_name']: i['mongo_field'] for i in part_schema}
-
-        # colmap = {row[1]['display']: row[1]['name'] for row in schema.iterrows()}
+        colmap = {i['display']: i['name'] for i in part_schema}
+        
         toplevel = {'End Time': 'endtime',
                     'Start Time': 'starttime',
-                    'Machine': 'machine__source',
+                    'Part Type': 'type__part_type',
                     'Cycle Time (Net)': 'total',
                     'Cycle Time (Gross)': 'record_time',
                     'Shift': 'shift',

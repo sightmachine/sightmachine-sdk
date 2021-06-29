@@ -1227,9 +1227,9 @@ class ClientV0(object):
             column_sequence.append('part_count')
             return pd.DataFrame(part_count_records, columns=column_sequence)
 
-    def get_cycles_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True):
+    def get_cycles_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True, nodes=4):
         # https://pathos.readthedocs.io/en/latest/pathos.html
-        pool = pathos.pools.ProcessPool(nodes=4)
+        pool = pathos.pools.ProcessPool(nodes=nodes)
         response = pool.map(self.get_cycles,
                             [normalize] * len(query_list),
                             [clean_strings_in] * len(query_list),
@@ -1238,8 +1238,8 @@ class ClientV0(object):
                             )
         return response
 
-    def get_downtimes_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True):
-        pool = pathos.pools.ProcessPool(nodes=4)
+    def get_downtimes_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True, nodes=4):
+        pool = pathos.pools.ProcessPool(nodes=nodes)
         response = pool.map(self.get_cycles,
                             [normalize] * len(query_list),
                             [clean_strings_in] * len(query_list),
@@ -1248,8 +1248,8 @@ class ClientV0(object):
                             )
         return response
 
-    def get_parts_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True):
-        pool = pathos.pools.ProcessPool(nodes=4)
+    def get_parts_batch(self, query_list, normalize=True, clean_strings_in=True, clean_strings_out=True, datatab_api=True, nodes=4):
+        pool = pathos.pools.ProcessPool(nodes=nodes)
         response = pool.map(self.get_parts,
                             [normalize] * len(query_list),
                             [clean_strings_in] * len(query_list),

@@ -378,16 +378,17 @@ class ClientV0(object):
             if args and (not kwargs):
                 kwargs = args[0]
 
+            part = kwargs.get('type__part_type', kwargs.get('Part'))
+            if not part:
+                part = kwargs.get('type__part_type__in', kwargs.get('Part__in'))
+                part = part[0]
+
+            kwargs['type__part_type'] = part
+            part_schema = self.get_part_schema(part)
+
             if "_only" not in kwargs:
                 print('_only not specified.  Selecting first 50 fields.')
-                part = kwargs.get('type__part_type', kwargs.get('Part'))
-                if not part:
-                    part = kwargs.get('type__part_type__in', kwargs.get('Part__in'))
-                    part = part[0]
-
-                kwargs['type__part_type'] = part
-                part_schema = self.get_part_schema(part)
-
+                
                 cols = part_schema['name'].tolist()[:50]
                 
                 toplevel = ['type__part_type', 'serial', 'starttime', 'endtime', 'production_date_start',
@@ -396,8 +397,11 @@ class ClientV0(object):
                 kwargs["_only"] = toplevel + cols
 
             if clean_strings_in:
-                kwargs = self.clean_query_part_names(kwargs)
                 kwargs = self.clean_query_part_titles(kwargs)
+                kwargs = self.clean_query_part_names(kwargs)
+                
+            if 'type__part_type' not in kwargs['_only']:
+                kwargs['_only'].insert(0, 'type__part_type')
 
             # df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
             df = func(self, normalize, clean_strings_in, clean_strings_out, *args, **kwargs)
@@ -751,6 +755,7 @@ class ClientV0(object):
         toplevel = {'End Time': 'endtime',
                     'Start Time': 'starttime',
                     'Part Type': 'type__part_type',
+                    'Part': 'type__part_type',
                     'Cycle Time (Net)': 'total',
                     'Cycle Time (Gross)': 'record_time',
                     'Shift': 'shift',

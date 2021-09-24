@@ -141,9 +141,9 @@ class Client(ClientV0):
         #     kwargs['_only'] = new_cols
 
         # Fix format for __in commands
-        for key, val in kwargs.items():
-            if '__in' in key:
-                kwargs[key] = str(val)
+        #for key, val in kwargs.items():
+        #    if '__in' in key:
+        #        kwargs[key] = str(val)
 
         # check if requested util_name belong the list of
         # registerd utilites

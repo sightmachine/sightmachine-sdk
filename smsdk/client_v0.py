@@ -549,22 +549,32 @@ class ClientV0(object):
 
         # Just joining by row, so reset all the indexes to just the row number and get rid of the mongo object id
         df = df.reset_index()
-        df = df.drop('id', axis=1)
+        df = df.drop('id', axis=1, errors='ignore')
         df_cyc = df_cyc.reset_index()
         if clean_strings_out:
             df_cyc = df_cyc.drop(['Machine', 'id', 'Shift'],
-                                 axis=1)  # Also get rid of fields that are duplicate on both downtime and cycle
+                                 axis=1, errors='ignore')  # Also get rid of fields that are duplicate on both downtime and cycle
             df_cyc = df_cyc.rename({'Start Time': 'Cycle Start Time', 'End Time': 'Cycle End Time'},
                                    axis=1)  # Retitle times so clear these are from the cycle
         else:
             df_cyc = df_cyc.drop(['machine__source', 'id', 'shift'],
-                                 axis=1)  # Also get rid of fields that are duplicate on both downtime and cycle
+                                 axis=1, errors='ignore')  # Also get rid of fields that are duplicate on both downtime and cycle
             df_cyc = df_cyc.rename({'starttime': 'cycle_starttime', 'End Time': 'cycle_endtime'},
                                    axis=1)  # Retitle times so clear these are from the cycle
 
         merged = df.merge(df_cyc, left_index=True, right_index=True)
 
         return merged
+
+    def get_factories(self, normalize=True, *args, **kwargs):
+        """
+        Get list of factories and associated metadata.  Note this includes extensive internal metadata.  
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data('factory', 'get_factories', normalize, *args, **kwargs)
 
     def get_machines(self, normalize=True, *args, **kwargs):
         """
@@ -628,6 +638,29 @@ class ClientV0(object):
                             f"Unknow stat schema identified :: machine_type {machine_source} - "
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         return fields
+
+    def get_machine_timezone(self, machine_source):
+        """
+        Get the timezone associated with a machine.  
+
+        :param machine_source
+        :type machine_source: str
+        :return: pandas dataframe
+        """
+
+        mach = self.get_machines(**{'source': machine_source})
+        if len(mach) == 0:
+            mach = self.get_machines(**{'source_clean': machine_source})
+            if len(mach) == 0:
+                raise Exception('Machine not found')
+
+        partner = mach.iloc[0]['factory_partner']
+        location = mach.iloc[0]['factory_location']
+        
+        fact = self.get_factories(factory_partner=partner, factory_location=location)
+        timezone = fact.iloc[0]['metadata__timezone']
+        
+        return timezone
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
         """

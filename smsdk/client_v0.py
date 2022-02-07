@@ -789,6 +789,7 @@ class ClientV0(object):
                     'Start Time': 'starttime',
                     'Part Type': 'type__part_type',
                     'Part': 'type__part_type',
+                    'Serial': 'serial',
                     'Cycle Time (Net)': 'total',
                     'Cycle Time (Gross)': 'record_time',
                     'Shift': 'shift',

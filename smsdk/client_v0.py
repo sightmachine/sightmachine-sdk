@@ -744,8 +744,8 @@ class ClientV0(object):
             for m_stat in m_stats.values():
                 if not m_stat.get('display', {}).get('ui_hidden', False):
                     if len(types) == 0 or m_stat['analytics']['columns'][0]['type'] in types:
-                        fields.append({'name': f'stats__{m_stat["title"]}__val',
-                                        # 'name': stat['analytics']['columns'][0]['name'],
+                        fields.append({#'name': f'stats__{m_stat["title"]}__val',
+                                        'name': m_stat['analytics']['columns'][0]['name'],
                                         'display': m_stat['display']['title_prefix'],
                                         'type': m_stat['analytics']['columns'][0]['type']})
         part_schema = pd.DataFrame(fields)

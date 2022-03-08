@@ -71,12 +71,16 @@ class Cycle(SmsdkEntities, MaSession):
         if machine[0] == "'":
             machine = machine[1:-1]
 
+        machine_type = kwargs.get('machine_type', '')
+        if machine_type[0] == "'":
+            machine_type = machine_type[1:-1]
+
         new_kwargs = {}
         etime = datetime.now()
         stime = etime - timedelta(days=1)
         new_kwargs['asset_selection'] = {
             "machine_source": machine,
-            "machine_type": kwargs.get('machine_type', '')
+            "machine_type": machine_type
         }
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)

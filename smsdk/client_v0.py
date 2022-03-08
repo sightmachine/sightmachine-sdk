@@ -429,8 +429,14 @@ class ClientV0(object):
                 except KeyError:
                     log.error(f'Unable to find machine type for {machine_source}')
                     return
-
-            stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
+            try:
+                stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
+            except KeyError:
+                # explicitly embed string to machine type names esp JCP
+                machine_type = f"'{machine_type}'"
+                stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
+            except Exception as ex:
+                print(f"Exception in getting machine type stats {ex}")
             kwargs['stats'] = stats
 
             fields = func(self, machine_source, types=[], return_mtype=False, **kwargs)

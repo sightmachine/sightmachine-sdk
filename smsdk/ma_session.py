@@ -159,7 +159,7 @@ class MaSession:
         :param url_params: dict of params for API ex filtering, columns etc
         :return: List of records
         """
-        max_page_size = 2000
+        max_page_size = 50000
 
         records: List = []
         while True:

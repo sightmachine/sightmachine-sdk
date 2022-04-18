@@ -15,7 +15,7 @@ install_requires = [
 
 setup(
     name="smsdk",
-    version="1.0.15",
+    version="1.0.16",
     packages=find_packages(exclude=["test*"]),
     include_package_data=True,
     install_requires=install_requires,

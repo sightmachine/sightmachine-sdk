@@ -73,8 +73,11 @@ class MaSession:
                 # print(f"response text -- {response.text}")
 
                 if response.text:
-                    if "error" in response.text:
-                        raise ValueError("Error - {}".format(response.text))
+                    print("===========================")
+                    print(response.status_code)
+                    print("===========================")
+                    if response.status_code > 399:
+                        raise ValueError(f"Error.... - {response.text}")
                     try:
                         data = response.json()
 

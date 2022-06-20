@@ -199,6 +199,7 @@ class ClientV0(object):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
+
         df = pd.DataFrame()
         # load the entity class and initialize it
         cls = smsdkentities.get(ename)(self.session, base_url)
@@ -235,6 +236,7 @@ class ClientV0(object):
             # dict params strictly follow {'key':'value'} format
 
             sub_kwargs = self.fix_only(kwargs)
+
             if len(sub_kwargs) == 1:
                 data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
             else:

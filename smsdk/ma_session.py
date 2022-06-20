@@ -126,7 +126,10 @@ class MaSession:
         )
 
         if response.text:
-            if "error" in response.text:
+            print("===========================")
+            print(response.status_code)
+            print("===========================")
+            if response.status_code > 399:
                 raise ValueError("Error - {}".format(response.text))
             try:
                 data = response.json()
@@ -184,7 +187,10 @@ class MaSession:
                     endpoint, json=url_params
                 )
                 if response.text:
-                    if "error" in response.text:
+                    print("===========================")
+                    print(response.status_code)
+                    print("===========================")
+                    if response.status_code > 399:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()

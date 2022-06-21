@@ -421,7 +421,10 @@ class ClientV0(object):
         def inner(self, machine_source, types=[], return_mtype=False, **kwargs):
 
             try:
-                machine_type = self.get_machines(source=machine_source)['source_type'][0]
+                machine_type = self.get_machines(source=machine_source)
+                if 'source_type' not in machine_type.keys():
+                    print("here.....................")
+                    machine_type = self.get_machines(source=f"'{machine_source}'")['source_type'][0]
             except KeyError:
                 try:
                     # Possible that this was done on a clean string

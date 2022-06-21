@@ -421,12 +421,12 @@ class ClientV0(object):
         def inner(self, machine_source, types=[], return_mtype=False, **kwargs):
 
             try:
-                machine_type = self.get_machines(source=machine_source)
+                machine_type = self.get_machines(source=machine_source).to_dict()
                 if 'source_type' not in machine_type.keys():
                     print("here.....................")
+                    machine_type = self.get_machines(source=f"'{machine_source}'")['source_type'][0]
                 else:
                     machine_type = machine_type['source_type'][0]
-                    machine_type = self.get_machines(source=f"'{machine_source}'")['source_type'][0]
             except KeyError:
                 try:
                     # Possible that this was done on a clean string
@@ -436,7 +436,7 @@ class ClientV0(object):
                     return
             try:
                 print("========================")
-                print(machine_type.to_dict())
+                print(machine_type)
                 print("========================")
                 stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
             except KeyError:

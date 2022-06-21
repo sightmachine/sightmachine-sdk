@@ -424,6 +424,8 @@ class ClientV0(object):
                 machine_type = self.get_machines(source=machine_source)
                 if 'source_type' not in machine_type.keys():
                     print("here.....................")
+                else:
+                    machine_type = machine_type['source_type'][0]
                     machine_type = self.get_machines(source=f"'{machine_source}'")['source_type'][0]
             except KeyError:
                 try:

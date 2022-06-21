@@ -434,7 +434,7 @@ class ClientV0(object):
                     return
             try:
                 print("========================")
-                print(machine_type)
+                print(machine_type.to_dict())
                 print("========================")
                 stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
             except KeyError:

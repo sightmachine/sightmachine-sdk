@@ -432,9 +432,6 @@ class ClientV0(object):
                         log.error(f'Unable to find machine type for {machine_source}')
                         return
             try:
-                print("========================")
-                print(machine_type)
-                print("========================")
                 stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
             except KeyError:
                 # explicitly embed string to machine type names esp JCP

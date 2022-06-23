@@ -73,7 +73,7 @@ class MaSession:
                 # print(f"response text -- {response.text}")
 
                 if response.text:
-                    if "error" in response.text:
+                    if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()
@@ -123,7 +123,7 @@ class MaSession:
         )
 
         if response.text:
-            if "error" in response.text:
+            if response.status_code not in [200, 201]:
                 raise ValueError("Error - {}".format(response.text))
             try:
                 data = response.json()
@@ -181,7 +181,7 @@ class MaSession:
                     endpoint, json=url_params
                 )
                 if response.text:
-                    if "error" in response.text:
+                    if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()

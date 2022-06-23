@@ -424,11 +424,14 @@ class ClientV0(object):
                 machine_type = self.get_machines(source=machine_source)['source_type'][0]
             except KeyError:
                 try:
-                    # Possible that this was done on a clean string
-                    machine_type = self.get_machines(source_clean=machine_source)['source_type'][0]
+                    machine_type = self.get_machines(source=f"'{machine_source}'")['source_type'][0]
                 except KeyError:
-                    log.error(f'Unable to find machine type for {machine_source}')
-                    return
+                    try:
+                        # Possible that this was done on a clean string
+                        machine_type = self.get_machines(source_clean=machine_source)['source_type'][0]
+                    except KeyError:
+                        log.error(f'Unable to find machine type for {machine_source}')
+                        return
             try:
                 stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
             except KeyError:

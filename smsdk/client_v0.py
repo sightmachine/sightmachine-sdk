@@ -288,6 +288,7 @@ class ClientV0(object):
                 '_limit not specified.  Maximum of 5000 rows will be returned.'
 
             if not '_only' in kwargs:
+                print('_only not specified.  Selecting first 50 fields.')
                 only_names = schema['name'].tolist()[:50]
                 toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
 

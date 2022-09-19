@@ -295,8 +295,13 @@ class ClientV0(object):
                 kwargs['_only'] = only_names + toplevel
             else:
                 if ('Machine' not in kwargs['_only']) and ('machine__source' not in kwargs['_only']):
-                    print("please provide Machine / machine__source in _only field")
-                    return pd.DataFrame()
+                    print("Adding Machine to _only")
+                    kwargs['_only'].append('Machine')
+
+                if ('End Time' not in kwargs['_only']) and ('endtime' not in kwargs['_only']):
+                    print("Adding End Time to _only")
+                    kwargs['_only'].append('End Time')
+
 
             if kwargs['_only'] == '*':
                 kwargs.pop('_only')

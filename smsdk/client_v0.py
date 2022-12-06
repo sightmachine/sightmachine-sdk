@@ -458,43 +458,43 @@ class ClientV0(object):
         return inner
 
     # Some shortcut functions
-    @validate_input
-    @cycle_decorator
-    def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
-        """
-        Retrieve cycle/machine data.  
+    # @validate_input
+    # @cycle_decorator
+    # def get_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+    #     """
+    #     Retrieve cycle/machine data.  
 
-        :param normalize: Flatten nested data structures
-        :type normalize: bool
-        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
-        :type clean_strings_in: bool
-        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
-        :type clean_strings_out: bool
-        :return: pandas dataframe
-        """
+    #     :param normalize: Flatten nested data structures
+    #     :type normalize: bool
+    #     :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+    #     :type clean_strings_in: bool
+    #     :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+    #     :type clean_strings_out: bool
+    #     :return: pandas dataframe
+    #     """
 
-        df = self.get_data('cycle', 'get_cycles', normalize, *args, **kwargs)
+    #     df = self.get_data('cycle', 'get_cycles', normalize, *args, **kwargs)
 
-        return df
+    #     return df
 
-    @validate_input
-    @downtime_decorator
-    def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
-        """
-        Retrieve Downtime data.  
+    # @validate_input
+    # @downtime_decorator
+    # def get_downtimes(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+    #     """
+    #     Retrieve Downtime data.  
 
-        :param normalize: Flatten nested data structures
-        :type normalize: bool
-        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
-        :type clean_strings_in: bool
-        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
-        :type clean_strings_out: bool
-        :return: pandas dataframe
-        """
+    #     :param normalize: Flatten nested data structures
+    #     :type normalize: bool
+    #     :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+    #     :type clean_strings_in: bool
+    #     :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+    #     :type clean_strings_out: bool
+    #     :return: pandas dataframe
+    #     """
 
-        df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
+    #     df = self.get_data('downtime', 'get_downtime', normalize, *args, **kwargs)
 
-        return df
+    #     return df
 
     def get_downtime_reasons(self, machine=None):
         query = {'_distinct': 'metadata.reason'}
@@ -509,28 +509,28 @@ class ClientV0(object):
         else:
             return []
 
-    @validate_input
-    @part_decorator
-    def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
-        """
-        Retrieve Downtime data.
+    # @validate_input
+    # @part_decorator
+    # def get_parts(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
+    #     """
+    #     Retrieve Downtime data.
 
-        :param normalize: Flatten nested data structures
-        :type normalize: bool
-        :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
-        :type clean_strings_in: bool
-        :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
-        :type clean_strings_out: bool
-        :return: pandas dataframe
-        """
-        # kwargs, part_schema = self.clean_query_part_titles(kwargs)
-        data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
+    #     :param normalize: Flatten nested data structures
+    #     :type normalize: bool
+    #     :param clean_strings_in: When using query parameters, converts the UI-based display names into the Sight Machine internal database names.
+    #     :type clean_strings_in: bool
+    #     :param clean_strings_out: For the returned data frame, convert the Sight Machine internal database names into the UI-based display names.
+    #     :type clean_strings_out: bool
+    #     :return: pandas dataframe
+    #     """
+    #     # kwargs, part_schema = self.clean_query_part_titles(kwargs)
+    #     data = self.get_data('parts', 'get_parts', normalize, *args, **kwargs)
 
-        # data = self.clean_df_part_titles(data, part_schema)
+    #     # data = self.clean_df_part_titles(data, part_schema)
 
-        # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
-        # return part_schema
-        return data
+    #     # part_schema = self.get_data('parts','get_part_schema', False, *args, **kwargs)
+    #     # return part_schema
+    #     return data
 
     def get_downtimes_with_cycles(self, normalize=True, clean_strings_in=True, clean_strings_out=True, *args, **kwargs):
         """

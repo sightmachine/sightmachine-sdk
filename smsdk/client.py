@@ -154,7 +154,7 @@ class Client(ClientV0):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            if util_name in ['get_cycles', 'get_downtime', 'get_parts']:
+            if util_name in ['get_cycles', 'get_downtime', 'get_parts', 'get_factories', 'get_machines']:
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
@@ -225,3 +225,36 @@ class Client(ClientV0):
                             f"Unknow stat schema identified :: machine_type {machine_source} - "
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         return fields
+
+    def get_factories(self, normalize=True, *args, **kwargs):
+        """
+        Get list of factories and associated metadata.  Note this includes extensive internal metadata.  
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data('factory_v1', 'get_factories', normalize, *args, **kwargs)
+
+    def get_machines(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
+        then see also get_machine_names(). 
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data('machine_v1', 'get_machines', normalize, *args, **kwargs)
+
+    # def get_machine_types(self, normalize=True, *args, **kwargs):
+    #     """
+    #     Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
+    #     then see also get_machine_type_names(). 
+
+    #     :param normalize: Flatten nested data structures
+    #     :type normalize: bool
+    #     :return: pandas dataframe
+    #     """
+
+    #     return self.get_data('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)

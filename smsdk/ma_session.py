@@ -243,3 +243,75 @@ class MaSession:
                     continue
 
         return starttime_key, endtime_key
+
+    def _get_records_mongo_v1(
+        self,
+        endpoint,
+        method="get",
+        _limit=np.Inf,
+        _offset=1,
+        **url_params
+    ):
+        """
+        Function to get api call and fetch data from MA APIs
+        :param endpoint: complete url endpoint
+        :param method: Reqested method. Default = get
+        :param enable_pagination: if pagination is enabled then
+        the records are fetched with limit offset pagination
+        :param limit: Limit the number of records for pagination
+        :param offset: pagination offset
+        :param url_params: dict of params for API ex filtering, columns etc
+        :return: List of records
+        """
+        
+        if 'machine_type' in url_params:
+            url_params.pop('machine_type')
+        max_page_size = 2000
+        
+        records: List = []
+        while True:
+            try:
+                remaining_limit = _limit - len(records)
+                this_loop_limit = min(remaining_limit, max_page_size)
+
+                # If we exactly hit our desired number of records -- limit is 0 -- then can stop
+                if this_loop_limit <= 0:
+                    return records
+
+                url_params["offset"] = _offset
+                url_params["limit"] = this_loop_limit
+
+                #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
+                response = getattr(self.session, method.lower())(
+                    endpoint, params=url_params
+                )
+                # print(f"response text -- {response.text}")
+
+                if response.text:
+                    if response.status_code not in [200, 201]:
+                        raise ValueError("Error - {}".format(response.text))
+                    try:
+                        data = response.json()
+
+                        if data["success"]:
+                            data = data['objects']
+
+                    except JSONDecodeError as e:
+                        print(f'No valid JSON returned {e}')
+                        return []
+                else:
+                    return []
+
+                records.extend(data)
+                # print(f'sizes {len(data)} vs {this_loop_limit}')
+                if len(data) < this_loop_limit:
+                    # Cursor exhausted, so just return
+                    return records
+                _offset += this_loop_limit
+                
+            except:
+                import traceback
+                
+                print(traceback.print_exc())
+                return records
+

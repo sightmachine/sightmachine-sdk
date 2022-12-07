@@ -8,13 +8,16 @@
     "alt_url": "/api/cycle"
   },
   "Factory": {
-    "url" : "/api/factory"
+    "url" : "/api/factory",
+    "url_v1" : "/v1/obj/factory"
   },
   "MachineType": {
-    "url" : "/api/machinetype"
+    "url" : "/api/machinetype",
+    "url_v1" : "/v1/obj/machine_type"
   },
   "Machine": {
-    "url" : "/api/machine"
+    "url" : "/api/machine",
+    "url_v1" : "/v1/obj/machine"
   },
   "Parts": {
     "url" : "/api/part",

@@ -136,4 +136,9 @@ class Machine(SmsdkEntities, MaSession):
                 order_type = 'asc'
             new_kwargs['order_by'] = [{'name': order_key, 'order': order_type}]
 
+        new_kwargs = {
+            key: json.dumps(value)
+            for key, value in new_kwargs.items()
+        }
+
         return new_kwargs

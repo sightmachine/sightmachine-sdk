@@ -286,13 +286,7 @@ class MaSession:
                     endpoint, params=url_params
                 )
                 # print(f"response text -- {response.text}")
-                print("xxxxxxxxxxxxxxxxxxxxxxxxx", endpoint)
-                print(url_params, "\n>>>>>")
-                print(url_params.__class__, "\n>>>>>")
                 if response.text:
-                    print(response)
-                    print(">>>>>>>>>")
-                    print(response.text)
                     if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     try:

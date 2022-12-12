@@ -136,6 +136,10 @@ class Factory(SmsdkEntities, MaSession):
             else:
                 order_type = 'asc'
             new_kwargs['order_by'] = [{'name': order_key, 'order': order_type}]
-        print(new_kwargs)
+
+        new_kwargs = {
+            key: json.dumps(value)
+            for key, value in new_kwargs.items()
+        }
         return new_kwargs
 

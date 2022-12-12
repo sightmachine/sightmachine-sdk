@@ -234,7 +234,7 @@ class Client(ClientV0):
         :type normalize: bool
         :return: pandas dataframe
         """
-        return self.get_data('factory_v1', 'get_factories', normalize, *args, **kwargs)
+        return self.get_data_v1('factory_v1', 'get_factories', normalize, *args, **kwargs)
 
     def get_machines(self, normalize=True, *args, **kwargs):
         """
@@ -245,7 +245,7 @@ class Client(ClientV0):
         :type normalize: bool
         :return: pandas dataframe
         """
-        return self.get_data('machine_v1', 'get_machines', normalize, *args, **kwargs)
+        return self.get_data_v1('machine_v1', 'get_machines', normalize, *args, **kwargs)
 
     # def get_machine_types(self, normalize=True, *args, **kwargs):
     #     """
@@ -257,4 +257,4 @@ class Client(ClientV0):
     #     :return: pandas dataframe
     #     """
 
-    #     return self.get_data('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)
+    #     return self.get_data_v1('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)

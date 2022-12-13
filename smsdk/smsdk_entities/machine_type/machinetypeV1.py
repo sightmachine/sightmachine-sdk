@@ -1,5 +1,6 @@
 from typing import List
 import json
+from datetime import datetime, timedelta
 
 try:
     import importlib.resources as pkg_resources
@@ -7,6 +8,8 @@ except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
 
+
+import numpy as np
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
@@ -38,6 +41,7 @@ class MachineType(SmsdkEntities, MaSession):
         from the ma machine API
         Recommend to use 'enable_pagination':True for larger datasets
         """
+        kwargs = self.modify_input_params(**kwargs)
         url = "{}{}".format(self.base_url, ENDPOINTS["MachineType"]["url_v1"])
         records = self._get_records_mongo_v1(url, **kwargs)
         if not isinstance(records, List):

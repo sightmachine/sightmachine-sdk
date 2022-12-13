@@ -154,7 +154,7 @@ class Client(ClientV0):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            if util_name in ['get_cycles', 'get_downtime', 'get_parts', 'get_factories']:
+            if util_name in ['get_cycles', 'get_downtime', 'get_parts', 'get_factories', 'get_machines', 'get_machine_types']:
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
@@ -236,25 +236,25 @@ class Client(ClientV0):
         """
         return self.get_data_v1('factory_v1', 'get_factories', normalize, *args, **kwargs)
 
-    # def get_machines(self, normalize=True, *args, **kwargs):
-    #     """
-    #     Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
-    #     then see also get_machine_names(). 
+    def get_machines(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
+        then see also get_machine_names(). 
 
-    #     :param normalize: Flatten nested data structures
-    #     :type normalize: bool
-    #     :return: pandas dataframe
-    #     """
-    #     return self.get_data_v1('machine_v1', 'get_machines', normalize, *args, **kwargs)
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data_v1('machine_v1', 'get_machines', normalize, *args, **kwargs)
 
-    # def get_machine_types(self, normalize=True, *args, **kwargs):
-    #     """
-    #     Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
-    #     then see also get_machine_type_names(). 
+    def get_machine_types(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
+        then see also get_machine_type_names(). 
 
-    #     :param normalize: Flatten nested data structures
-    #     :type normalize: bool
-    #     :return: pandas dataframe
-    #     """
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
 
-    #     return self.get_data_v1('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)
+        return self.get_data_v1('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)

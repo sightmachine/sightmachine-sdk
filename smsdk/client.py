@@ -258,3 +258,53 @@ class Client(ClientV0):
         """
 
         return self.get_data_v1('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)
+
+    def get_machine_names(self, source_type=None, clean_strings_out=True):
+        """
+        Get a list of machine names.  This is a simplified version of get_machines().  
+
+        :param source_type: filter the list to only the specified source_type
+        :type source_type: str
+        :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine names.
+        :return: list
+        """
+
+        query_params = {'_only': ['source', 'source_clean', 'source_type'],
+                        '_order_by': 'source_clean'}
+
+        if source_type:
+            # Double check the type
+            mt = self.get_machine_types(source_type=source_type)
+            # If it was found, then no action to take, otherwise try looking up from clean string
+            if not len(mt):
+                mt = self.get_machine_types(source_type_clean=source_type)
+                if len(mt):
+                    source_type = mt['source_type'].iloc[0]
+                else:
+                    log.error('Machine Type not found')
+                    return []
+
+            query_params['source_type'] = source_type
+
+        machines = self.get_data_v1('machine_v1', 'get_machines', normalize=True, **query_params)
+
+        if clean_strings_out:
+            return machines['source_clean'].to_list()
+        else:
+            return machines['source'].to_list()
+
+    def get_machine_type_names(self, clean_strings_out=True):
+        """
+        Get a list of machine type names.  This is a simplified version of get_machine_types().  
+
+        :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
+        :return: list
+        """
+        query_params = {'_only': ['source_type', 'source_type_clean'],
+                        '_order_by': 'source_type_clean'}
+        machine_types = self.get_data_v1('machine_type_v1', 'get_machine_types', normalize=True, **query_params)
+
+        if clean_strings_out:
+            return machine_types['source_type_clean'].to_list()
+        else:
+            return machine_types['source_type'].to_list()

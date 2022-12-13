@@ -46,7 +46,6 @@ class Factory(SmsdkEntities, MaSession):
         url = "{}{}".format(self.base_url, ENDPOINTS["Factory"]["url_v1"])
         
         kwargs = self.modify_input_params(**kwargs)
-        print(kwargs)
         records = self._get_records_mongo_v1(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

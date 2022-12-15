@@ -96,8 +96,7 @@ class MaSession:
                 
             except:
                 import traceback
-                
-                print(traceback.print_exc())
+                log.error(traceback.print_exc())
                 return records
 
     def _get_schema(
@@ -203,7 +202,7 @@ class MaSession:
             except:
                 import traceback
 
-                print(traceback.print_exc())
+                log.error(traceback.print_exc())
                 return records
 
     def get_json_headers(self):
@@ -311,6 +310,6 @@ class MaSession:
             except:
                 import traceback
                 
-                print(traceback.print_exc())
+                log.error(traceback.print_exc())
                 return records
 

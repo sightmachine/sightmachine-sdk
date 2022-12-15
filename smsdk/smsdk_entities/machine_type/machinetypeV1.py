@@ -12,7 +12,7 @@ except ImportError:
 import numpy as np
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
-from smsdk.utils import module_utility
+from smsdk.utils import module_utility, check_kw
 from smsdk import config
 from smsdk.ma_session import MaSession
 
@@ -65,12 +65,12 @@ class MachineType(SmsdkEntities, MaSession):
 
         
         # Special handling for EF type names
-        machine = kwargs.get('machine__source', None)
+        machine = kwargs.get('machine__source')
 
         if machine and machine[0] == "'":
             machine = machine[1:-1]
 
-        machine_type = kwargs.get('machine_type', None)
+        machine_type = kwargs.get('machine_type')
         if machine_type and machine_type[0] == "'":
             machine_type = machine_type[1:-1]
 
@@ -101,7 +101,8 @@ class MachineType(SmsdkEntities, MaSession):
             where.append({'name': 'machine_type', 'op': 'eq', 'value': machine_type})
 
         for kw in kwargs:
-            if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
+            if check_kw(kw):
+            # if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
                 if '__' not in kw:
                     where.append({'name': kw, 'op': 'eq', 'value': kwargs[kw]})
                 else:

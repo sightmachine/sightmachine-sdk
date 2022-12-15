@@ -27,3 +27,17 @@ def get_url(protocol, tenant, site_domain):
     """
 
     return "{}://{}.{}".format(protocol, tenant, site_domain)
+
+def check_kw(kw) -> bool:
+    for key in [
+        "machine_type", 
+        "Machine",
+        "machine__source", 
+        "End Time",
+        "endtime",
+        "Start Time",
+        "starttime"
+    ]:
+        if key in kw or kw[0] == "_":
+            return False
+    return True

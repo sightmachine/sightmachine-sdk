@@ -8,7 +8,7 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
-from smsdk.utils import module_utility
+from smsdk.utils import module_utility, check_kw
 from smsdk import config
 from smsdk.ma_session import MaSession
 from datetime import datetime, timedelta
@@ -96,7 +96,8 @@ class Cycle(SmsdkEntities, MaSession):
             where.append({'name': end_key.split('__')[0], 'op': end_key.split('__')[-1], 'value': endtime.isoformat()})
 
         for kw in kwargs:
-            if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
+            if check_kw(kw):
+            # if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
                 if '__' not in kw:
                     where.append({'name': kw, 'op': 'eq', 'value': kwargs[kw]})
                 else:

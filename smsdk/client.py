@@ -236,7 +236,7 @@ class Client(ClientV0):
         """
         return self.get_data_v1('factory_v1', 'get_factories', normalize, *args, **kwargs)
 
-    def get_machines(self, normalize=True, *args, **kwargs):
+    def get_machines(self, normalize=True, *args, **kwargs) -> pd.DataFrame:
         """
         Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
         then see also get_machine_names(). 
@@ -276,13 +276,12 @@ class Client(ClientV0):
             # Double check the type
             mt = self.get_machine_types(source_type=source_type)
             # If it was found, then no action to take, otherwise try looking up from clean string
-            if not len(mt):
-                mt = self.get_machine_types(source_type_clean=source_type)
-                if len(mt):
-                    source_type = mt['source_type'].iloc[0]
-                else:
-                    log.error('Machine Type not found')
-                    return []
+            mt = self.get_machine_types(source_type_clean=source_type) if not len(mt) else []
+            if len(mt):
+                source_type = mt['source_type'].iloc[0]
+            else:
+                log.error('Machine Type not found')
+                return []
 
             query_params['source_type'] = source_type
 

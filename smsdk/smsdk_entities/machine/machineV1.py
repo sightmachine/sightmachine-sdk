@@ -9,9 +9,10 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 import numpy as np
+import pandas as pd
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
-from smsdk.utils import module_utility
+from smsdk.utils import module_utility, check_kw
 from smsdk import config
 from smsdk.ma_session import MaSession
 
@@ -36,7 +37,7 @@ class Machine(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_machines(self, *args, **kwargs):
+    def get_machines(self, *args, **kwargs) -> pd.DataFrame:
         """
         Utility function to get the machines
         from the ma machine API
@@ -67,7 +68,7 @@ class Machine(SmsdkEntities, MaSession):
 
         
         # Special handling for EF type names
-        machine = kwargs.get('machine__source', None)
+        machine = kwargs.get('machine__source')
 
         if machine and machine[0] == "'":
             machine = machine[1:-1]
@@ -103,7 +104,8 @@ class Machine(SmsdkEntities, MaSession):
             where.append({'name': 'machine_type', 'op': 'eq', 'value': machine_type})
 
         for kw in kwargs:
-            if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
+            if check_kw(kw):
+            # if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
                 if '__' not in kw:
                     where.append({'name': kw, 'op': 'eq', 'value': kwargs[kw]})
                 else:

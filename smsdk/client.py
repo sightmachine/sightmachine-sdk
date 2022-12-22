@@ -62,7 +62,7 @@ def dict_to_df(data, normalize=True):
 
         if 'id' in df.columns:
             df.set_index('id', inplace=True)
-
+            
     return df
 
 
@@ -160,7 +160,8 @@ class Client(ClientV0):
                 sub_kwargs = self.fix_only(kwargs)
 
             if len(sub_kwargs) == 1:
-                data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
+                # data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
+                return getattr(cls, util_name)(*args, **sub_kwargs[0])
             else:
                 data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
                 for sub in sub_kwargs[1:]:

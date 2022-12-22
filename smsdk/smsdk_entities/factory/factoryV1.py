@@ -47,43 +47,30 @@ class Factory(SmsdkEntities, MaSession):
         
         kwargs = self.modify_input_params(**kwargs)
         records = self._get_records_mongo_v1(url, **kwargs)
-        if not isinstance(records, List):
-            raise ValueError("Error - {}".format(records))
+        # if not isinstance(records, List):
+        #     raise ValueError("Error - {}".format(records))
         return records
 
     def modify_input_params(self, **kwargs):
+        v1_params = ["cb", "select", "where", "group_by", "order_by", "limit", "offset", "per_page", "cursor"]
 
-    # :qparam cb: conditional Cache busting flag. If this is the only query
-    # parameter set, return a 204 No Content response with an empty list.
-
-    # :qparam list[dict] select: optional Query Modifier. Fields from data record to only return.
-    # :qparam list[dict] where: optional Query Modifier. Conditions to filter data upon.
-    # :qparam list[] group_by: optional Query Modifier.
-    # :qparam list[dict] order_by: optional Query Modifier. Fields to sort data by.
-    # :qparam int limit: optional Query Modifier. Limit number of objects returned. Default/Max is 2000. If the max is
-    #     exceed, error returned.
-    # :qparam int offset: optional Query Modifier. Number of results to skip before starting to return results.
-
-    # :qparam int per_page: optional Query Modifier. Number of results to display per page
-
+        list_of_operations = [
+            'ne', 'lt', 'lte', 'gt', 'gte', 'not', 'in', 
+            'nin', 'mod', 'all', 'exists', 'exact', 'iexact', 
+            'contains', 'icontains', 'startswith', 'istartswith', 
+            'endswith', 'iendswith', 'match',
+        ]
         
         # Special handling for EF type names
         machine = kwargs.get('machine__source')
-
-        if machine and machine[0] == "'":
-            machine = machine[1:-1]
-
+        machine = machine[1:-1] if machine and machine[0] == "'" else machine
+            
         machine_type = kwargs.get('machine_type')
-        if machine_type and machine_type[0] == "'":
-            machine_type = machine_type[1:-1]
-
+        machine_type = machine_type[1:-1] if machine_type and machine_type[0] == "'" else machine_type
+            
         new_kwargs = {}
         etime = datetime.now()
         stime = etime - timedelta(days=1)
-        # new_kwargs['asset_selection'] = {
-        #     "machine_source": machine,
-        #     "machine_type": machine_type
-        # }
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
 
@@ -104,11 +91,10 @@ class Factory(SmsdkEntities, MaSession):
             where.append({'name': 'machine_type', 'op': 'eq', 'value': machine_type})
 
         for kw in kwargs:
-            if check_kw(kw):
-            # if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
+            if check_kw(kw) and kw not in v1_params:
                 if '__' not in kw:
                     where.append({'name': kw, 'op': 'eq', 'value': kwargs[kw]})
-                else:
+                elif "__" in kw and kw.split("__")[-1] in list_of_operations:
                     key = '__'.join(kw.split('__')[:-1])
                     op = kw.split('__')[-1]
 
@@ -123,20 +109,28 @@ class Factory(SmsdkEntities, MaSession):
                             where.append({'name': key, 'op': 'ne', 'value': None})
                         else:
                             where.append({'name': key, 'op': 'eq', 'value': None})
-        if kwargs.get('_only', None):
-            new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
-        new_kwargs['offset'] = kwargs.get('_offset', 0)
-        new_kwargs['limit'] = kwargs.get('_limit', np.Inf)
-        new_kwargs['where'] = where
+                else:
+                    where.append({'name': kw, 'op': 'eq', 'value': kwargs[kw]})
+                    
+            if kwargs.get('_only'):
+                new_kwargs['select'] = [{'name': i} for i in kwargs['_only']]
+            
+            new_kwargs['offset'] = kwargs.get('_offset', kwargs.get('offset', 1))
+            new_kwargs['limit'] = kwargs.get('_limit', kwargs.get('limit', np.Inf))
+            new_kwargs['where'] = where
 
-        if kwargs.get("_order_by", ""):
-            order_key = kwargs["_order_by"].replace("_epoch","")
-            if order_key.startswith('-'):
-                order_type = 'desc'
-                order_key = order_key[1:]
-            else:
-                order_type = 'asc'
-            new_kwargs['order_by'] = [{'name': order_key, 'order': order_type}]
+            for p in v1_params:
+                if not new_kwargs.get(p) and kwargs.get(p):
+                    new_kwargs[p] = kwargs.get(p)
+
+            if kwargs.get("_order_by", ""):
+                order_key = kwargs["_order_by"].replace("_epoch","")
+                if order_key.startswith('-'):
+                    order_type = 'desc'
+                    order_key = order_key[1:]
+                else:
+                    order_type = 'asc'
+                new_kwargs['order_by'] = [{'name': order_key, 'order': order_type}]
 
         new_kwargs = {
             key: json.dumps(value)

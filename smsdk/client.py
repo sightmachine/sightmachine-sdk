@@ -160,8 +160,11 @@ class Client(ClientV0):
                 sub_kwargs = self.fix_only(kwargs)
 
             if len(sub_kwargs) == 1:
-                # data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
-                return getattr(cls, util_name)(*args, **sub_kwargs[0])
+                if util_name in ['get_factories', 'get_machines', 'get_machine_types']:
+                    # data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
+                    return getattr(cls, util_name)(normalize, *args, **sub_kwargs[0])
+                else:
+                    data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
             else:
                 data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
                 for sub in sub_kwargs[1:]:
@@ -227,7 +230,7 @@ class Client(ClientV0):
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         return fields
 
-    def get_factories(self, normalize=True, *args, **kwargs):
+    def _get_factories(self, normalize=True, *args, **kwargs):
         """
         Get list of factories and associated metadata.  Note this includes extensive internal metadata.  
 
@@ -237,7 +240,7 @@ class Client(ClientV0):
         """
         return self.get_data_v1('factory_v1', 'get_factories', normalize, *args, **kwargs)
 
-    def get_machines(self, normalize=True, *args, **kwargs) -> pd.DataFrame:
+    def _get_machines(self, normalize=True, *args, **kwargs) -> pd.DataFrame:
         """
         Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
         then see also get_machine_names(). 
@@ -248,7 +251,7 @@ class Client(ClientV0):
         """
         return self.get_data_v1('machine_v1', 'get_machines', normalize, *args, **kwargs)
 
-    def get_machine_types(self, normalize=True, *args, **kwargs):
+    def _get_machine_types(self, normalize=True, *args, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
         then see also get_machine_type_names(). 
@@ -259,6 +262,39 @@ class Client(ClientV0):
         """
 
         return self.get_data_v1('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)
+    
+    def get_factories(self, normalize=True, *args, **kwargs):
+        generator = self._get_factories(normalize=normalize, *args, **kwargs)
+        data = []
+        for page in generator:
+            try:
+                data.append(page)
+            except Exception as e:
+                print(e)
+        data = pd.concat(data)
+        return data
+
+    def get_machines(self, normalize=True, *args, **kwargs):
+        generator = self._get_machines(normalize=normalize, *args, **kwargs)
+        data = []
+        for page in generator:
+            try:
+                data.append(page)
+            except Exception as e:
+                print(e)
+        data = pd.concat(data)
+        return data
+
+    def get_machine_types(self, normalize=True, *args, **kwargs):
+        generator = self._get_machine_types(normalize=normalize, *args, **kwargs)
+        data = []
+        for page in generator:
+            try:
+                data.append(page)
+            except Exception as e:
+                print(e)
+        data = pd.concat(data)
+        return data
 
     def get_machine_names(self, source_type=None, clean_strings_out=True):
         """

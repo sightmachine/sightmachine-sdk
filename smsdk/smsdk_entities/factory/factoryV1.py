@@ -37,7 +37,7 @@ class Factory(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_factories(self, *args, **kwargs):
+    def get_factories(self, normalize, *args, **kwargs):
         """
         Utility function to get the machines
         from the ma machine API
@@ -46,7 +46,7 @@ class Factory(SmsdkEntities, MaSession):
         url = "{}{}".format(self.base_url, ENDPOINTS["Factory"]["url_v1"])
         
         kwargs = self.modify_input_params(**kwargs)
-        records = self._get_records_mongo_v1(url, **kwargs)
+        records = self._get_records_mongo_v1(url, normalize, **kwargs)
         # if not isinstance(records, List):
         #     raise ValueError("Error - {}".format(records))
         return records

@@ -65,6 +65,15 @@ def dict_to_df(data, normalize=True):
             
     return df
 
+def generator_to_df(generator) -> pd.DataFrame:
+    data = []
+    for page in generator:
+        try:
+            data.append(page)
+        except Exception as e:
+            log.error(e)
+    data = pd.concat(data)
+    return data
 
 # We don't have a downtime schema, so hard code one
 downmap = {'machine__source': 'Machine',
@@ -265,35 +274,17 @@ class Client(ClientV0):
     
     def get_factories(self, normalize=True, *args, **kwargs):
         generator = self._get_factories(normalize=normalize, *args, **kwargs)
-        data = []
-        for page in generator:
-            try:
-                data.append(page)
-            except Exception as e:
-                print(e)
-        data = pd.concat(data)
+        data = generator_to_df(generator)
         return data
 
     def get_machines(self, normalize=True, *args, **kwargs):
         generator = self._get_machines(normalize=normalize, *args, **kwargs)
-        data = []
-        for page in generator:
-            try:
-                data.append(page)
-            except Exception as e:
-                print(e)
-        data = pd.concat(data)
+        data = generator_to_df(generator)
         return data
 
     def get_machine_types(self, normalize=True, *args, **kwargs):
         generator = self._get_machine_types(normalize=normalize, *args, **kwargs)
-        data = []
-        for page in generator:
-            try:
-                data.append(page)
-            except Exception as e:
-                print(e)
-        data = pd.concat(data)
+        data = generator_to_df(generator)
         return data
 
     def get_machine_names(self, source_type=None, clean_strings_out=True):

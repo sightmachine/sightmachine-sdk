@@ -308,6 +308,9 @@ class MaSession:
         if not url_params.get("per_page"):
             url_params["per_page"] = 5
 
+        if limit < url_params["per_page"]:
+            url_params["per_page"] = limit
+
         def _fetch_data(endpoint, url_params):
             response = getattr(self.session, method.lower())(
                     endpoint, params=url_params

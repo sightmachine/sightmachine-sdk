@@ -3,6 +3,7 @@ import json
 import warnings
 
 from requests.utils import cookiejar_from_dict, default_headers
+import pandas as pd
 
 try:
     import importlib.resources as pkg_resources
@@ -158,11 +159,12 @@ class Authenticator(MaSession):
 
     def check_auth(self):
         """
-        Determine if SDK has access to the client by checking the Cycle API.
+        Determine if SDK has access to the client by checking the Machine API.
         """
         try:
-            url = "{}{}".format(self.host, ENDPOINTS["Cycle"]["alt_url"])
-            resp = self._get_records(url, _limit=1, _only=["_id"])
+            url = "{}{}".format(self.host, ENDPOINTS["Machine"]["url_v1"])
+            resp = self._get_records_mongo_v1(url, limit=1, select=["id"])
+            resp = list(pd.concat(list(resp)).reset_index().values)
             return isinstance(resp, list) and "error" not in resp
         except Exception:  # pylint:disable=broad-except
             return False

@@ -314,6 +314,7 @@ class Client(ClientV0):
             query_params['source_type'] = source_type
 
         machines = self.get_data_v1('machine_v1', 'get_machines', normalize=True, **query_params)
+        machines = generator_to_df(machines)
 
         if clean_strings_out:
             return machines['source_clean'].to_list()
@@ -330,6 +331,7 @@ class Client(ClientV0):
         query_params = {'_only': ['source_type', 'source_type_clean'],
                         '_order_by': 'source_type_clean'}
         machine_types = self.get_data_v1('machine_type_v1', 'get_machine_types', normalize=True, **query_params)
+        machine_types = generator_to_df(machine_types)
 
         if clean_strings_out:
             return machine_types['source_type_clean'].to_list()

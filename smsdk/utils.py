@@ -38,6 +38,6 @@ def check_kw(kw) -> bool:
         "Start Time",
         "starttime"
     ]:
-        if key in kw or kw[0] == "_":
+        if kw[0] == "_" or key in kw:
             return False
     return True

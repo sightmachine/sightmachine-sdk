@@ -66,13 +66,7 @@ def dict_to_df(data, normalize=True):
     return df
 
 def generator_to_df(generator) -> pd.DataFrame:
-    data = []
-    for page in generator:
-        try:
-            data.append(page)
-        except Exception as e:
-            log.error(e)
-    data = pd.concat(data)
+    data = pd.concat([page for page in generator])
     return data
 
 # We don't have a downtime schema, so hard code one
@@ -239,7 +233,7 @@ class Client(ClientV0):
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         return fields
 
-    def _get_factories(self, normalize=True, *args, **kwargs):
+    def _get_factories(self, *args, normalize=True, **kwargs):
         """
         Get list of factories and associated metadata.  Note this includes extensive internal metadata.  
 
@@ -249,7 +243,7 @@ class Client(ClientV0):
         """
         return self.get_data_v1('factory_v1', 'get_factories', normalize, *args, **kwargs)
 
-    def _get_machines(self, normalize=True, *args, **kwargs) -> pd.DataFrame:
+    def _get_machines(self, *args, normalize=True, **kwargs) -> pd.DataFrame:
         """
         Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
         then see also get_machine_names(). 
@@ -260,7 +254,7 @@ class Client(ClientV0):
         """
         return self.get_data_v1('machine_v1', 'get_machines', normalize, *args, **kwargs)
 
-    def _get_machine_types(self, normalize=True, *args, **kwargs):
+    def _get_machine_types(self, *args, normalize=True, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
         then see also get_machine_type_names(). 
@@ -272,17 +266,17 @@ class Client(ClientV0):
 
         return self.get_data_v1('machine_type_v1', 'get_machine_types', normalize, *args, **kwargs)
     
-    def get_factories(self, normalize=True, *args, **kwargs):
+    def get_factories(self, *args, normalize=True, **kwargs):
         generator = self._get_factories(normalize=normalize, *args, **kwargs)
         data = generator_to_df(generator)
         return data
 
-    def get_machines(self, normalize=True, *args, **kwargs):
+    def get_machines(self, *args, normalize=True, **kwargs):
         generator = self._get_machines(normalize=normalize, *args, **kwargs)
         data = generator_to_df(generator)
         return data
 
-    def get_machine_types(self, normalize=True, *args, **kwargs):
+    def get_machine_types(self, *args, normalize=True, **kwargs):
         generator = self._get_machine_types(normalize=normalize, *args, **kwargs)
         data = generator_to_df(generator)
         return data
@@ -297,8 +291,10 @@ class Client(ClientV0):
         :return: list
         """
 
-        query_params = {'_only': ['source', 'source_clean', 'source_type'],
-                        '_order_by': 'source_clean'}
+        query_params = {
+            'select': ['source', 'source_clean', 'source_type'], 
+            'order_by': [{'name':'source_clean'}]
+        }
 
         if source_type:
             # Double check the type
@@ -328,8 +324,10 @@ class Client(ClientV0):
         :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
         :return: list
         """
-        query_params = {'_only': ['source_type', 'source_type_clean'],
-                        '_order_by': 'source_type_clean'}
+        query_params = {
+            'select': ['source_type', 'source_type_clean'],
+            'order_by': [{'name':'source_type_clean'}]
+        }
         machine_types = self.get_data_v1('machine_type_v1', 'get_machine_types', normalize=True, **query_params)
         machine_types = generator_to_df(machine_types)
 

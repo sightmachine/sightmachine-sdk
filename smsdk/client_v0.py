@@ -582,7 +582,7 @@ class ClientV0(object):
 
         return merged
 
-    def get_factories(self, normalize=True, *args, **kwargs):
+    def get_factories(self, *args, normalize=True, **kwargs):
         """
         Get list of factories and associated metadata.  Note this includes extensive internal metadata.  
 
@@ -592,7 +592,7 @@ class ClientV0(object):
         """
         return self.get_data('factory', 'get_factories', normalize, *args, **kwargs)
 
-    def get_machines(self, normalize=True, *args, **kwargs) -> pd.DataFrame:
+    def get_machines(self, *args, normalize=True, **kwargs) -> pd.DataFrame:
         """
         Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
         then see also get_machine_names(). 
@@ -677,7 +677,7 @@ class ClientV0(object):
         
         return timezone
 
-    def get_machine_types(self, normalize=True, *args, **kwargs):
+    def get_machine_types(self, *args, normalize=True, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
         then see also get_machine_type_names(). 

@@ -332,6 +332,7 @@ class MaSession:
             else:
                 data = []
             return data, next_page
+        
         while limit > 0:
             if next_page:
                 data, next_page = _fetch_data(endpoint=next_page, url_params={})

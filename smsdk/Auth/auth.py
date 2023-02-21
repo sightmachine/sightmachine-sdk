@@ -22,7 +22,7 @@ KEYWORDS = RESOURCE_CONFIG["keywords"]
 SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
-SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["x_sm_db_schema"]
+X_SM_DB_SCHEMA = RESOURCE_CONFIG["x_sm_db_schema"]
 
 class Authenticator(MaSession):
     """
@@ -105,7 +105,7 @@ class Authenticator(MaSession):
         self.session.headers.update({SM_AUTH_HEADER_SECRET_ID_OLD: secret_id}) #add v0/v1 compat
         self.session.headers.update({SM_AUTH_HEADER_KEY_ID: key_id})
         if db_schema:
-            self.session.headers.update({SM_AUTH_HEADER_KEY_ID: db_schema})
+            self.session.headers.update({X_SM_DB_SCHEMA: db_schema})
 
         if not self.check_auth():
             raise RuntimeError(
@@ -128,7 +128,6 @@ class Authenticator(MaSession):
         if method == "basic":
             success = self._auth_basic(**kwargs)
         elif method == "apikey":
-            # import ipdb;ipdb.set_trace()
             success = self._auth_apikey(**kwargs)
         elif method is None:
             try:

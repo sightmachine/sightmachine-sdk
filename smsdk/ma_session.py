@@ -21,6 +21,7 @@ RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.jso
 SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
+X_SM_DB_SCHEMA = RESOURCE_CONFIG['x_sm_db_schema']
 
 import logging
 log = logging.getLogger(__name__)

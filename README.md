@@ -62,7 +62,7 @@ For API Key authentication:
 key = api_key_from_platform
 secret = api_secret_from_platform
 
-cli.login('apikey', secret_id=secret, key_id=key)
+cli.login('apikey', secret_id=secret, key_id=key, schema_name="")
 ```
 
 ### Proxy Servers and CA Certs

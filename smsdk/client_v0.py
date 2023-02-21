@@ -699,7 +699,7 @@ class ClientV0(object):
         query_params = {'_only': ['source_type', 'source_type_clean'],
                         '_order_by': 'source_type_clean'}
         machine_types = self.get_data('machine_type', 'get_machine_types', normalize=True, **query_params)
-
+        # import ipdb;ipdb.set_trace()
         if clean_strings_out:
             return machine_types['source_type_clean'].to_list()
         else:

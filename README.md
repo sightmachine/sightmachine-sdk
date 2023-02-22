@@ -83,7 +83,7 @@ CURL_CA_BUNDLE="/path/to/my/certificates"
 
 ### Selecting database schema
 By default, the production pipeline schema will be considered to retrive data from the tenant.
-To select a perticular development pipeline schema you can use following function call:
+To select a particular development pipeline schema you can use following function call:
 
 ```
 db_schema = pipeline_id 

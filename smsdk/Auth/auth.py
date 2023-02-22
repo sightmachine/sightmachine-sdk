@@ -89,7 +89,7 @@ class Authenticator(MaSession):
 
         return success
 
-    def _auth_apikey(self, secret_id, key_id, db_schema=""):
+    def _auth_apikey(self, secret_id, key_id):
         """
         Authenticate by sending an API key.
 
@@ -104,8 +104,6 @@ class Authenticator(MaSession):
         self.session.headers.update({SM_AUTH_HEADER_SECRET_ID: secret_id})
         self.session.headers.update({SM_AUTH_HEADER_SECRET_ID_OLD: secret_id}) #add v0/v1 compat
         self.session.headers.update({SM_AUTH_HEADER_KEY_ID: key_id})
-        if db_schema:
-            self.session.headers.update({X_SM_DB_SCHEMA: db_schema})
 
         if not self.check_auth():
             raise RuntimeError(

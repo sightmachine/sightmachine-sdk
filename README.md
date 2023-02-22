@@ -62,8 +62,7 @@ For API Key authentication:
 key = api_key_from_platform
 secret = api_secret_from_platform
 
-# default value for db_schema is production pipeline schema
-cli.login('apikey', secret_id=secret, key_id=key, db_schema=schema_name)
+cli.login('apikey', secret_id=secret, key_id=key)
 ```
 
 ### Proxy Servers and CA Certs
@@ -80,6 +79,15 @@ Similarly, if you need to use your own CA Certificates, set the CURL_CA_BUNDLE e
 
 ```
 CURL_CA_BUNDLE="/path/to/my/certificates"
+```
+
+### Selecting database schema
+By default, the production pipeline schema will be considered to retrive data from the tenant.
+To select a perticular development pipeline schema you can use following function call:
+
+```
+db_schema = pipeline_id 
+cli.select_db_schema(schema_name=db_schema)
 ```
 
 ### Retrieving Data

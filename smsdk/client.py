@@ -12,7 +12,7 @@ except ImportError:
     from pandas.io.json import json_normalize
 
 from smsdk.utils import get_url
-from smsdk.Auth.auth import Authenticator
+from smsdk.Auth.auth import Authenticator, X_SM_DB_SCHEMA
 from smsdk.tool_register import smsdkentities
 from smsdk.client_v0 import ClientV0
 
@@ -115,6 +115,9 @@ class Client(ClientV0):
         # Setup Authenticator
         self.auth = Authenticator(self)
         self.session = self.auth.session
+    
+    def select_db_schema(self, schema_name):
+        self.session.headers.update({X_SM_DB_SCHEMA:schema_name})
 
     def get_data_v1(self, ename, util_name, normalize=True, *args, **kwargs):
         """

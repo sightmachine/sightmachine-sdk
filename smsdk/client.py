@@ -225,3 +225,10 @@ class Client(ClientV0):
                             f"Unknow stat schema identified :: machine_type {machine_source} - "
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         return fields
+    
+    def get_kpis(self, **kwargs):
+        kpis = smsdkentities.get('kpi')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpis(self.session, base_url).get_kpis(**kwargs)

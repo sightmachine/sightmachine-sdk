@@ -28,6 +28,10 @@
   },
   "DataViz": {
     "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
-    "estimate_part": "/v1/selector/datavis/estimate/part"
+    "estimate_part": "/v1/selector/datavis/estimate/part",
+    "task": "/v1/datavis/task/async"
+  },
+  "KPI": {
+    "availible_kpis": "/v1/selector/datavis/kpi/y_axis"
   }
 }

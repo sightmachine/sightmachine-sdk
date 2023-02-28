@@ -440,11 +440,10 @@ class ClientV0(object):
                         return
             try:
                 stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)
-                stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
             except KeyError:
                 # explicitly embed string to machine type names esp JCP
                 machine_type = f"'{machine_type}'"
-                stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)['stats'][0]
+                stats = self.get_machine_types(normalize=False, _limit=1, source_type=machine_type)
             except Exception as ex:
                 print(f"Exception in getting machine type stats {ex}")
             kwargs['stats'] = stats

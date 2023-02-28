@@ -48,8 +48,7 @@ def dict_to_df(data, normalize=True):
     if len(df) > 0:
         if '_id' in df.columns:
             df.set_index('_id', inplace=True)
-
-        if 'id' in df.columns:
+        elif 'id' in df.columns:
             df.set_index('id', inplace=True)
     return df
 
@@ -125,9 +124,8 @@ class MaSession:
                     return records
                 _offset += this_loop_limit
                 
-            except:
-                import traceback
-                log.error(traceback.print_exc())
+            except Exception as e:
+                log.exception(str(e), exc_info=1)
                 return records
 
     def _get_schema(
@@ -230,10 +228,8 @@ class MaSession:
                     return records
                 offset += this_loop_limit
 
-            except:
-                import traceback
-
-                log.error(traceback.print_exc())
+            except Exception as e:
+                log.exception(str(e), exc_info=1)
                 return records
 
     def get_json_headers(self):

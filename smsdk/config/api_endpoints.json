@@ -3,29 +3,22 @@
     "url": "/auth/password/login"
   },
   "Cycle": {
-    "url_v1": "/v1/datatab/cycle",
-    "url": "/api/cycle",
-    "alt_url": "/api/cycle"
+    "url_v1": "/v1/datatab/cycle"
   },
   "Factory": {
-    "url" : "/api/factory",
     "url_v1" : "/v1/obj/factory"
   },
   "MachineType": {
-    "url" : "/api/machinetype",
     "url_v1" : "/v1/obj/machine_type"
   },
   "Machine": {
-    "url" : "/api/machine",
     "url_v1" : "/v1/obj/machine"
   },
   "Parts": {
-    "url" : "/api/part",
     "url_v1": "/v1/datatab/part",
     "part_schema": "/v1/obj/part_type"
   },
   "Downtime": {
-    "url" : "/api/downtime",
     "url_v1" : "/v1/datatab/downtime"
 
   },

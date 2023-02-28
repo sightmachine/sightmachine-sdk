@@ -28,7 +28,8 @@ def get_url(protocol, tenant, site_domain):
 
     return "{}://{}.{}".format(protocol, tenant, site_domain)
 
-def check_kw(kw) -> bool:
+def check_kw(kw: str) -> bool:
+    print(f"type of kw is {type(kw)}")
     for key in [
         "machine_type", 
         "Machine",
@@ -38,6 +39,6 @@ def check_kw(kw) -> bool:
         "Start Time",
         "starttime"
     ]:
-        if kw[0] == "_" or key in kw:
+        if kw.startswith("_") or key in kw:
             return False
     return True

@@ -53,3 +53,17 @@ class KPI(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
+    
+    @mod_util
+    def get_kpi_data_viz(self, *args, **kwargs):
+        """
+        Utility function to get the downtimes
+        from the ma downtime API
+        Recommend to use 'enable_pagination':True for larger datasets
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["task"])
+        records = self._complete_async_task(url, **kwargs)
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records

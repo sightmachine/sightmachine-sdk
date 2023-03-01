@@ -205,6 +205,48 @@ class MaSession:
 
                 print(traceback.print_exc())
                 return records
+            
+    
+    def _complete_async_task(
+            self,
+            endpoint,
+            method="post",
+            db_mode='sql',
+            **url_params
+    ):
+        if url_params.get('db_mode') == None:
+            url_params['db_mode'] = db_mode
+        try:
+            response = getattr(self.session, method.lower())(
+                        endpoint, json=url_params
+                    )
+            data = response.json()
+            task_id = data['response']['task_id']
+            while True:
+                try:
+                    response = getattr(self.session, 'get')(
+                            endpoint+'/'+task_id, json=url_params
+                        )
+                    data = response.json()
+                    state = data['response']['state']
+                    if state == 'SUCCESS':
+                        return data['response']['meta']['results']
+                    
+                    if state == 'FAILURE' or state == 'REVOKED':
+                        import traceback
+
+                        print(traceback.print_exc())
+                        return []
+                except:
+                    import traceback
+
+                    print(traceback.print_exc())
+                    return []
+        except:
+            import traceback
+
+            print(traceback.print_exc())
+            return []
 
     def get_json_headers(self):
         """

@@ -226,7 +226,7 @@ class MaSession:
             task_id = data['response']['task_id']
             while True:
                 try:
-                    response = getattr(self.session, 'get')(
+                    response = self.session.get(
                             endpoint+'/'+task_id, json=url_params
                         )
                     if response.status_code not in [200, 201]:

@@ -220,6 +220,8 @@ class MaSession:
             response = getattr(self.session, method.lower())(
                         endpoint, json=url_params
                     )
+            if response.status_code not in [200, 201]:
+                raise ValueError("Error - {}".format(response.text))
             data = response.json()
             task_id = data['response']['task_id']
             while True:
@@ -227,16 +229,15 @@ class MaSession:
                     response = getattr(self.session, 'get')(
                             endpoint+'/'+task_id, json=url_params
                         )
+                    if response.status_code not in [200, 201]:
+                        raise ValueError("Error - {}".format(response.text))
                     data = response.json()
                     state = data['response']['state']
                     if state == 'SUCCESS':
                         return data['response']['meta']['results']
                     
                     if state == 'FAILURE' or state == 'REVOKED':
-                        import traceback
-
-                        print(traceback.print_exc())
-                        return []
+                        raise ValueError("Error - {}".format(response.text))
                 except:
                     import traceback
 

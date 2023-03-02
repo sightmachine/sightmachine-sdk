@@ -62,6 +62,7 @@ class KPI(SmsdkEntities, MaSession):
         Recommend to use 'enable_pagination':True for larger datasets
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["task"])
+        kwargs['model']='kpi'
         records = self._complete_async_task(url, **kwargs)
 
         if not isinstance(records, List):

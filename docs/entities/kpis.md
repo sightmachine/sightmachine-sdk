@@ -3,13 +3,26 @@
 KPIs are user defined calculated fields in the Sight Machine software.
 
 ## Functions
-The SDK has two functions related to KPIs.  The first of which allows a user to see which KPIs are availible for a particular asset.  The second makes use of our Data Visulation api which allows a user to see these KPIs over a timeframe.
+The SDK has three functions related to KPIs.  The first returns a list of all availible KPis.  The second of which allows a user to see which KPIs are availible for a particular asset.  The thrid makes use of our Data Visulation api which allows a user to see these KPIs over a timeframe.
 
 ### Get KPIs
-This is the first KPI function allowing you to see which KPIs are availible for a particular asset.  In order to call this function you must first have a logged in client see the [quick start guide](/README.md) for more information on logging in.  Once you have a logged in client you can call the function as follows:
+This is the first KPI function allowing you to see which all KPIs.  In order to call this function you must first have a logged in client see the [quick start guide](/README.md) for more information on logging in.  Once you have a logged in client you can call the function as follows:
 
 ```
-cli.get_kpis(**asset_selection)
+cli.get_kpis()
+```
+This will return a full list of KPIs which will look something like this example:
+```
+[{'name': 'performance', 'display_name': 'Performance', 'formula': '( IdealCycle / Recorded_time ) * 100 if ( Recorded_time > 0 ) else None', 'data_type': '', 'dependencies': [{'aggregate': 'sum', 'name': 'Recorded_time'}, {'aggregate': 'sum', 'name': 'IdealCycle'}]}, ...]
+```
+
+In order to make use of the data viz function you'll need the name of the KPI you wish to get.
+
+### Get KPIs For Asset
+This is the second KPI function allowing you to see which KPIs are availible for a particular asset.  Once you have a logged in client you can call the function as follows:
+
+```
+cli.get_kpis_for_asset(**asset_selection)
 ```
 
 For more info on [asset_selection](/docs/commonly_used_data_types/asset_selection.md) click on the previous link.  After a moment the SDK should return a list that looks something like this:

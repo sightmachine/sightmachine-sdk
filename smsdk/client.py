@@ -233,6 +233,13 @@ class Client(ClientV0):
         )
         return kpis(self.session, base_url).get_kpis(**kwargs)
     
+    def get_kpis_for_asset(self, **kwargs):
+        kpis = smsdkentities.get('kpi')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
+    
     def get_kpi_data_viz(self, **kwargs):
         kpis = smsdkentities.get('kpi')
         base_url = get_url(

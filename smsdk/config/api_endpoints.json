@@ -32,6 +32,7 @@
     "task": "/v1/datavis/task/async"
   },
   "KPI": {
-    "availible_kpis": "/v1/selector/datavis/kpi/y_axis"
+    "availible_kpis": "/v1/selector/assets",
+    "availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"
   }
 }

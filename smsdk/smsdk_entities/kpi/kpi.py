@@ -43,11 +43,22 @@ class KPI(SmsdkEntities, MaSession):
     @mod_util
     def get_kpis(self, *args, **kwargs):
         """
-        Utility function to get the downtimes
-        from the ma downtime API
-        Recommend to use 'enable_pagination':True for larger datasets
+        Returns a list of all KPIs
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["KPI"]["availible_kpis"])
+        records = self._get_records_v1(url, method="get", **kwargs)[0]["kpi"]
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records
+    
+    @mod_util
+    def get_kpis_for_asset(self, *args, **kwargs):
+        """
+        Takes an asset selection
+        returns a list of KPIs avaible to that asset
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["KPI"]["availible_kpis_for_asset"])
         records = self._get_records_v1(url, **kwargs)
 
         if not isinstance(records, List):
@@ -57,9 +68,8 @@ class KPI(SmsdkEntities, MaSession):
     @mod_util
     def get_kpi_data_viz(self, *args, **kwargs):
         """
-        Utility function to get the downtimes
-        from the ma downtime API
-        Recommend to use 'enable_pagination':True for larger datasets
+        Takes a Data Viz query for the KPI model
+        Returns Data Viz info for that query
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["task"])
         kwargs['model']='kpi'

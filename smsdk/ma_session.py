@@ -1,4 +1,5 @@
 from json.decoder import JSONDecodeError
+from time import sleep
 from typing import List
 import json
 import requests
@@ -229,6 +230,7 @@ class MaSession:
                     response = self.session.get(
                             endpoint+'/'+task_id, json=url_params
                         )
+                    sleep(1)
                     if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     data = response.json()

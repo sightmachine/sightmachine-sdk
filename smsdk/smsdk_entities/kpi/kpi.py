@@ -45,7 +45,7 @@ class KPI(SmsdkEntities, MaSession):
         """
         Returns a list of all KPIs
         """
-        url = "{}{}".format(self.base_url, ENDPOINTS["KPI"]["availible_kpis"])
+        url = "{}{}".format(self.base_url, ENDPOINTS["Assets"]["url"])
         records = self._get_records_v1(url, method="get", **kwargs)[0]["kpi"]
 
         if not isinstance(records, List):

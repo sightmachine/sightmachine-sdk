@@ -240,9 +240,36 @@ class Client(ClientV0):
         )
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
     
-    def get_kpi_data_viz(self, **kwargs):
-        kpis = smsdkentities.get('kpi')
+    def get_kpi_data_viz(self, machine_source=None, kpis=None, i_vars=None, time_selection=None, **kwargs):
+        kpi_entity = smsdkentities.get('kpi')
+        if machine_source:
+            machine_type = self.get_type_from_machine(machine_source, **kwargs)
+            kwargs["asset_selection"]= {
+                "machine_source": [machine_source],
+                "machine_type": [machine_type]
+            }
+        
+        if kpis:
+            d_vars = []
+            for kpi in kpis:
+                d_vars.append({"name": kpi, "aggregate": ["avg"]})
+            kwargs['d_vars'] = d_vars
+        
+        if i_vars:
+            kwargs['i_vars'] = i_vars
+        
+        if time_selection:
+            kwargs["time_selection"] = time_selection
+        
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return kpis(self.session, base_url).get_kpi_data_viz(**kwargs)
+        return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
+        
+    def get_type_from_machine(self, machine_source=None, **kwargs):
+        machine = smsdkentities.get('machine')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
+

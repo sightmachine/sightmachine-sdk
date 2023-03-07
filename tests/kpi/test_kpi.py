@@ -28,6 +28,7 @@ def test_get_kpi(mocked):
     assert len(kpis) == 5
 
     assert kpis[0]["name"] == 'Scrap_Rate'
+
 def test_get_kpi_for_asset(monkeypatch):
     # Setup
     def mockapi(self, session, endpoint):

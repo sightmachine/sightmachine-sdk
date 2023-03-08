@@ -46,3 +46,15 @@ class Machine(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
+    
+    def get_type_from_machine_name(self, machine_source, *args, **kwargs):
+        """
+        Function that gives the name of a machine from it's type
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["Assets"]["url"])
+        records = self._get_records_v1(url, method="get", **kwargs)[0]["machine"]
+        machine_type = ''
+        for record in records:
+            if record['name'] == machine_source:
+                machine_type = record['type']
+        return machine_type

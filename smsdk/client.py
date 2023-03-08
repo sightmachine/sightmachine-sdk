@@ -228,3 +228,53 @@ class Client(ClientV0):
                             f"Unknow stat schema identified :: machine_type {machine_source} - "
                             f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
         return fields
+    
+    def get_kpis(self, **kwargs):
+        kpis = smsdkentities.get('kpi')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpis(self.session, base_url).get_kpis(**kwargs)
+    
+    def get_kpis_for_asset(self, **kwargs):
+        kpis = smsdkentities.get('kpi')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
+    
+    def get_kpi_data_viz(self, machine_sources=None, kpis=None, i_vars=None, time_selection=None, **kwargs):
+        kpi_entity = smsdkentities.get('kpi')
+        if machine_sources:
+            machine_types = []
+            for machine_source in machine_sources:
+                machine_types.append(self.get_type_from_machine(machine_source, **kwargs))
+            kwargs["asset_selection"]= {
+                "machine_source": machine_sources,
+                "machine_type": list(set(machine_types))
+            }
+        
+        if kpis:
+            d_vars = []
+            for kpi in kpis:
+                d_vars.append({"name": kpi, "aggregate": ["avg"]})
+            kwargs['d_vars'] = d_vars
+        
+        if i_vars:
+            kwargs['i_vars'] = i_vars
+        
+        if time_selection:
+            kwargs["time_selection"] = time_selection
+        
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
+        
+    def get_type_from_machine(self, machine_source=None, **kwargs):
+        machine = smsdkentities.get('machine')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
+

@@ -3,10 +3,10 @@
 KPIs are user defined calculated fields in the Sight Machine software.
 
 ## Functions
-The SDK has three functions related to KPIs.  The first returns a list of all availible KPis.  The second of which allows a user to see which KPIs are availible for a particular asset.  The thrid makes use of our Data Visulation api which allows a user to see these KPIs over a timeframe.
+The SDK has three functions related to KPIs.  The first returns a list of all availible KPis.  The second of which allows a user to see which KPIs are availible for a particular asset.  The third makes use of our Data Visualization api which allows a user to see these KPIs over a timeframe.
 
 ### Get KPIs
-This is the first KPI function allowing you to see which all KPIs.  In order to call this function you must first have a logged in client see the [quick start guide](/README.md) for more information on logging in.  Once you have a logged in client you can call the function as follows:
+This is the first KPI function allowing you to see all KPIs availible to you.  In order to call this function you must first have a logged in client see the [quick start guide](/README.md) for more information on logging in.  Once you have a logged in client you can call the function as follows:
 
 ```
 cli.get_kpis()
@@ -46,8 +46,8 @@ After some time the SDK should return a list that looks something like this:
 
 There's two ways to call this function you can use a data_viz_query,For more information on [data_viz_queries](/docs/commonly_used_data_types/data_viz_query.md) click on the previous link, or have the function fill out the query for you by passing in a few variable we will now go over one at a time.
 
-#### machine_source
-This is a string and is the name of machine you wish to run a query on.
+#### machine_sources
+This is a list of strings and is the name of machine(s) you wish to run a query on.
 
 #### kpis
 This is a list of the names of all the kpis you wish to run this query on.

@@ -240,13 +240,15 @@ class Client(ClientV0):
         )
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
     
-    def get_kpi_data_viz(self, machine_source=None, kpis=None, i_vars=None, time_selection=None, **kwargs):
+    def get_kpi_data_viz(self, machine_sources=None, kpis=None, i_vars=None, time_selection=None, **kwargs):
         kpi_entity = smsdkentities.get('kpi')
-        if machine_source:
-            machine_type = self.get_type_from_machine(machine_source, **kwargs)
+        if machine_sources:
+            machine_types = []
+            for machine_source in machine_sources:
+                machine_types.append(self.get_type_from_machine(machine_source, **kwargs))
             kwargs["asset_selection"]= {
-                "machine_source": [machine_source],
-                "machine_type": [machine_type]
+                "machine_source": machine_sources,
+                "machine_type": list(set(machine_types))
             }
         
         if kpis:

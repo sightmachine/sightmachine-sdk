@@ -278,11 +278,18 @@ class Client(ClientV0):
         )
         return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
     
-    def get_fields_of_machine(self, machine_source=None):
+    def get_fields_of_machine(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
         machineType= smsdkentities.get('machine_type')
         machine_type = self.get_type_from_machine(machine_source)
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return machineType(self.session, base_url).get_fields(machine_type)
+        fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
+        fields = [field for field in fields if not field.get('ui_hidden') or show_hidden]
+        if len(types) > 0:
+            fields = [field for field in fields if field.get('type') in types]
 
+        if return_mtype:
+            return (machine_type, fields)
+
+        return fields

@@ -176,4 +176,4 @@ The type of operation you are doing.
 The value to compare with the operation.
 
 ## db_mode
-This is optional.  It will defualt to 'sql' and usually should be but we have a 'monogo' mode as well.  You will likely ever need to tset this.
+This is optional.  It will default to 'sql' and usually should be but we have a 'mongo' mode as well.  You will likely ever need to set this.

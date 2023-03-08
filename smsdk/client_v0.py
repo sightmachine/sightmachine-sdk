@@ -424,7 +424,7 @@ class ClientV0(object):
     def get_machine_schema_decorator(func):
 
         @functools.wraps(func)
-        def inner(self, machine_source, types=[], return_mtype=False, **kwargs):
+        def inner(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
 
             try:
                 machine_type = self.get_machines(source=machine_source)['source_type'][0]
@@ -448,7 +448,7 @@ class ClientV0(object):
                 print(f"Exception in getting machine type stats {ex}")
             kwargs['stats'] = stats
 
-            fields = func(self, machine_source, types=[], return_mtype=False, **kwargs)
+            fields = func(self, machine_source, types, show_hidden, return_mtype, **kwargs)
 
             if return_mtype:
                 return machine_type, pd.DataFrame(fields)

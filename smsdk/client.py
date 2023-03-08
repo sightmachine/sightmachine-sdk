@@ -213,11 +213,11 @@ class Client(ClientV0):
 
 
     @ClientV0.get_machine_schema_decorator
-    def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
+    def get_machine_schema(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
         stats = kwargs.get('stats', [])
         fields = []
         for stat in stats:
-            if not stat.get('display', {}).get('ui_hidden', False):
+            if not stat.get('display', {}).get('ui_hidden', False) or show_hidden:
                 if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
                     try:
                         fields.append({'name': stat['analytics']['columns'][0]['name'],

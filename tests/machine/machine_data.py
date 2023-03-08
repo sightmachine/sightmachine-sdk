@@ -255,3 +255,34 @@ JSON_MACHINE = [
         "source_type": "UpperComponentBacking",
     },
 ]
+
+MACHINE_TYPE = {
+    'stats': [
+        [
+            {
+                'analytics' : {'columns' : [
+                    {'type': 'float', 'name': 'stat__test_float'}
+                    ]
+                },
+                'display':{'title_prefix': 'test float'}
+            },
+            {
+                'analytics' : {'columns' : [
+                    {'type': 'string', 'name': 'stat__test_string'}
+                    ]
+                },
+                'display':{'title_prefix': 'test string'}
+            },
+            {
+                'analytics' : {'columns' : [
+                    {'type': 'string', 'name': 'stat__test_hidden'}
+                    ]
+                },
+                'display':{
+                    'title_prefix': 'test hidden',
+                    'ui_hidden' : True
+                }
+            }
+        ]
+    ]
+}

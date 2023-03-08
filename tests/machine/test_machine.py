@@ -3,7 +3,7 @@ from mock import patch
 import pandas as pd
 from requests.sessions import Session
 from smsdk.client import Client
-from tests.machine.machine_data import JSON_MACHINE
+from tests.machine.machine_data import JSON_MACHINE, MACHINE_TYPE
 from smsdk.smsdk_entities.machine.machine import Machine
 
 
@@ -59,3 +59,59 @@ def test_get_type(mocked):
 
     # Verify
     assert type == 'test_type'
+
+
+@patch("smsdk.client_v0.ClientV0.get_machines")
+@patch("smsdk.client_v0.ClientV0.get_machine_types")
+def test_get_machine_schema(mocked_types, mocked_machines):
+    mocked_machines.return_value = {'source_type': ['test']}
+    mocked_types.return_value = MACHINE_TYPE
+    dt = Client("demo")
+
+    # Run
+    schema = dt.get_machine_schema('test')
+
+    # Verify
+    assert schema.name.sort_values().tolist() == ['stat__test_float', 'stat__test_string']
+
+
+@patch("smsdk.client_v0.ClientV0.get_machines")
+@patch("smsdk.client_v0.ClientV0.get_machine_types")
+def test_get_machine_schema_hidden(mocked_types, mocked_machines):
+    mocked_machines.return_value = {'source_type': ['test']}
+    mocked_types.return_value = MACHINE_TYPE
+    dt = Client("demo")
+
+    # Run
+    schema = dt.get_machine_schema('test', show_hidden=True)
+
+    # Verify
+    assert schema.name.sort_values().tolist() == ['stat__test_float', 'stat__test_hidden', 'stat__test_string']
+
+@patch("smsdk.client_v0.ClientV0.get_machines")
+@patch("smsdk.client_v0.ClientV0.get_machine_types")
+def test_get_machine_schema_types(mocked_types, mocked_machines):
+    mocked_machines.return_value = {'source_type': ['test']}
+    mocked_types.return_value = MACHINE_TYPE
+    dt = Client("demo")
+
+    # Run
+    schema = dt.get_machine_schema('test', types=["float"])
+
+    # Verify
+    assert schema.name.sort_values().tolist() == ['stat__test_float']
+
+@patch("smsdk.client_v0.ClientV0.get_machines")
+@patch("smsdk.client_v0.ClientV0.get_machine_types")
+def test_get_machine_schema_types_return_mtype(mocked_types, mocked_machines):
+    mocked_machines.return_value = {'source_type': ['test_type']}
+    mocked_types.return_value = MACHINE_TYPE
+    dt = Client("demo")
+
+    # Run
+    schema = dt.get_machine_schema('test', return_mtype=True)
+
+    # Verify
+    assert schema[0] == 'test_type'
+    assert schema[1].name.sort_values().tolist() == ['stat__test_float', 'stat__test_string']
+

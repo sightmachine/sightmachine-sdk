@@ -277,4 +277,12 @@ class Client(ClientV0):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
+    
+    def get_fields_of_machine(self, machine_source=None):
+        machineType= smsdkentities.get('machine_type')
+        machine_type = self.get_type_from_machine(machine_source)
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return machineType(self.session, base_url).get_fields(machine_type)
 

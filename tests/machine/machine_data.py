@@ -256,33 +256,21 @@ JSON_MACHINE = [
     },
 ]
 
-MACHINE_TYPE = {
-    'stats': [
-        [
+MACHINE_TYPE =[
             {
-                'analytics' : {'columns' : [
-                    {'type': 'float', 'name': 'stat__test_float'}
-                    ]
-                },
-                'display':{'title_prefix': 'test float'}
+                'type': 'float',
+                'name': 'stat__test_float',
+                'title_prefix': 'test float'
             },
             {
-                'analytics' : {'columns' : [
-                    {'type': 'string', 'name': 'stat__test_string'}
-                    ]
-                },
-                'display':{'title_prefix': 'test string'}
+               'type': 'string', 
+               'name': 'stat__test_string',
+               'title_prefix': 'test string'
             },
             {
-                'analytics' : {'columns' : [
-                    {'type': 'string', 'name': 'stat__test_hidden'}
-                    ]
-                },
-                'display':{
-                    'title_prefix': 'test hidden',
-                    'ui_hidden' : True
-                }
+               'type': 'string', 
+               'name': 'stat__test_hidden',
+                'title_prefix': 'test hidden',
+                'ui_hidden' : True
             }
         ]
-    ]
-}

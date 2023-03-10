@@ -70,10 +70,9 @@ def test_get_machine_schema(mocked_types, mocked_machines):
 
     # Run
     fields = dt.get_machine_schema('test')
-    assert len(fields) == 2
-    names = [field['name'] for field in fields]
+    assert fields.shape == (2, 3)
     # Verify
-    assert names == ['stat__test_float', 'stat__test_string']
+    assert fields.name.sort_values().tolist() == ['stat__test_float', 'stat__test_string']
 
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
@@ -85,12 +84,10 @@ def test_get_machine_schema_hidden(mocked_types, mocked_machines):
 
     # Run
     fields = dt.get_machine_schema('test', show_hidden=True)
-    assert len(fields) == 3
-    names = [field['name'] for field in fields]
-    names.sort()
+    assert fields.shape == (3, 4)
 
     # Verify
-    assert names == ['stat__test_float', 'stat__test_hidden', 'stat__test_string']
+    assert fields.name.sort_values().tolist() == ['stat__test_float', 'stat__test_hidden', 'stat__test_string']
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
@@ -101,11 +98,10 @@ def test_get_machine_schema_types(mocked_types, mocked_machines):
 
     # Run
     fields = dt.get_machine_schema('test', types=['float'])
-    assert len(fields) == 1
-    names = [field['name'] for field in fields]
+    assert fields.shape == (1, 3)
 
     # Verify
-    assert names == ['stat__test_float']
+    assert fields.name.sort_values().tolist() == ['stat__test_float']
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
@@ -117,9 +113,8 @@ def test_get_machine_schema_types_return_mtype(mocked_types, mocked_machines):
     # Run
     fields = dt.get_machine_schema('test', return_mtype=True)
     assert fields[0] == 'test'
-    assert len(fields[1]) == 2
-    names = [field['name'] for field in fields[1]]
+    assert fields[1].shape == (2, 3)
     # Verify
-    assert names == ['stat__test_float', 'stat__test_string']
+    assert fields[1].name.sort_values().tolist() == ['stat__test_float', 'stat__test_string']
 
 

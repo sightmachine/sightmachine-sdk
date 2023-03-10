@@ -272,9 +272,9 @@ class Client(ClientV0):
             fields = [field for field in fields if field.get('type') in types]
 
         if return_mtype:
-            return (machine_type, fields)
+            return (machine_type, pd.DataFrame(fields))
 
-        return fields
+        return pd.DataFrame(fields)
     
     def get_fields_of_machine_type(self, machine_type, types=[], show_hidden=False, **kwargs):
         machineType= smsdkentities.get('machine_type')

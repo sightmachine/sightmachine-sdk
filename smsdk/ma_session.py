@@ -148,6 +148,7 @@ class MaSession:
             limit=np.Inf,
             offset=0,
             db_mode='sql',
+            results_under='results',
             **url_params
     ):
         """
@@ -187,7 +188,7 @@ class MaSession:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()
-                        data = data['results']
+                        data = data[results_under]
                         if isinstance(data, dict):
                             data = [data]
                     except JSONDecodeError as e:

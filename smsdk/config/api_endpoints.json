@@ -36,5 +36,8 @@
   },
   "Assets": { 
     "url":"/v1/selector/assets"
+  },
+  "Cookbook": {
+    "get_cookbooks": "/v1/obj/recipe/cookbook"
   }
 }

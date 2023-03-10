@@ -277,4 +277,11 @@ class Client(ClientV0):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
+    
+    def get_cookbooks(self):
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_cookbooks()
 

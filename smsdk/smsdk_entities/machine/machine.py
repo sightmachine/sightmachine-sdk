@@ -55,6 +55,6 @@ class Machine(SmsdkEntities, MaSession):
         records = self._get_records_v1(url, method="get", **kwargs)[0]["machine"]
         machine_type = ''
         for record in records:
-            if record['name'] == machine_source:
+            if record['name'] == machine_source or record['display_name'] == machine_source:
                 machine_type = record['type']
         return machine_type

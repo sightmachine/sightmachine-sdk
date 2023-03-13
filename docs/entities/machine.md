@@ -4,7 +4,7 @@ Machines are just that, machines in factories.  The machine object is how the Si
 ## Functions
 
 ### get_type_from_machine
-The get_type_from_machine function allows you to get the type of any machine from it's name and is called this way:
+The get_type_from_machine function allows you to get the type of any machine from it's name(or display name) and is called this way:
 ```
 cli.get_type_from_machine(machine_name)
 ```
@@ -30,7 +30,7 @@ The only required field in this case is the machine_source, we will go over each
 ```
 
 #### machine_source
-This is the name of the machine that you are trying to grab the schema of.  This is the only required parameter for this function.
+This is the name of the machine that you are trying to grab the schema of.  This will also work with it's display name or source_clean.  This is the only required parameter for this function.
 
 #### types
 This is an optional parameter and is a list of strings.  If this is set the function will only return colomns that match the types given.  For example if we were to pass ['string'] as our types parameter in the previous example we would instead have returned:

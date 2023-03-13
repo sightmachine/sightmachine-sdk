@@ -43,3 +43,16 @@ class MachineType(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
+    
+    @mod_util
+    def get_fields(self, machine_type, *args, **kwargs):
+        """
+        Utility function to get the machine types
+        from the ma machine API
+        Recommend to use 'enable_pagination':True for larger datasets
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["MachineType"]["fields"].format(machine_type))
+        records = self._get_records(url, **kwargs)
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records

@@ -210,24 +210,6 @@ class Client(ClientV0):
         df = self.get_data_v1('part_v1', 'get_parts', normalize, *args, **kwargs)
 
         return df
-
-
-    @ClientV0.get_machine_schema_decorator
-    def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
-        stats = kwargs.get('stats', [])
-        fields = []
-        for stat in stats:
-            if not stat.get('display', {}).get('ui_hidden', False):
-                if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
-                    try:
-                        fields.append({'name': stat['analytics']['columns'][0]['name'],
-                                       'display': stat['display']['title_prefix'],
-                                       'type': stat['analytics']['columns'][0]['type']})
-                    except:
-                        log.warning(
-                            f"Unknow stat schema identified :: machine_type {machine_source} - "
-                            f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
-        return fields
     
     def get_kpis(self, **kwargs):
         kpis = smsdkentities.get('kpi')
@@ -277,4 +259,31 @@ class Client(ClientV0):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
+    
+    def get_machine_schema(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
+        machineType= smsdkentities.get('machine_type')
+        machine_type = self.get_type_from_machine(machine_source)
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
+        fields = [field for field in fields if not field.get('ui_hidden') or show_hidden]
+        if len(types) > 0:
+            fields = [field for field in fields if field.get('type') in types]
 
+        if return_mtype:
+            return (machine_type, pd.DataFrame(fields))
+
+        return pd.DataFrame(fields)
+    
+    def get_fields_of_machine_type(self, machine_type, types=[], show_hidden=False, **kwargs):
+        machineType= smsdkentities.get('machine_type')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
+        fields = [field for field in fields if not field.get('ui_hidden') or show_hidden]
+        if len(types) > 0:
+            fields = [field for field in fields if field.get('type') in types]
+
+        return fields

@@ -43,10 +43,36 @@ class Cookbook(SmsdkEntities, MaSession):
     @mod_util
     def get_cookbooks(self, *args, **kwargs):
         """
-        Returns a list of all KPIs
+        Returns a list of all Cookbooks
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Cookbook"]["get_cookbooks"])
         records = self._get_records_v1(url, method="get", results_under="objects", **kwargs)
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records
+    
+    @mod_util
+    def get_top_results(self, recipe_group_id, limit=10, *args, **kwargs):
+        """
+        Returns the top results from a recipe group
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["Cookbook"]["top_results"].format(recipe_group_id, limit))
+        records = self._get_records_v1(url, method="get", results_under=None, **kwargs)
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records[0]
+    
+    @mod_util
+    def get_current_value(self, variables, minutes=1440,  **kwargs):
+        """
+        Gets the current value of levers and constraints
+        """
+        kwargs['minutes'] = minutes
+        kwargs['variables'] = variables
+        url = "{}{}".format(self.base_url, ENDPOINTS["Cookbook"]["current_value"])
+        records = self._get_records_v1(url, offset=None, limit=None, db_mode=None, **kwargs)
 
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

@@ -259,13 +259,6 @@ class Client(ClientV0):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
-    
-    def get_cookbooks(self):
-        cookbook = smsdkentities.get('cookbook')
-        base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
-        )
-        return cookbook(self.session, base_url).get_cookbooks()
 
     def get_machine_schema(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
         machineType= smsdkentities.get('machine_type')
@@ -294,3 +287,24 @@ class Client(ClientV0):
             fields = [field for field in fields if field.get('type') in types]
 
         return fields
+        
+    def get_cookbooks(self, **kwargs):
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_cookbooks(**kwargs)
+
+    def get_top_results(self, recipe_group_id, limit=10, **kwargs):
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_top_results(recipe_group_id, limit, **kwargs)
+    
+    def get_current_value(self, minutes=10, variables=[], **kwargs):
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_current_value(minutes, variables, **kwargs)

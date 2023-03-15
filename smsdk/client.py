@@ -271,10 +271,12 @@ class Client(ClientV0):
         if len(types) > 0:
             fields = [field for field in fields if field.get('type') in types]
 
-        if return_mtype:
-            return (machine_type, pd.DataFrame(fields))
+        frame = pd.DataFrame(fields).rename(columns={"display_name": "display", "type": "sight_type", "data_type": "type"})
 
-        return pd.DataFrame(fields)
+        if return_mtype:
+            return (machine_type, frame)
+
+        return frame
     
     def get_fields_of_machine_type(self, machine_type, types=[], show_hidden=False, **kwargs):
         machineType= smsdkentities.get('machine_type')

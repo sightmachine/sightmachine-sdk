@@ -302,9 +302,20 @@ class Client(ClientV0):
         )
         return cookbook(self.session, base_url).get_top_results(recipe_group_id, limit, **kwargs)
     
-    def get_current_value(self, minutes=10, variables=[], **kwargs):
+    def get_current_value(self, variables=[], minutes=1440, **kwargs):
         cookbook = smsdkentities.get('cookbook')
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return cookbook(self.session, base_url).get_current_value(minutes, variables, **kwargs)
+        return cookbook(self.session, base_url).get_current_value(variables, minutes, **kwargs)
+    
+    def normalize_constraint(self, constraint):
+        to = constraint.get("to")
+        from_constraint = constraint.get("from")
+        return "({},{})".format(to, from_constraint)
+    
+    def normalize_constraints(self, constraints):
+        constraints_normal = []
+        for constraint in constraints:
+            constraints_normal.append(self.normalize_constraint(constraint))
+        return constraints_normal

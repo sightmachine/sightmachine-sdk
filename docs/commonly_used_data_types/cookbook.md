@@ -3,7 +3,6 @@
  ```
 {
     "hash": "hash",
-    "auto_generated_parent": "",
     "name": "name",
     "assetNames": ['machine names'],
     "key_constraint":{
@@ -33,8 +32,6 @@
  ## Hash
  A hash of the cookbook object.
 
- ## auto_generated_parent
-
  ## name
  The name of the cookbook.
 
@@ -42,6 +39,13 @@
  A list of names of assets used in this cookbook these are often just machine_names.
 
  ## key_constraint
+ The field that specfices the product.  This also how the system knows which recipe_group to use.
+
+ ### field
+ This is detailed information on the field being used as the Key Constraint for more info see [levers](#levers).
+
+ ### valueMap
+ This how the system maps the values of the key constraint on to recipe groups.  Value for each key is the index of the recipe group to use.
 
  ## recipe_groups
  A list of recipe groups,  They look like the following and will be described in more details
@@ -73,26 +77,51 @@
  List of constraints of boundaries?
 
  ### maxDuration
- Max duration of a run.  Looks like the following:
- ```
- {'isEnabled': False, 'minimum': 0, 'unit': 'second'}
- ```
- Here is a break down of each key:
-
- #### isEnabled
- Boolean where or not this is enabled
-
- #### minimum
- Minium run length?
-
- #### unit
- Unit of run length
+ This field is ignored by the system currently
 
  ### topRun
  The value of the topRun in this recipe group.
 
  ### constraints
- List of fields and values that are constraints on the group?
+ List of fields and values that are used to breakup runs They look like the following:
+ ```
+{
+  "asset": "F1_010_BodyMaker_4",
+  "name": "stats__BM 001: Cans Out__val",
+  "type": "continuous",
+  "values": [
+    {
+      "from": null,
+      "from_is_inclusive": false,
+      "to": 340,
+      "to_is_inclusive": false
+    },
+    {
+      "from": 340,
+      "from_is_inclusive": true,
+      "to": 6000,
+      "to_is_inclusive": true
+    },
+    {
+      "from": 6000,
+      "from_is_inclusive": false,
+      "to": null,
+      "to_is_inclusive": false
+    }
+  ]
+}
+ ```
+ #### asset
+ The name of the asset the field used in the constraint.
+
+ #### name
+ The name of the field used for the constraint.
+
+ #### type
+ The data type of the constraint, mostly commonly continuous or categorical
+
+ #### values
+ These are the values to break up runs into.
 
  ### levers
  List of fields that go into recipe runs.  Looks like the following:
@@ -123,7 +152,7 @@ The name of the machine this field belongs to.
 The display name of the machine this field belongs to.
 
 #### fieldType
-Whieter the field is contionuous or discrete or kpi?
+What the type of the field is, commonly KPI, Continous or Categorical.
 
 #### machineType
 The machineType of the machine this field bleongs to.
@@ -170,10 +199,39 @@ Object containing a duration filter and list of record filters
 ```
 
 #### duration
-Same as maxDuration.?
+This is the minimum run duration.
+
+##### isEnabled
+Whieter or not minimum run duration is enabled
+
+##### minimum
+The amount of time of what ever unit the minimum run duration is.
+
+##### unit
+The unit of time the minimum run duration uses.
 
 #### recordFilters
-List of recordFilters?
+List of record based filters.  They look like the following:
+```
+{
+    asset: "F1_010_BodyMaker_4"
+    name: "stats__0_BM: CPM__val"
+    op: "gt"
+    value: 1
+}
+```
+
+##### asset
+Name of the asset the field is on, usually a machine_name.
+
+##### name
+Name of the field.
+
+##### op
+The type of operation used to criteria match this filter.
+
+##### value
+The value of used for the criteria matching operation.
 
 ### dateRange
 The date range that runs can look at.  Looks like this:
@@ -184,17 +242,14 @@ The date range that runs can look at.  Looks like this:
         'relativeUnit': 'day'
     },
     'config': {
-        'mode': 'relative',
-        'selectableRelativeUnits': ['minute', 'hour', 'day', 'week', 'month', 'year'],
-        'enableTimeTypeSelection': True,
-        'showQuarterShortcuts': True
+        ...
     }
 }
 ```
 Here is a breakdown of the keys:
 
 #### value
-The value of the dateRange. For relative config we have two keys, relativeAmount and relativeUnit.
+The value of the dateRange. For relative config we have two keys, relativeAmount and relativeUnit.  This very similiar to [Data Viz time Selection](/docs/commonly_used_data_types/data_viz_query.md#time_selection).
 
 ##### relativeAmount
 The amount of the relative range.
@@ -203,25 +258,13 @@ The amount of the relative range.
 The unit of the amount of the relative range.
 
 #### config
-The config for the daterange.  This does not include the value as that is in it's value. Here is a breakdown of the keysk
-
-##### mode
-The mode for the dateRange this can be relative or absolute?
-
-##### selectableRelativeUnits
-The units you can select for a relative date range, relativeUnit will be one of these.
-
-##### enableTimeTypeSelection
-where or not time type selection is availible on the UI?
-
-#####  showQuarterShortcuts
-Where or not the user can select quarters on the UI?
+This is used by the frontend UI and can be safely ignored for our purposes.
 
 ### statsCalculationSetting
 How the recipe group runs calculations?  Can be set to defualt?
 
 ### deployed
-The deployed version of this recipe_group?  It's a [recipe_group](#recipe_groups) minus this field
+The deployed version of this recipe_group.  It's a [recipe_group](#recipe_groups) minus this field.
 
 ## metadata
 This is created by info, it includes the id of the user that created the cookbook along with their name and email

@@ -62,10 +62,10 @@ Name is the name of the field you are grabing the value of.
 This is an optional parameter and is passed in as integer.  This is the number of minutes you want to look bak for the current value.
 
 ### Normalize Constraints
-This is a function to return a clean string version of constraints. And is called like this:
+This is a function to return a clean string version of constraints values. And is called like this:
 ```
-cli.normalize_constraints(constraints)
+cli.normalize_constraints(constraint_values)
 ```
 
 #### constraints
-Are the constraints on a recipe group.
+The constraint values you wish to normalize, this only works for range values.

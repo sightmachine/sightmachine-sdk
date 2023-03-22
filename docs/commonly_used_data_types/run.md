@@ -77,8 +77,6 @@ A recipe run or just run, is one set of inputs and outcomes for a cookbook recip
                          'var_pop': 100.0}}]}
 ```
 
-We will go over each key in more detail
-
 ## _count
 The number of total records in the run.
 
@@ -130,7 +128,7 @@ A list of the levers attached to this run and their values.  A lever is in this 
 ```
 
 ### asset
-The name of asset this lever is on, this is a machine_name
+The name of asset this lever is on, this is a machine_name.
 
 ### d_pos
 The index of the corresponding dependent variable in the linevis query. Internal use only.
@@ -197,7 +195,7 @@ How we aggregate each field being feed into our kpi formula, can be sum, avg, mi
 The variables in the KPI formula.
 
 #### formula
-The actual formula the kpi uses
+The actual formula the kpi uses.
 
 ### name
 The name of the field that the outcome is being tracked from.
@@ -218,4 +216,4 @@ The maxium value recorded during the run.
 The minimum value recorded during the run.
 
 #### normal
-A measure of the normal distribution of the values recorded during the run
+A measure of the normal distribution of the values recorded during the run.

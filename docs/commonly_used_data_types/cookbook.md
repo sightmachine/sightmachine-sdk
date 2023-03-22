@@ -48,7 +48,7 @@
  This how the system maps the values of the key constraint on to recipe groups.  Value for each key is the index of the recipe group to use.
 
  ## recipe_groups
- A list of recipe groups,  They look like the following and will be described in more details
+ A list of recipe groups.  They look like the following:
  ```
  {
     "id": "id"
@@ -71,7 +71,7 @@
  The id of the recipe group.
 
  ### values
- List of values that currently in the goup?
+ List of values that currently in the goup.
 
  ### runBoundaries
  List of boundaries on runs.
@@ -83,7 +83,7 @@
  The number of top runs to consider when computing lever statistics.
 
  ### constraints
- List of fields and values that are used to breakup runs They look like the following:
+ List of fields and values that are used to breakup runs they look like the following:
  ```
 {
   "asset": "F1_010_BodyMaker_4",
@@ -118,7 +118,7 @@
  The name of the field used for the constraint.
 
  #### type
- The data type of the constraint, most commonly continuous or categorical
+ The data type of the constraint, most commonly continuous or categorical.
 
  #### values
  These are the values to break up runs into.
@@ -137,7 +137,6 @@
     'fieldUnit': 'celsius'
 }
  ```
-And here is a break down of each field:
 
 #### fieldName
 The name of field being looking.
@@ -190,10 +189,10 @@ The field you are trying to optimize with this outcome.  This is the same set up
 The wieght you are putting on this outcome as compared to the others.
 
 #### optimization_func
-How you wish to optimize this field usually 'maximize' or 'minimize'
+How you wish to optimize this field usually 'maximize' or 'minimize'.
 
 ### filters
-Object containing a duration filter and list of record filters
+Object containing a duration filter and list of record filters.  It looks like the following:
 ```
 {'duration': {'isEnabled': False, 'minimum': 0, 'unit': 'second'}, 'recordFilters': []}
 ```
@@ -202,7 +201,7 @@ Object containing a duration filter and list of record filters
 This is the minimum run duration.
 
 ##### isEnabled
-Whieter or not minimum run duration is enabled
+Whieter or not minimum run duration is enabled.
 
 ##### minimum
 The amount of time of what ever unit the minimum run duration is.
@@ -246,7 +245,6 @@ The date range that runs can look at.  Looks like this:
     }
 }
 ```
-Here is a breakdown of the keys:
 
 #### value
 The value of the dateRange. For relative config we have two keys, relativeAmount and relativeUnit.  This very similiar to [Data Viz time Selection](/docs/commonly_used_data_types/data_viz_query.md#time_selection).
@@ -267,7 +265,7 @@ A legacy setting currently unused.
 The deployed version of this recipe_group.  It's a [recipe_group](#recipe_groups) minus this field.
 
 ## metadata
-This is created by info, it includes the id of the user that created the cookbook along with their name and email
+This is created by info, it includes the id of the user that created the cookbook along with their name and email.
 
 ## updatetime
 The time the cookbook was last updated.

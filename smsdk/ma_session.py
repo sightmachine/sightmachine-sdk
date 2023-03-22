@@ -186,6 +186,7 @@ class MaSession:
                 response = getattr(self.session, method.lower())(
                     endpoint, json=url_params
                 )
+
                 if response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))

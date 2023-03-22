@@ -80,10 +80,10 @@ A recipe run or just run, is one set of inputs and outcomes for a cookbook recip
 We will go over each key in more detail
 
 ## _count
-The number of total runs?
+The number of total runs.
 
 ## _count_muted
-The number of runs muted?
+The number of runs muted.
 
 ## _duration_seconds
 The duration of the run in  seconds.
@@ -95,7 +95,7 @@ The start time of the run.
 The end time of the run.
 
 ## _score
-The 'score' this run achieved (out of 1?)
+The 'score' this run achieved.
 
 ## constraint_group_id
 The id of the group of constraints in the cookbook
@@ -110,7 +110,7 @@ The id of the cookbook this run relates to?
 A list of filters on this run
 
 ## i_vals
-??
+This is used by the backend to tell which run is which mostly not needed for our purposes
 
 ## levers
 A list of the levers attached to this run and the values these levers where at.  A lever is in this format:
@@ -219,6 +219,3 @@ The minimum value recorded during the run.
 
 #### normal
 A measure of the normal distrabution of the values recorded during the
-
-#### var_pop
-??

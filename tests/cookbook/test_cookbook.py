@@ -46,7 +46,7 @@ def test_get_top_results(mocked):
     dt = Client("demo")
 
     # Run
-    runs = dt.get_top_results('recipe_group_id', 1)
+    runs = dt.get_cookbook_top_results('recipe_group_id', 1)
 
     # Verify
     assert len(runs['runs']) == 1
@@ -68,7 +68,7 @@ def test_get_current_value(mocked):
     dt = Client("demo")
 
     # Run
-    value = dt.get_current_value([{"asset": "test", "name": "test_field"}])
+    value = dt.get_cookbook_current_value([{"asset": "test", "name": "test_field"}])
 
     # Verify
     assert value[0]['values']['latest'] == 42.42

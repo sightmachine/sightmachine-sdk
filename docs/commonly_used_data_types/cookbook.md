@@ -62,7 +62,7 @@
     "filters": {'duration': {'isEnabled': False, 'minimum': 0, 'unit': 'second'}, 'recordFilters': []},
     "dateRange": {'value': {'relativeAmount': 7, 'relativeUnit': 'day'}, 'config': {'mode': 'relative', 'selectableRelativeUnits': ['minute', 'hour', 'day', 'week', 'month', 'year'], 'enableTimeTypeSelection': True, 'showQuarterShortcuts': True}}
     "computeDeployedDateRange": None,
-    "statsCalculationSetting": "defualt",
+    "statsCalculationSetting": "default",
     "deployed":{recipe_group - deployed field}
  }
  ```
@@ -74,13 +74,13 @@
  List of values that currently in the goup?
 
  ### runBoundaries
- List of constraints of boundaries?
+ List of boundaries on runs.
 
  ### maxDuration
  This field is ignored by the system currently
 
  ### topRun
- The value of the topRun in this recipe group.
+ The number of top runs to consider when computing lever statistics.
 
  ### constraints
  List of fields and values that are used to breakup runs They look like the following:
@@ -111,14 +111,14 @@
   ]
 }
  ```
- #### asset
+ #### assets
  The name of the asset the field used in the constraint.
 
  #### name
  The name of the field used for the constraint.
 
  #### type
- The data type of the constraint, mostly commonly continuous or categorical
+ The data type of the constraint, most commonly continuous or categorical
 
  #### values
  These are the values to break up runs into.
@@ -190,7 +190,7 @@ The field you are trying to optimize with this outcome.  This is the same set up
 The wieght you are putting on this outcome as compared to the others.
 
 #### optimization_func
-How you wish to optimize this field usually 'maximize' or 'minize'
+How you wish to optimize this field usually 'maximize' or 'minimize'
 
 ### filters
 Object containing a duration filter and list of record filters
@@ -261,7 +261,7 @@ The unit of the amount of the relative range.
 This is used by the frontend UI and can be safely ignored for our purposes.
 
 ### statsCalculationSetting
-How the recipe group runs calculations?  Can be set to defualt?
+A legacy setting currently unused.
 
 ### deployed
 The deployed version of this recipe_group.  It's a [recipe_group](#recipe_groups) minus this field.
@@ -273,7 +273,7 @@ This is created by info, it includes the id of the user that created the cookboo
 The time the cookbook was last updated.
 
 ## assets
-A list of assets used in the cookbook?
+A list of assets used in the cookbook.
 
 ## id
 The id of the cookbook

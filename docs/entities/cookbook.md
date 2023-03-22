@@ -14,7 +14,7 @@ This will return a list of [cookbooks](/docs/commonly_used_data_types/cookbook.m
 ### Get Top Results
 This function will get you the top runs of the recipe group you input and is called like the following:
 ```
-cli.get_top_results(recipe_group_id, limit)
+cli.get_cookbook_top_results(recipe_group_id, limit)
 ```
 
 This will return the following:
@@ -36,7 +36,7 @@ This is an int and is optional, if not entered it will default to 10.  This is t
 ### Get Current Value
 This function gets the current values of the fields passed into it.  It is called like the following:
 ```
-get_current_value(variables, minutes)
+cli.get_cookbook_current_value(variables, minutes)
 ```
 
 It returns something like:

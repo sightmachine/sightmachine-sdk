@@ -80,10 +80,10 @@ A recipe run or just run, is one set of inputs and outcomes for a cookbook recip
 We will go over each key in more detail
 
 ## _count
-The number of total runs.
+The number of total records in the run.
 
 ## _count_muted
-The number of runs muted.
+The number of records filtered out in the run.
 
 ## _duration_seconds
 The duration of the run in  seconds.
@@ -98,22 +98,22 @@ The end time of the run.
 The 'score' this run achieved.
 
 ## constraint_group_id
-The id of the group of constraints in the cookbook
+The id of the group of constraints in the cookbook.
 
 ## constraints
-A list of the constraints on this run
+A list of the constraints on this run.
 
 ## cookbook
-The id of the cookbook this run relates to?
+The id of the cookbook this run relates to.
 
 ## filters
-A list of filters on this run
+A list of filters on this run.
 
 ## i_vals
-This is used by the backend to tell which run is which mostly not needed for our purposes
+Lists the constraint and/or run boundary values that were used to delimit this run.
 
 ## levers
-A list of the levers attached to this run and the values these levers where at.  A lever is in this format:
+A list of the levers attached to this run and their values.  A lever is in this format:
 ```
 {
 'asset': 'JB_HM_Diecast_1',
@@ -130,10 +130,10 @@ A list of the levers attached to this run and the values these levers where at. 
 ```
 
 ### asset
-The name of asset this lever is on, this is usually a machine_name
+The name of asset this lever is on, this is a machine_name
 
 ### d_pos
-??
+The index of the corresponding dependent variable in the linevis query. Internal use only.
 
 ### name
 The actual name of the field being looked at.
@@ -145,7 +145,7 @@ The values that this lever was measured at during this run.  It is futher broken
 Average value during the run.
 
 #### count
-The amount of measurements during the run.
+The amount of records during the run.
 
 #### max
 The maxium value recorded during the run.
@@ -154,7 +154,7 @@ The maxium value recorded during the run.
 The minimum value recorded during the run.
 
 #### var_pop
-??
+Population variance.
 
 ## outcomes
 A list of outcomes recorded during the run.  It looks like:
@@ -185,16 +185,16 @@ A list of outcomes recorded during the run.  It looks like:
 The name of the asset that outcome is attached to.  Usually a machine name.
 
 ### d_pos
-??
+The index of the corresponding dependent variable in the linevis query. Internal use only.
 
 ### kpi
 If the outcome is a kpi this field will descripe the kpi.  It has the following keys:
 
 #### aggregates
-How we aggregate each field being feed into our kpi formula, can be sum or avg.
+How we aggregate each field being feed into our kpi formula, can be sum, avg, min or max.
 
 #### dependencies
-The fields that feed into our kpi formula?
+The variables in the KPI formula.
 
 #### formula
 The actual formula the kpi uses
@@ -218,4 +218,4 @@ The maxium value recorded during the run.
 The minimum value recorded during the run.
 
 #### normal
-A measure of the normal distrabution of the values recorded during the
+A measure of the normal distribution of the values recorded during the run

@@ -259,7 +259,7 @@ class Client(ClientV0):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
-    
+
     def get_machine_schema(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
         machineType= smsdkentities.get('machine_type')
         machine_type = self.get_type_from_machine(machine_source)
@@ -289,3 +289,61 @@ class Client(ClientV0):
             fields = [field for field in fields if field.get('type') in types]
 
         return fields
+        
+    def get_cookbooks(self, **kwargs):
+        """
+        Gets all of the cookbooks accessable to the logged in user.
+        :return: list of cookbooks
+        """
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_cookbooks(**kwargs)
+
+    def get_cookbook_top_results(self, recipe_group_id, limit=10, **kwargs):
+        """
+        Gets the top runs for a recipe group.
+        :param recipe_group_id: The id of the recipe group to get runs for.
+        :param limit: The max number of runs wished to return.  Defaults to 10.
+        :return: List of runs
+        """
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_top_results(recipe_group_id, limit, **kwargs)
+    
+    def get_cookbook_current_value(self, variables=[], minutes=1440, **kwargs):
+        """
+        Gets the current value of a field.
+        :param variables: A list of fields to return values for in the format {'asset': machine_name, 'name': field_name}
+        :param minutes: The number of minutes to consider when grabing the current value, defaults to 1440 or 1 day
+        :return: A list of values associated with the proper fields.
+        """
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_current_value(variables, minutes, **kwargs)
+    
+    def normalize_constraint(self, constraint):
+        """
+        Takes a constraint and returns a string version of it's to and from fields.
+        :param constraint: A range constraint field most have a to and from key.
+        :return: A string
+        """
+        to = constraint.get("to")
+        from_constraint = constraint.get("from")
+        return "({},{})".format(to, from_constraint)
+    
+    def normalize_constraints(self, constraints):
+        """
+        Takes a list of constraint and returns string versions of their to and from fields.
+        :param constraint: A list range constraint field each most have a to and from key.
+        :return: A list of strings
+        """
+        constraints_normal = []
+        for constraint in constraints:
+            constraints_normal.append(self.normalize_constraint(constraint))
+        return constraints_normal

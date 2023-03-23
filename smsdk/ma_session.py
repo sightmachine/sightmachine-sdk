@@ -148,6 +148,7 @@ class MaSession:
             limit=np.Inf,
             offset=0,
             db_mode='sql',
+            results_under='results',
             **url_params
     ):
         """
@@ -166,28 +167,33 @@ class MaSession:
         records: List = []
         while True:
             try:
-                remaining_limit = limit - len(records)
-                this_loop_limit = min(remaining_limit, max_page_size)
+                if limit:
+                    remaining_limit = limit - len(records)
+                    this_loop_limit = min(remaining_limit, max_page_size)
 
-                # If we exactly hit our desired number of records -- limit is 0 -- then can stop
-                if this_loop_limit == 0:
-                    return records
+                    # If we exactly hit our desired number of records -- limit is 0 -- then can stop
+                    if this_loop_limit == 0:
+                        return records
+                    url_params["limit"] = this_loop_limit
 
-                url_params["offset"] = offset
-                url_params["limit"] = this_loop_limit
-                url_params["db_mode"] = db_mode
+                if offset:
+                    url_params["offset"] = offset
+                if db_mode:
+                    url_params["db_mode"] = db_mode
 
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
 
                 response = getattr(self.session, method.lower())(
                     endpoint, json=url_params
                 )
+
                 if response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()
-                        data = data['results']
+                        if results_under:
+                            data = data[results_under]
                         if isinstance(data, dict):
                             data = [data]
                     except JSONDecodeError as e:
@@ -197,6 +203,8 @@ class MaSession:
                     return []
 
                 records.extend(data)
+                if limit is None:
+                    return records
                 if len(data) < this_loop_limit:
                     # Cursor exhausted, so just return
                     return records

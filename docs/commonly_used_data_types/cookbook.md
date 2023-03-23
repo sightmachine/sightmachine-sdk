@@ -39,7 +39,7 @@
  A list of names of assets used in this cookbook these are often just machine_names.
 
  ## key_constraint
- The field that specfices the product.  This also how the system knows which recipe_group to use.
+ The field that specifies the product.  This also how the system knows which recipe_group to use.
 
  ### field
  This is detailed information on the field being used as the Key Constraint for more info see [levers](#levers).

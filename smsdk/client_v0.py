@@ -290,9 +290,7 @@ class ClientV0(object):
             if not '_only' in kwargs:
                 print('_only not specified.  Selecting first 50 fields.')
                 only_names = schema['name'].tolist()[:50]
-                toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
-
-                kwargs['_only'] = only_names + toplevel
+                kwargs['_only'] = only_names
             else:
                 if ('Machine' not in kwargs['_only']) and ('machine__source' not in kwargs['_only']):
                     print("Adding Machine to _only")

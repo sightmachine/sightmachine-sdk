@@ -12,7 +12,7 @@ except ImportError:
     from pandas.io.json import json_normalize
 
 from smsdk.utils import get_url
-from smsdk.Auth.auth import Authenticator
+from smsdk.Auth.auth import Authenticator, X_SM_DB_SCHEMA
 from smsdk.tool_register import smsdkentities
 from smsdk.client_v0 import ClientV0
 
@@ -118,6 +118,9 @@ class Client(ClientV0):
         # Setup Authenticator
         self.auth = Authenticator(self)
         self.session = self.auth.session
+    
+    def select_db_schema(self, schema_name):
+        self.session.headers.update({X_SM_DB_SCHEMA:schema_name})
 
     def get_data_v1(self, ename, util_name, normalize=True, *args, **kwargs):
         """
@@ -214,24 +217,86 @@ class Client(ClientV0):
         df = self.get_data_v1('part_v1', 'get_parts', normalize, *args, **kwargs)
 
         return df
+    
+    def get_kpis(self, **kwargs):
+        kpis = smsdkentities.get('kpi')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpis(self.session, base_url).get_kpis(**kwargs)
+    
+    def get_kpis_for_asset(self, **kwargs):
+        kpis = smsdkentities.get('kpi')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
+    
+    def get_kpi_data_viz(self, machine_sources=None, kpis=None, i_vars=None, time_selection=None, **kwargs):
+        kpi_entity = smsdkentities.get('kpi')
+        if machine_sources:
+            machine_types = []
+            for machine_source in machine_sources:
+                machine_types.append(self.get_type_from_machine(machine_source, **kwargs))
+            kwargs["asset_selection"]= {
+                "machine_source": machine_sources,
+                "machine_type": list(set(machine_types))
+            }
+        
+        if kpis:
+            d_vars = []
+            for kpi in kpis:
+                d_vars.append({"name": kpi, "aggregate": ["avg"]})
+            kwargs['d_vars'] = d_vars
+        
+        if i_vars:
+            kwargs['i_vars'] = i_vars
+        
+        if time_selection:
+            kwargs["time_selection"] = time_selection
+        
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
+        
+    def get_type_from_machine(self, machine_source=None, **kwargs):
+        machine = smsdkentities.get('machine')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return machine(self.session, base_url).get_type_from_machine_name(machine_source, **kwargs)
 
+    def get_machine_schema(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
+        machineType= smsdkentities.get('machine_type')
+        machine_type = self.get_type_from_machine(machine_source)
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
+        fields = [field for field in fields if not field.get('ui_hidden') or show_hidden]
+        if len(types) > 0:
+            fields = [field for field in fields if field.get('type') in types]
 
-    @ClientV0.get_machine_schema_decorator
-    def get_machine_schema(self, machine_source, types=[], return_mtype=False, **kwargs):
-        stats = kwargs.get('stats', [])
-        fields = []
-        for stat in stats:
-            if not stat.get('display', {}).get('ui_hidden', False):
-                if len(types) == 0 or stat['analytics']['columns'][0]['type'] in types:
-                    try:
-                        fields.append({'name': stat['analytics']['columns'][0]['name'],
-                                       'display': stat['display']['title_prefix'],
-                                       'type': stat['analytics']['columns'][0]['type']})
-                    except:
-                        log.warning(
-                            f"Unknow stat schema identified :: machine_type {machine_source} - "
-                            f"title_prefix :: {stat.get('display', {}).get('title_prefix', '')}")
+        frame = pd.DataFrame(fields).rename(columns={"display_name": "display", "type": "sight_type", "data_type": "type"})
+
+        if return_mtype:
+            return (machine_type, frame)
+
+        return frame
+    
+    def get_fields_of_machine_type(self, machine_type, types=[], show_hidden=False, **kwargs):
+        machineType= smsdkentities.get('machine_type')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
+        fields = [field for field in fields if not field.get('ui_hidden') or show_hidden]
+        if len(types) > 0:
+            fields = [field for field in fields if field.get('type') in types]
+
         return fields
+        
 
     def _get_factories(self, *args, normalize=True, **kwargs):
         """
@@ -335,3 +400,60 @@ class Client(ClientV0):
             return machine_types['source_type_clean'].to_list()
         else:
             return machine_types['source_type'].to_list()
+    def get_cookbooks(self, **kwargs):
+        """
+        Gets all of the cookbooks accessable to the logged in user.
+        :return: list of cookbooks
+        """
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_cookbooks(**kwargs)
+
+    def get_cookbook_top_results(self, recipe_group_id, limit=10, **kwargs):
+        """
+        Gets the top runs for a recipe group.
+        :param recipe_group_id: The id of the recipe group to get runs for.
+        :param limit: The max number of runs wished to return.  Defaults to 10.
+        :return: List of runs
+        """
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_top_results(recipe_group_id, limit, **kwargs)
+    
+    def get_cookbook_current_value(self, variables=[], minutes=1440, **kwargs):
+        """
+        Gets the current value of a field.
+        :param variables: A list of fields to return values for in the format {'asset': machine_name, 'name': field_name}
+        :param minutes: The number of minutes to consider when grabing the current value, defaults to 1440 or 1 day
+        :return: A list of values associated with the proper fields.
+        """
+        cookbook = smsdkentities.get('cookbook')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return cookbook(self.session, base_url).get_current_value(variables, minutes, **kwargs)
+    
+    def normalize_constraint(self, constraint):
+        """
+        Takes a constraint and returns a string version of it's to and from fields.
+        :param constraint: A range constraint field most have a to and from key.
+        :return: A string
+        """
+        to = constraint.get("to")
+        from_constraint = constraint.get("from")
+        return "({},{})".format(to, from_constraint)
+    
+    def normalize_constraints(self, constraints):
+        """
+        Takes a list of constraint and returns string versions of their to and from fields.
+        :param constraint: A list range constraint field each most have a to and from key.
+        :return: A list of strings
+        """
+        constraints_normal = []
+        for constraint in constraints:
+            constraints_normal.append(self.normalize_constraint(constraint))
+        return constraints_normal

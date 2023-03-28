@@ -81,6 +81,15 @@ Similarly, if you need to use your own CA Certificates, set the CURL_CA_BUNDLE e
 CURL_CA_BUNDLE="/path/to/my/certificates"
 ```
 
+### Selecting database schema
+By default, the production pipeline schema will be considered to retrive data from the tenant.
+To select a particular development pipeline schema you can use following function call:
+
+```
+db_schema = pipeline_id 
+cli.select_db_schema(schema_name=db_schema)
+```
+
 ### Retrieving Data
 
 The typical workflow for getting data from Sight Machine is:

@@ -1,4 +1,5 @@
 from json.decoder import JSONDecodeError
+from time import sleep
 from typing import List
 import json
 import requests
@@ -23,6 +24,7 @@ RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.jso
 SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
+X_SM_DB_SCHEMA = RESOURCE_CONFIG['x_sm_db_schema']
 
 def dict_to_df(data, normalize=True):
     if normalize:
@@ -174,6 +176,7 @@ class MaSession:
             limit=np.Inf,
             offset=0,
             db_mode='sql',
+            results_under='results',
             **url_params
     ):
         """
@@ -192,28 +195,33 @@ class MaSession:
         records: List = []
         while True:
             try:
-                remaining_limit = limit - len(records)
-                this_loop_limit = min(remaining_limit, max_page_size)
+                if limit:
+                    remaining_limit = limit - len(records)
+                    this_loop_limit = min(remaining_limit, max_page_size)
 
-                # If we exactly hit our desired number of records -- limit is 0 -- then can stop
-                if this_loop_limit == 0:
-                    return records
+                    # If we exactly hit our desired number of records -- limit is 0 -- then can stop
+                    if this_loop_limit == 0:
+                        return records
+                    url_params["limit"] = this_loop_limit
 
-                url_params["offset"] = offset
-                url_params["limit"] = this_loop_limit
-                url_params["db_mode"] = db_mode
+                if offset:
+                    url_params["offset"] = offset
+                if db_mode:
+                    url_params["db_mode"] = db_mode
 
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
 
                 response = getattr(self.session, method.lower())(
                     endpoint, json=url_params
                 )
+
                 if response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()
-                        data = data['results']
+                        if results_under:
+                            data = data[results_under]
                         if isinstance(data, dict):
                             data = [data]
                     except JSONDecodeError as e:
@@ -223,6 +231,8 @@ class MaSession:
                     return []
 
                 records.extend(data)
+                if limit is None:
+                    return records
                 if len(data) < this_loop_limit:
                     # Cursor exhausted, so just return
                     return records
@@ -231,6 +241,50 @@ class MaSession:
             except Exception as e:
                 log.exception(str(e), exc_info=1)
                 return records
+            
+    
+    def _complete_async_task(
+            self,
+            endpoint,
+            method="post",
+            db_mode='sql',
+            **url_params
+    ):
+        if url_params.get('db_mode') == None:
+            url_params['db_mode'] = db_mode
+        try:
+            response = getattr(self.session, method.lower())(
+                        endpoint, json=url_params
+                    )
+            if response.status_code not in [200, 201]:
+                raise ValueError("Error - {}".format(response.text))
+            data = response.json()
+            task_id = data['response']['task_id']
+            while True:
+                try:
+                    response = self.session.get(
+                            endpoint+'/'+task_id, json=url_params
+                        )
+                    sleep(1)
+                    if response.status_code not in [200, 201]:
+                        raise ValueError("Error - {}".format(response.text))
+                    data = response.json()
+                    state = data['response']['state']
+                    if state == 'SUCCESS':
+                        return data['response']['meta']['results']
+                    
+                    if state == 'FAILURE' or state == 'REVOKED':
+                        raise ValueError("Error - {}".format(response.text))
+                except:
+                    import traceback
+
+                    print(traceback.print_exc())
+                    return []
+        except:
+            import traceback
+
+            print(traceback.print_exc())
+            return []
 
     def get_json_headers(self):
         """

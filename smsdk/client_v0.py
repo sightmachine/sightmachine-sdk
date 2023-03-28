@@ -290,9 +290,7 @@ class ClientV0(object):
             if not '_only' in kwargs:
                 print('_only not specified.  Selecting first 50 fields.')
                 only_names = schema['name'].tolist()[:50]
-                toplevel = ['machine__source', 'starttime', 'endtime', 'total', 'record_time', 'shift', 'output']
-
-                kwargs['_only'] = only_names + toplevel
+                kwargs['_only'] = only_names
             else:
                 if ('Machine' not in kwargs['_only']) and ('machine__source' not in kwargs['_only']):
                     print("Adding Machine to _only")
@@ -424,7 +422,7 @@ class ClientV0(object):
     def get_machine_schema_decorator(func):
 
         @functools.wraps(func)
-        def inner(self, machine_source, types=[], return_mtype=False, **kwargs):
+        def inner(self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs):
 
             try:
                 machine_type = self.get_machines(source=machine_source)['source_type'][0]
@@ -448,7 +446,7 @@ class ClientV0(object):
                 print(f"Exception in getting machine type stats {ex}")
             kwargs['stats'] = stats
 
-            fields = func(self, machine_source, types=[], return_mtype=False, **kwargs)
+            fields = func(self, machine_source, types, show_hidden, return_mtype, **kwargs)
 
             if return_mtype:
                 return machine_type, pd.DataFrame(fields)
@@ -698,7 +696,6 @@ class ClientV0(object):
         query_params = {'_only': ['source_type', 'source_type_clean'],
                         '_order_by': 'source_type_clean'}
         machine_types = self.get_data('machine_type', 'get_machine_types', normalize=True, **query_params)
-
         if clean_strings_out:
             return machine_types['source_type_clean'].to_list()
         else:

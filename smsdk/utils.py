@@ -43,7 +43,6 @@ def get_url(protocol, tenant, site_domain):
     return "{}://{}.{}".format(protocol, tenant, site_domain)
 
 def check_kw(kw: str) -> bool:
-    print(f"type of kw is {type(kw)}")
     for key in [
         "machine_type", 
         "Machine",

@@ -11,7 +11,7 @@ try:
 except ImportError:
     from pandas.io.json import json_normalize
 
-from smsdk.utils import get_url
+from smsdk.utils import get_url, escape_mongo_field_name
 from smsdk.Auth.auth import Authenticator, X_SM_DB_SCHEMA
 from smsdk.tool_register import smsdkentities
 from smsdk.client_v0 import ClientV0
@@ -180,7 +180,7 @@ class Client(ClientV0):
                     data.drop(joined_cols, axis=1)
 
             # To keep consistent, rename columns back from '.' to '__'
-            data.columns = [name.replace('.', '__') for name in data.columns]
+            data.columns = [escape_mongo_field_name(name)for name in data.columns]
 
         else:
             # raise error if requested for unregistered utility

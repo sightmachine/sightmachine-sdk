@@ -18,6 +18,7 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 from smsdk import config
+from smsdk.utils import escape_mongo_field_name
 
 RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.json"))
 
@@ -399,7 +400,7 @@ class MaSession:
             data = dict_to_df(data, normalize=normalize)
 
             # To keep consistent, rename columns back from '.' to '__'
-            data.columns = [name.replace('.', '__') for name in data.columns]
+            data.columns = [escape_mongo_field_name(name) for name in data.columns]
 
             if 'endtime' in data.columns:
                 data['endtime'] = pd.to_datetime(data['endtime'])

@@ -43,6 +43,12 @@ def get_url(protocol, tenant, site_domain):
     return "{}://{}.{}".format(protocol, tenant, site_domain)
 
 def check_kw(kw: str) -> bool:
+    """This function is used to remove code duplicacy where
+    it checks whether the kw is of special type of keyword supported
+    in v0 sdk and it also checks the type of keywprd so that it
+    can be parsed effectively for supportig v0 style of using sdk
+    """
+
     for key in [
         "machine_type", 
         "Machine",

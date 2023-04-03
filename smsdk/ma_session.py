@@ -259,6 +259,49 @@ class MaSession:
 
             print(traceback.print_exc())
             return []
+    
+    def _download_csv(
+            self,
+            endpoint,
+            method="post",
+            db_mode='sql',
+            **url_params
+    ):
+        if url_params.get('db_mode') == None:
+            url_params['db_mode'] = db_mode
+        try:
+            response = getattr(self.session, method.lower())(
+                        endpoint, json=url_params
+                    )
+            if response.status_code not in [200, 201]:
+                raise ValueError("Error - {}".format(response.text))
+            data = response.json()
+            task_id = data['response']['task_id']
+            while True:
+                try:
+                    response = self.session.get(
+                           '/v1/export/tasks/'+task_id+'/check', json=url_params
+                        )
+                    sleep(1)
+                    if response.status_code not in [200, 201]:
+                        raise ValueError("Error - {}".format(response.text))
+                    data = response.json()
+                    state = data['response']['state']
+                    if state == 'CREATED':
+                        download_url = data['response']['meta']['download_url']
+                    
+                    if state == 'FAILURE' or state == 'REVOKED':
+                        raise ValueError("Error - {}".format(response.text))
+                except:
+                    import traceback
+
+                    print(traceback.print_exc())
+                    return []
+        except:
+            import traceback
+
+            print(traceback.print_exc())
+            return []
 
     def get_json_headers(self):
         """

@@ -347,3 +347,53 @@ class Client(ClientV0):
         for constraint in constraints:
             constraints_normal.append(self.normalize_constraint(constraint))
         return constraints_normal
+    
+    def get_lines(self, **kwargs):
+        """
+        Returns all the lines for the facility
+        """
+        lines = smsdkentities.get('line')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return lines(self.session, base_url).get_lines(**kwargs)
+    
+    one_day_relative = {
+        "time_type": "relative",
+        "relative_start": 1,
+        "relative_unit": "day",
+        "ctime_tz": "America/Los_Angeles"
+    }
+    
+    def get_line_data(self, assets, fields=[],  time_selection=one_day_relative, asset_time_offset={}, **kwargs):
+        """
+        Returns all the lines for the facility
+        :param assets: A list of assets you wish to get data for
+        :param asset_time_offset: A dictionary of the time offsets to use for assets
+        :param fields: A list of dicts that has the asset and name of fields you wish to select
+        :param time_selection: A time selection for your query defaults to one day relative
+        """
+        lines = smsdkentities.get('line')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        
+        asset_selection = []
+        for asset in assets:
+            asset_selection.append({"asset": asset})
+            if asset_time_offset.get(asset) == None:
+                asset_time_offset[asset] = {
+                    'interval': 0,
+                    'period': 'minutes'
+                }
+
+        kwargs["asset_selection"] = asset_selection
+        kwargs["asset_time_offset"] = asset_time_offset
+        kwargs["select"] = fields
+        kwargs["time_selection"] = time_selection
+        kwargs["db_mode"] = 'sql'
+        kwargs["model"] = 'line'
+        kwargs["model_type"] = 'data-table'
+        kwargs["offset"] = 0
+
+        return lines(self.session, base_url).get_line_data(**kwargs)

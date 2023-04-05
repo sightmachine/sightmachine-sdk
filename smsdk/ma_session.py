@@ -176,7 +176,7 @@ class MaSession:
                         return records
                     url_params["limit"] = this_loop_limit
 
-                if offset:
+                if offset or url_params.get("model") == 'line':
                     url_params["offset"] = offset
                 if db_mode:
                     url_params["db_mode"] = db_mode

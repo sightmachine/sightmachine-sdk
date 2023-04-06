@@ -1,0 +1,156 @@
+version: 2.1
+
+workflows: 
+  code-commit:
+    jobs:
+      - black-python-code-formatter:
+          context: org-sightmachine
+      - run-unit-tests:
+          context: org-sightmachine
+      - code-coverage-report:
+          context: org-sightmachine
+          requires:
+            - run-unit-tests
+
+orbs:
+  gcp-gke: circleci/gcp-gke@0.2.0
+
+commands:
+  disable_docker_hub:
+    description: "Disable Docker Hub access for running container/VM."
+    steps:
+      - run:
+          name: Disable Docker Hub
+          command: |
+            mkdir -p ~/.docker/
+            echo '{"auths":{"https://index.docker.io/v1/":{"auth":"YTpiYWQK"}}}' > ~/.docker/config.json
+  disable_build_if_not_pr:
+    description: "Stop the current build if not in a PR context."
+    steps:
+      - run:
+          name: Abort if not building a pull request
+          command: |
+            if [ -z "$CIRCLE_PULL_REQUEST" ]; then
+              circleci-agent step halt
+            fi
+  configure_environment:
+    description: "Initial environment setup: Configure Gcloud, GCR, and conditionally installs Docker Compose."
+    steps:
+      - run:
+          name: Authorize gcloud
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project sightmachine-178216
+            gcloud --quiet config set compute/zone us-west1-a
+            gcloud --quiet container clusters get-credentials dev-k8s-uw1
+            ## To authenticate to Container Registry, use gcloud as a Docker credential helper
+            echo y | gcloud auth configure-docker
+      - run:
+          name: Log in to Google Container Registry
+          command: echo "$GCR_JSON_KEY" | docker login -u _json_key --password-stdin https://gcr.io
+
+jobs:
+  ## ------------------ Run Unit Tests ------------------
+
+  run-unit-tests:
+    # Use VM over docker container
+    machine:
+      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+      image: ubuntu-2204:2022.07.1
+    steps:
+      # Make sure that the build doesn't accidentally pull images from Docker Hub.
+      # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
+      - disable_docker_hub
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - configure_environment
+      - run:
+          name: Run Unit Tests
+          #command: |
+          #  source /tmp/workspace/custom.env
+          #  docker-compose exec ma /bin/bash -c "/opt/sightmachine/ma/circleci_scripts/execute_unit_tests.sh ${CIRCLE_NODE_INDEX}"
+          command: |
+            pytest tests
+
+      # Store the test results on each node so we can see failures
+      - store_test_results:
+          path: /tmp/workspace/junit/
+
+      - store_artifacts:
+          name: Save Unit Test Results
+          path: /tmp/workspace/junit/
+
+      - run:
+          name: Copy Coverage Results to Workspace
+          command: |
+            mkdir -p /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}
+            docker cp ma:/opt/sightmachine/ma/.coverage /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}/.coverage
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - "coverage-report-*"
+
+## ------------------ Generate Code Coverage Report ------------------
+
+  code-coverage-report:
+    parameters:
+      with_merge: # Part of the PR-merge workflow
+        type: boolean
+        default: false
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: gcr.io/sightmachine-178216/cimg/python:3.7.15
+        auth:
+          username: _json_key
+          password: $GCR_JSON_KEY
+    steps:
+      - when:
+          condition: << parameters.with_merge >>
+          steps:
+            - disable_build_if_not_pr
+      # Make sure that the build doesn't accidentally pull images from Docker Hub.
+      # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
+      - disable_docker_hub
+      # Coverage html requires source code to build HTML views
+      - checkout
+      # Need a workspace for all the coverage reports
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Compile Coverage Reports
+          command: |
+            set -x
+            pip install -r requirements-coveralls.txt
+            coverage combine /tmp/workspace/coverage-report-*/.coverage
+            coveralls
+
+  ## ------------------ Check Black python code formate ------------------
+  black-python-code-formatter:
+    parameters:
+      with_merge: # Part of the PR-merge workflow
+        type: boolean
+        default: false
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: gcr.io/sightmachine-178216/cimg/python:3.7.12
+        auth:
+          username: _json_key
+          password: $GCR_JSON_KEY
+    steps:
+      - when:
+          condition: << parameters.with_merge >>
+          steps:
+            - disable_build_if_not_pr
+      - checkout
+      - run:
+          name: Run black code formatter check
+          command: |
+            set -x
+            pip install -r ./requirements-black.txt
+            black --check .
+            if [ $? -ne 0 ]; then
+              echo "Unformatted code detected. Please run black --fast . locally and commit to format your code." >&2
+              exit 1
+            fi

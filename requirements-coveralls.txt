@@ -1,4 +1,0 @@
-# Use public repo for coverall upload
-
-coverage==6.5.0
-coveralls

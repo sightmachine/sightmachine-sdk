@@ -18,7 +18,7 @@ This will return a list of lines and will like the following:
 ### Get Line Data
 This function allows you to pull data from our line model and is call in the following way:
 ```
-cli.get_line_data(assets, fields,  time_selection, asset_time_offset)
+cli.get_line_data(assets, fields,  time_selection, asset_time_offset, filters)
 ```
 
 It will return something like:
@@ -51,7 +51,37 @@ This is the same time selection we use in other places more details can be found
 ```
 
 #### asset_offset
-This is used to set offsets between machines in a line.  This is a dictionary that looks like this:
+This is used to set offsets between machines in a line.  This is optional and will defualt to no offset if not given.  This is a dictionary that looks like this:
 ```
 {"F2_010_BodyMaker_2": {'interval': 1, 'period': 'minutes'}}
 ```
+
+#### filters
+This is optional and a way to to filter the data.  This a list of objects that each look like the following:
+```
+{
+    "asset": "F2_010_BodyMaker_1",
+    "name": "stats__0_BM 008: Cans Out__val",
+    "op": "gt",
+    "value": 35200.0
+}
+```
+
+##### asset
+The name of the asset this filter is looking at. This will be a machine_name.
+
+##### name
+The name of the field you are looking at for this machine.
+
+##### op
+The operation you are filtering with.  Options inclue:
+lt: less than
+gt: greater than
+lte: less than or equal to
+gte: greater than or equal to
+eq: equal to
+in: in
+ne: not equal to
+
+##### value
+The value you are comparing the field to.

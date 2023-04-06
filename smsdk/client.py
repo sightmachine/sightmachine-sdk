@@ -365,7 +365,7 @@ class Client(ClientV0):
         "ctime_tz": "America/Los_Angeles"
     }
     
-    def get_line_data(self, assets, fields=[],  time_selection=one_day_relative, asset_time_offset={}, **kwargs):
+    def get_line_data(self, assets, fields=[],  time_selection=one_day_relative, asset_time_offset={}, filters=[], **kwargs):
         """
         Returns all the lines for the facility
         :param assets: A list of assets you wish to get data for
@@ -386,6 +386,10 @@ class Client(ClientV0):
                     'interval': 0,
                     'period': 'minutes'
                 }
+        where = []
+        if len(filters) > 0:
+            for filter in filters:
+                where.append({"nested": [filter]})
 
         kwargs["asset_selection"] = asset_selection
         kwargs["asset_time_offset"] = asset_time_offset
@@ -395,5 +399,6 @@ class Client(ClientV0):
         kwargs["model"] = 'line'
         kwargs["model_type"] = 'data-table'
         kwargs["offset"] = 0
+        kwargs["where"] = where
 
         return lines(self.session, base_url).get_line_data(**kwargs)

@@ -166,6 +166,7 @@ class Authenticator(MaSession):
         try:
             url = "{}{}".format(self.host, ENDPOINTS["Cycle"]["alt_url"])
             resp = self._get_records(url, _limit=1, _only=["_id"])
+            breakpoint()
             return isinstance(resp, list) and "error" not in resp
         except Exception:  # pylint:disable=broad-except
             return False

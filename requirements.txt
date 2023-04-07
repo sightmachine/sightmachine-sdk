@@ -1,6 +1,6 @@
 numpy>=1.8.2
 requests>=2.24.0
-pytest>=6.0.2
+pytest>=4.6.11
 pandas>=0.25.2
 mock>=4.0.2
 importlib-resources>=3.0.0

@@ -72,7 +72,7 @@ jobs:
           #  source /tmp/workspace/custom.env
           #  docker-compose exec ma /bin/bash -c "/opt/sightmachine/ma/circleci_scripts/execute_unit_tests.sh ${CIRCLE_NODE_INDEX}"
           command: |
-            pytest tests
+            python -m pytest tests
 
       # Store the test results on each node so we can see failures
       - store_test_results:

@@ -46,12 +46,12 @@ class Line(SmsdkEntities, MaSession):
         return records
     
     @mod_util
-    def get_line_data(self, *args, **kwargs):
+    def get_line_data(self, limit = 400, offset=0, *args, **kwargs):
         """
         Returns a list of all lines
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Line"]["url"])
-        records = self._get_records_v1(url, method="post", **kwargs)
+        records = self._get_records_v1(url, method="post", limit=limit, offset=offset, **kwargs)
 
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

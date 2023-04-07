@@ -18,7 +18,7 @@ This will return a list of lines and will like the following:
 ### Get Line Data
 This function allows you to pull data from our line model and is call in the following way:
 ```
-cli.get_line_data(assets, fields,  time_selection, asset_time_offset, filters)
+cli.get_line_data(assets, fields,  time_selection, asset_time_offset, filters, limit, offset)
 ```
 
 It will return something like:
@@ -85,3 +85,9 @@ ne: not equal to
 
 ##### value
 The value you are comparing the field to.
+
+#### limit
+The max number of records you wish to get.
+
+#### offset
+The number of records at the begining you wish to skip.

@@ -365,13 +365,16 @@ class Client(ClientV0):
         "ctime_tz": "America/Los_Angeles"
     }
     
-    def get_line_data(self, assets, fields=[],  time_selection=one_day_relative, asset_time_offset={}, filters=[], **kwargs):
+    def get_line_data(self, assets, fields=[],  time_selection=one_day_relative, asset_time_offset={}, filters=[], limit=400, offset=0, **kwargs):
         """
         Returns all the lines for the facility
         :param assets: A list of assets you wish to get data for
         :param asset_time_offset: A dictionary of the time offsets to use for assets
         :param fields: A list of dicts that has the asset and name of fields you wish to select
         :param time_selection: A time selection for your query defaults to one day relative
+        :param filter: A list of filters on the data
+        :param limit: A limit of records to grab defaults to 400
+        :param offset: The offset to start the data at
         """
         lines = smsdkentities.get('line')
         base_url = get_url(
@@ -398,7 +401,6 @@ class Client(ClientV0):
         kwargs["db_mode"] = 'sql'
         kwargs["model"] = 'line'
         kwargs["model_type"] = 'data-table'
-        kwargs["offset"] = 0
         kwargs["where"] = where
 
-        return lines(self.session, base_url).get_line_data(**kwargs)
+        return lines(self.session, base_url).get_line_data(limit=limit, offset=offset, **kwargs)

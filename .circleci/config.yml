@@ -68,7 +68,7 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
 
-      - configure_environment
+      # - configure_environment
       - python/install-packages:
           pkg-manager: pip
       - run:

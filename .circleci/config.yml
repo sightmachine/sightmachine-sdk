@@ -59,8 +59,6 @@ jobs:
     machine:
       # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
       image: ubuntu-2204:2022.07.1
-    docker:
-      - image: cimg/python:3.11.0
     steps:
       # Make sure that the build doesn't accidentally pull images from Docker Hub.
       # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.

@@ -14,7 +14,7 @@ workflows:
 
 orbs:
   gcp-gke: circleci/gcp-gke@0.2.0
-  python: circleci/python@2.1.1
+  # python: circleci/python@2.1.1
 
 commands:
   disable_docker_hub:
@@ -67,15 +67,13 @@ jobs:
           at: /tmp/workspace
 
       - configure_environment
-
-      - python/install-packages:
-          pkg-manager: pip
       - run:
           name: Run Unit Tests
           #command: |
           #  source /tmp/workspace/custom.env
           #  docker-compose exec ma /bin/bash -c "/opt/sightmachine/ma/circleci_scripts/execute_unit_tests.sh ${CIRCLE_NODE_INDEX}"
           command: |
+            pip install -r requirements.txt 
             pytest tests
 
       # Store the test results on each node so we can see failures

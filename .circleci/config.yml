@@ -69,14 +69,15 @@ jobs:
           at: /tmp/workspace
 
       # - configure_environment
-      - python/install-packages:
-          pkg-manager: pip
+      # - python/install-packages:
+      #     pkg-manager: pip
       - run:
           name: Run Unit Tests
           #command: |
           #  source /tmp/workspace/custom.env
           #  docker-compose exec ma /bin/bash -c "/opt/sightmachine/ma/circleci_scripts/execute_unit_tests.sh ${CIRCLE_NODE_INDEX}"
           command: |
+            pwd
             pytest tests
 
       # Store the test results on each node so we can see failures

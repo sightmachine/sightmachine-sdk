@@ -84,6 +84,10 @@ jobs:
       # Store the test results on each node so we can see failures
       - store_test_results:
           path: test-results
+      
+      - store_artifacts:
+          name: Save Unit Test Results
+          path: test-results
 
 
       - run:
@@ -91,7 +95,7 @@ jobs:
           command: |
             mkdir -p /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}
             cd /home/circleci/project/test-results/
-            ls
+            ls -a
             cp test-results/.coverage /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}/.coverage
       - persist_to_workspace:
           root: /tmp/workspace

@@ -90,6 +90,8 @@ jobs:
           name: Copy Coverage Results to Workspace
           command: |
             mkdir -p /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}
+            cd /home/circleci/project/test-results/
+            ls
             cp test-results/.coverage /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}/.coverage
       - persist_to_workspace:
           root: /tmp/workspace

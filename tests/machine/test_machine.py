@@ -42,79 +42,87 @@ def test_get_type(mocked):
     class ResponseGet:
         ok = True
         text = "Success"
-        status_code=200
+        status_code = 200
 
         @staticmethod
         def json():
-            return {'results':[{"machine":[{"name":"test", "type":'test_type'}]}]}
+            return {"results": [{"machine": [{"name": "test", "type": "test_type"}]}]}
 
-    mocked.return_value = MagicMock(
-       get=MagicMock(return_value=ResponseGet())
-    )
+    mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
 
     dt = Client("demo")
 
     # Run
-    type = dt.get_type_from_machine('test')
+    type = dt.get_type_from_machine("test")
 
     # Verify
-    assert type == 'test_type'
+    assert type == "test_type"
 
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
 def test_get_machine_schema(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
-    mocked_types.return_value = 'test'
+    mocked_types.return_value = "test"
     dt = Client("demo")
 
     # Run
-    fields = dt.get_machine_schema('test')
+    fields = dt.get_machine_schema("test")
     assert fields.shape == (2, 3)
     # Verify
-    assert fields.name.sort_values().tolist() == ['stat__test_float', 'stat__test_string']
+    assert fields.name.sort_values().tolist() == [
+        "stat__test_float",
+        "stat__test_string",
+    ]
 
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
 def test_get_machine_schema_hidden(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
-    mocked_types.return_value = 'test'
+    mocked_types.return_value = "test"
     dt = Client("demo")
 
     # Run
-    fields = dt.get_machine_schema('test', show_hidden=True)
+    fields = dt.get_machine_schema("test", show_hidden=True)
     assert fields.shape == (3, 4)
 
     # Verify
-    assert fields.name.sort_values().tolist() == ['stat__test_float', 'stat__test_hidden', 'stat__test_string']
+    assert fields.name.sort_values().tolist() == [
+        "stat__test_float",
+        "stat__test_hidden",
+        "stat__test_string",
+    ]
+
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
 def test_get_machine_schema_types(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
-    mocked_types.return_value = 'test'
+    mocked_types.return_value = "test"
     dt = Client("demo")
 
     # Run
-    fields = dt.get_machine_schema('test', types=['float'])
+    fields = dt.get_machine_schema("test", types=["float"])
     assert fields.shape == (1, 3)
 
     # Verify
-    assert fields.name.sort_values().tolist() == ['stat__test_float']
+    assert fields.name.sort_values().tolist() == ["stat__test_float"]
+
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
 def test_get_machine_schema_types_return_mtype(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
-    mocked_types.return_value = 'test'
+    mocked_types.return_value = "test"
     dt = Client("demo")
 
     # Run
-    fields = dt.get_machine_schema('test', return_mtype=True)
-    assert fields[0] == 'test'
+    fields = dt.get_machine_schema("test", return_mtype=True)
+    assert fields[0] == "test"
     assert fields[1].shape == (2, 3)
     # Verify
-    assert fields[1].name.sort_values().tolist() == ['stat__test_float', 'stat__test_string']
-
-
+    assert fields[1].name.sort_values().tolist() == [
+        "stat__test_float",
+        "stat__test_string",
+    ]

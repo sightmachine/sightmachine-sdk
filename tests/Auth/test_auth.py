@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 
 def test_auth_init():
-    """ Test that Authenticator host is set properly """
+    """Test that Authenticator host is set properly"""
     tenant = "demo"
     cli = client.Client(tenant)
     authed = cli.auth
@@ -19,7 +19,7 @@ def test_auth_init():
 
 @patch("smsdk.ma_session.Session")
 def test_auth__auth_basic_success(mocked):
-    """ Test that Authenticator can use basic auth """
+    """Test that Authenticator can use basic auth"""
 
     class Response:
         ok = True
@@ -100,7 +100,7 @@ def test_auth_route_auth(mocked_apikey, mocked_basic):
 
 @patch("smsdk.ma_session.Session")
 def test_auth__auth_apikey_success(mocked):
-    """ Test that Authenticator can use apikey auth """
+    """Test that Authenticator can use apikey auth"""
 
     class Response:
         ok = True
@@ -129,7 +129,7 @@ def test_auth__auth_apikey_success(mocked):
 
 @patch("smsdk.ma_session.Session")
 def test_auth__auth_apikey_failure(mocked):
-    """ Test that Authenticator can handle errors in basic auth. """
+    """Test that Authenticator can handle errors in basic auth."""
 
     class Response:
         ok = False
@@ -156,7 +156,7 @@ def test_auth__auth_apikey_failure(mocked):
 
 @patch("smsdk.ma_session.Session")
 def test_auth_check_auth_success(mocked):
-    """ Test that Authenticator can properly determine if authed """
+    """Test that Authenticator can properly determine if authed"""
 
     class Response:
         ok = True
@@ -183,7 +183,7 @@ def test_auth_check_auth_success(mocked):
 
 @patch("smsdk.ma_session.Session")
 def test_auth_check_auth_failure(mocked):
-    """ Test that Authenticator can properly determine if authed """
+    """Test that Authenticator can properly determine if authed"""
 
     class Response:
         ok = False

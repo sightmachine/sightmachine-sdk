@@ -162,7 +162,6 @@ class Authenticator(MaSession):
     def check_auth(self):
         """
         Determine if SDK has access to the client by checking the Cycle API.
-        Broken with get_records fix later.
         """
         try:
             url = "{}{}".format(self.host, ENDPOINTS["Cycle"]["alt_url"])

@@ -7,10 +7,10 @@ workflows:
           context: org-sightmachine
       - run-unit-tests:
           context: org-sightmachine
-      - code-coverage-report:
-          context: org-sightmachine
-          requires:
-            - run-unit-tests
+      # - code-coverage-report:
+      #     context: org-sightmachine
+      #     requires:
+      #       - run-unit-tests
 
 orbs:
   gcp-gke: circleci/gcp-gke@0.2.0

@@ -89,54 +89,42 @@ jobs:
       
       - store_artifacts:
           name: Save Unit Test Results
-          path: test-results
+          path: htmlcov
 
 
-      - run:
-          name: Copy Coverage Results to Workspace
-          command: |
-            mkdir -p /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}
-            cd /home/circleci/project/test-results/
-            ls -a
-            cp test-results/.coverage /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}/.coverage
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - "coverage-report-*"
+# ## ------------------ Generate Code Coverage Report ------------------
 
-## ------------------ Generate Code Coverage Report ------------------
-
-  code-coverage-report:
-    parameters:
-      with_merge: # Part of the PR-merge workflow
-        type: boolean
-        default: false
-    docker:
-      # https://circleci.com/developer/images/image/cimg/python
-      - image: gcr.io/sightmachine-178216/cimg/python:3.7.15
-        auth:
-          username: _json_key
-          password: $GCR_JSON_KEY
-    steps:
-      - when:
-          condition: << parameters.with_merge >>
-          steps:
-            - disable_build_if_not_pr
-      # Make sure that the build doesn't accidentally pull images from Docker Hub.
-      # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
-      - disable_docker_hub
-      # Coverage html requires source code to build HTML views
-      - checkout
-      # Need a workspace for all the coverage reports
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Compile Coverage Reports
-          command: |
-            set -x
-            pip install -r requirements-coveralls.txt
-            coverage combine /tmp/workspace/coverage-report-*/.coverage
-            coveralls
+#   code-coverage-report:
+#     parameters:
+#       with_merge: # Part of the PR-merge workflow
+#         type: boolean
+#         default: false
+#     docker:
+#       # https://circleci.com/developer/images/image/cimg/python
+#       - image: gcr.io/sightmachine-178216/cimg/python:3.7.15
+#         auth:
+#           username: _json_key
+#           password: $GCR_JSON_KEY
+#     steps:
+#       - when:
+#           condition: << parameters.with_merge >>
+#           steps:
+#             - disable_build_if_not_pr
+#       # Make sure that the build doesn't accidentally pull images from Docker Hub.
+#       # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
+#       - disable_docker_hub
+#       # Coverage html requires source code to build HTML views
+#       - checkout
+#       # Need a workspace for all the coverage reports
+#       - attach_workspace:
+#           at: /tmp/workspace
+#       - run:
+#           name: Compile Coverage Reports
+#           command: |
+#             set -x
+#             pip install -r requirements-coveralls.txt
+#             coverage combine /tmp/workspace/coverage-report-*/.coverage
+#             coveralls
 
   ## ------------------ Check Black python code formate ------------------
   black-python-code-formatter:

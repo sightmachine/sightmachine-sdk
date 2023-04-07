@@ -56,11 +56,11 @@ jobs:
 
   run-unit-tests:
     # Use VM over docker container
-    # machine:
-    #   # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
-    #   image: ubuntu-2204:2022.07.1
-    docker:
-      - image: cimg/python:3.11.0
+    machine:
+      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+      image: ubuntu-2204:2022.07.1
+    # docker:
+    #   - image: cimg/python:3.11.0
     steps:
       # Make sure that the build doesn't accidentally pull images from Docker Hub.
       # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
@@ -78,21 +78,19 @@ jobs:
           #  source /tmp/workspace/custom.env
           #  docker-compose exec ma /bin/bash -c "/opt/sightmachine/ma/circleci_scripts/execute_unit_tests.sh ${CIRCLE_NODE_INDEX}"
           command: |
-            pytest tests
+            mkdir test-results
+            pytest --junitxml=test-results/junit.xml tests
 
       # Store the test results on each node so we can see failures
       - store_test_results:
-          path: /tmp/workspace/junit/
+          path: test-results
 
-      - store_artifacts:
-          name: Save Unit Test Results
-          path: /tmp/workspace/junit/
 
       - run:
           name: Copy Coverage Results to Workspace
           command: |
             mkdir -p /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}
-            docker cp ma:/opt/sightmachine/ma/.coverage /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}/.coverage
+            cp test-results/.coverage /tmp/workspace/coverage-report-${CIRCLE_BUILD_NUM}-${CIRCLE_NODE_INDEX}/.coverage
       - persist_to_workspace:
           root: /tmp/workspace
           paths:

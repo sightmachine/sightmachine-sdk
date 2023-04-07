@@ -78,11 +78,9 @@ jobs:
           #  docker-compose exec ma /bin/bash -c "/opt/sightmachine/ma/circleci_scripts/execute_unit_tests.sh ${CIRCLE_NODE_INDEX}"
           command: |
             pwd
-            cd ..
+            cd /opt
             ls
-            cd ..
-            ls
-            cd ..
+            cd /opt/sightmachine
             ls
             pytest tests
 

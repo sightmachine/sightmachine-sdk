@@ -34,22 +34,22 @@ commands:
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               circleci-agent step halt
             fi
-  configure_environment:
-    description: "Initial environment setup: Configure Gcloud, GCR, and conditionally installs Docker Compose."
-    steps:
-      - run:
-          name: Authorize gcloud
-          command: |
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-            gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-            gcloud --quiet config set project sightmachine-178216
-            gcloud --quiet config set compute/zone us-west1-a
-            gcloud --quiet container clusters get-credentials dev-k8s-uw1
-            ## To authenticate to Container Registry, use gcloud as a Docker credential helper
-            echo y | gcloud auth configure-docker
-      - run:
-          name: Log in to Google Container Registry
-          command: echo "$GCR_JSON_KEY" | docker login -u _json_key --password-stdin https://gcr.io
+  # configure_environment:
+  #   description: "Initial environment setup: Configure Gcloud, GCR, and conditionally installs Docker Compose."
+  #   steps:
+  #     - run:
+  #         name: Authorize gcloud
+  #         command: |
+  #           echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+  #           gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+  #           gcloud --quiet config set project sightmachine-178216
+  #           gcloud --quiet config set compute/zone us-west1-a
+  #           gcloud --quiet container clusters get-credentials dev-k8s-uw1
+  #           ## To authenticate to Container Registry, use gcloud as a Docker credential helper
+  #           echo y | gcloud auth configure-docker
+  #     - run:
+  #         name: Log in to Google Container Registry
+  #         command: echo "$GCR_JSON_KEY" | docker login -u _json_key --password-stdin https://gcr.io
 
 jobs:
   ## ------------------ Run Unit Tests ------------------

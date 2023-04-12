@@ -347,3 +347,10 @@ class Client(ClientV0):
         for constraint in constraints:
             constraints_normal.append(self.normalize_constraint(constraint))
         return constraints_normal
+    
+    def create_share_link(self, *args, **kwargs):
+        dataViz = smsdkentities.get('dataViz')
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return dataViz(self.session, base_url).create_share_link(*args, **kwargs)

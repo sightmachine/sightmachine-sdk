@@ -77,7 +77,7 @@ jobs:
         default: false
     docker:
       # https://circleci.com/developer/images/image/cimg/python
-      - image: gcr.io/sightmachine-178216/cimg/python:3.7.12
+      - image: cimg/python:3.11.0
         auth:
           username: _json_key
           password: $GCR_JSON_KEY

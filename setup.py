@@ -3,14 +3,11 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open("requirements.txt", "r")  as fh:
+with open("requirements.txt", "r") as fh:
     install_requires = [
         line
-        for line in (
-            item.strip()
-            for item in fh
-       )
-       if line and line[:1] not in ("#", "-")
+        for line in (item.strip() for item in fh)
+        if line and line[:1] not in ("#", "-")
     ]
 
     setup(

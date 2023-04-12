@@ -17,6 +17,7 @@ from smsdk.ma_session import MaSession
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+
 @smsdkentities.register("parts")
 class Parts(SmsdkEntities, MaSession):
     # Decorator to register a function as utility
@@ -67,9 +68,9 @@ class Parts(SmsdkEntities, MaSession):
 
         # Adding new fields in response named column_count that will count all the columns associated with any part
         for each_part_type in records:
-            stats = each_part_type['stats']
-            stats_count = sum([len(each_part_type['stats'][i]) for i in stats])
-            each_part_type.update({"column_count":stats_count})
+            stats = each_part_type["stats"]
+            stats_count = sum([len(each_part_type["stats"][i]) for i in stats])
+            each_part_type.update({"column_count": stats_count})
 
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

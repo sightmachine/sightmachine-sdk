@@ -10,7 +10,7 @@ install_requires = [
     "pandas>=0.25.2",
     "mock>=4.0.2",
     "importlib-resources>=3.0.0",
-    "pathos>=0.2.7"
+    "pathos>=0.2.7",
 ]
 
 setup(

@@ -15,6 +15,7 @@ from smsdk.ma_session import MaSession
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+
 @smsdkentities.register("factory")
 class Factory(SmsdkEntities, MaSession):
     # Decorator to register a function as utility

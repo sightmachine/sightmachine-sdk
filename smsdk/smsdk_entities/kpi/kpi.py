@@ -51,7 +51,7 @@ class KPI(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
-    
+
     @mod_util
     def get_kpis_for_asset(self, *args, **kwargs):
         """
@@ -64,7 +64,7 @@ class KPI(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
-    
+
     @mod_util
     def get_kpi_data_viz(self, *args, **kwargs):
         """
@@ -72,7 +72,7 @@ class KPI(SmsdkEntities, MaSession):
         Returns Data Viz info for that query
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["task"])
-        kwargs['model']='kpi'
+        kwargs["model"] = "kpi"
         records = self._complete_async_task(url, **kwargs)
 
         if not isinstance(records, List):

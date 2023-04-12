@@ -102,12 +102,11 @@ class Authenticator(MaSession):
             return success
 
         self.session.headers = self.get_json_headers()
-        self.session.headers.update({SM_AUTH_HEADER_SECRET_ID: secret_id})
-        self.session.headers.update(
-            {SM_AUTH_HEADER_SECRET_ID_OLD: secret_id}
-        )  # add v0/v1 compat
-        self.session.headers.update({SM_AUTH_HEADER_KEY_ID: key_id})
-
+        self.session.headers.update({
+            SM_AUTH_HEADER_SECRET_ID: secret_id,
+            SM_AUTH_HEADER_SECRET_ID_OLD: secret_id, # add v0/v1 compat
+            SM_AUTH_HEADER_KEY_ID: key_id,
+        })
         if not self.check_auth():
             raise RuntimeError(
                 "Failed login attempt to {}. Invalid secret or key".format(self.host)

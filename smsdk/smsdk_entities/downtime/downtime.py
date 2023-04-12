@@ -14,13 +14,14 @@ from smsdk import config
 from smsdk.ma_session import MaSession
 
 import logging
+
 log = logging.getLogger(__name__)
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+
 @smsdkentities.register("downtime")
 class Downtime(SmsdkEntities, MaSession):
-
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
     # to outside world via client.get_data()

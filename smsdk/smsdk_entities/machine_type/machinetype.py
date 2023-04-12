@@ -15,13 +15,13 @@ from smsdk.ma_session import MaSession
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+
 @smsdkentities.register("machine_type")
 class MachineType(SmsdkEntities, MaSession):
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
     # to outside world via client.get_data()
     mod_util = module_utility()
-
 
     def __init__(self, session, base_url) -> None:
         self.session = session
@@ -43,7 +43,7 @@ class MachineType(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
-    
+
     @mod_util
     def get_fields(self, machine_type, *args, **kwargs):
         """
@@ -51,7 +51,9 @@ class MachineType(SmsdkEntities, MaSession):
         from the ma machine API
         Recommend to use 'enable_pagination':True for larger datasets
         """
-        url = "{}{}".format(self.base_url, ENDPOINTS["MachineType"]["fields"].format(machine_type))
+        url = "{}{}".format(
+            self.base_url, ENDPOINTS["MachineType"]["fields"].format(machine_type)
+        )
         records = self._get_records(url, **kwargs)
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

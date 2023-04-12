@@ -13,18 +13,18 @@ from smsdk import config
 from smsdk.ma_session import MaSession
 
 import logging
+
 log = logging.getLogger(__name__)
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+
 @smsdkentities.register("cycle")
 class Cycle(SmsdkEntities, MaSession):
-
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
     # to outside world via client.get_data()
     mod_util = module_utility()
-
 
     def __init__(self, session, base_url) -> None:
         self.session = session
@@ -46,8 +46,8 @@ class Cycle(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Cycle"]["alt_url"])
 
-        if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:
-            log.warn('Machine source not specified.')
+        if "machine__source" not in kwargs and "machine__source__in" not in kwargs:
+            log.warn("Machine source not specified.")
             return []
 
         records = self._get_records(url, **kwargs)

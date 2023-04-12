@@ -78,9 +78,6 @@ jobs:
     docker:
       # https://circleci.com/developer/images/image/cimg/python
       - image: cimg/python:3.11.0
-        auth:
-          username: _json_key
-          password: $GCR_JSON_KEY
     steps:
       - when:
           condition: << parameters.with_merge >>

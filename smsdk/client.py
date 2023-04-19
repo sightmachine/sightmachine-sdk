@@ -391,9 +391,11 @@ class Client(ClientV0):
         :param constraint: A range constraint field most have a to and from key.
         :return: A string
         """
-        to = constraint.get("to")
-        from_constraint = constraint.get("from")
-        return "({},{})".format(to, from_constraint)
+        to_val = constraint.get("to")
+        from_val = constraint.get("from")
+        to_symbol = "[" if constraint.get("to_is_inclusive") else "("
+        from_symbol = "]" if constraint.get("from_is_inclusive") else ")"
+        return "{}{},{}{}".format(to_symbol, to_val, from_val, from_symbol)
 
     def normalize_constraints(self, constraints):
         """

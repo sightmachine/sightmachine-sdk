@@ -7,7 +7,7 @@ asset_selection: {
 }
 ```
 
-In order to select machines within a type it should look like the follwoing:
+In order to select machines within a type it should look like the following:
 ```
 asset_selection: {
     machine_type: ["Lasercut"],
@@ -15,3 +15,5 @@ asset_selection: {
 
 }
 ```
+
+NOTE: The machine_type strings must match source_type, NOT source_type_clean.

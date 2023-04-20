@@ -42,5 +42,8 @@
     "get_cookbooks": "/v1/obj/recipe/cookbook",
     "top_results": "/v1/recipe/top_results/{}?limit={}",
     "current_value": "/v1/recipe/current_value"
+  },
+  "Line": {
+    "url": "/v1/datatab/line"
   }
 }

@@ -22,10 +22,12 @@ RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.jso
 SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
-X_SM_DB_SCHEMA = RESOURCE_CONFIG['x_sm_db_schema']
+X_SM_DB_SCHEMA = RESOURCE_CONFIG["x_sm_db_schema"]
 
 import logging
+
 log = logging.getLogger(__name__)
+
 
 class MaSession:
     def __init__(self):
@@ -33,12 +35,7 @@ class MaSession:
         self.session = Session()
 
     def _get_records(
-        self,
-        endpoint,
-        method="get",
-        _limit=np.Inf,
-        _offset=0,
-        **url_params
+        self, endpoint, method="get", _limit=np.Inf, _offset=0, **url_params
     ):
         """
         Function to get api call and fetch data from MA APIs
@@ -51,10 +48,10 @@ class MaSession:
         :param url_params: dict of params for API ex filtering, columns etc
         :return: List of records
         """
-        if 'machine_type' in url_params:
-            url_params.pop('machine_type')
+        if "machine_type" in url_params:
+            url_params.pop("machine_type")
         max_page_size = 2000
-        
+
         records: List = []
         while True:
             try:
@@ -68,7 +65,7 @@ class MaSession:
                 url_params["_offset"] = _offset
                 url_params["_limit"] = this_loop_limit
 
-                #print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
+                # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
@@ -80,11 +77,11 @@ class MaSession:
                     try:
                         data = response.json()
 
-                        if 'results' in data:
-                            data = data['results']
+                        if "results" in data:
+                            data = data["results"]
 
                     except JSONDecodeError as e:
-                        print(f'No valid JSON returned {e}')
+                        print(f"No valid JSON returned {e}")
                         return []
                 else:
                     return []
@@ -95,19 +92,14 @@ class MaSession:
                     # Cursor exhausted, so just return
                     return records
                 _offset += this_loop_limit
-                
+
             except:
                 import traceback
-                
+
                 print(traceback.print_exc())
                 return records
 
-    def _get_schema(
-            self,
-            endpoint,
-            method="get",
-            **url_params
-    ):
+    def _get_schema(self, endpoint, method="get", **url_params):
         """
         This function can be used to fetch HLO schemas like AIDP
         Function to get api call and fetch data from MA APIs
@@ -116,13 +108,10 @@ class MaSession:
         :param url_params: dict of params for API ex filtering, columns etc
         :return: List of records
         """
-        if 'machine_type' in url_params:
-            url_params.pop('machine_type')
+        if "machine_type" in url_params:
+            url_params.pop("machine_type")
 
-
-        response = getattr(self.session, method.lower())(
-            endpoint, params=url_params
-        )
+        response = getattr(self.session, method.lower())(endpoint, params=url_params)
 
         if response.text:
             if response.status_code not in [200, 201]:
@@ -130,26 +119,25 @@ class MaSession:
             try:
                 data = response.json()
 
-                if 'objects' in data:
-                    data = data['objects']
+                if "objects" in data:
+                    data = data["objects"]
 
                 return data
             except JSONDecodeError as e:
-                print(f'No valid JSON returned {e}')
+                print(f"No valid JSON returned {e}")
                 return []
         else:
             return []
 
-
     def _get_records_v1(
-            self,
-            endpoint,
-            method="post",
-            limit=np.Inf,
-            offset=0,
-            db_mode='sql',
-            results_under='results',
-            **url_params
+        self,
+        endpoint,
+        method="post",
+        limit=np.Inf,
+        offset=0,
+        db_mode="sql",
+        results_under="results",
+        **url_params,
     ):
         """
         Function to get api call and fetch data from MA APIs
@@ -176,7 +164,7 @@ class MaSession:
                         return records
                     url_params["limit"] = this_loop_limit
 
-                if offset:
+                if offset or url_params.get("model") == "line":
                     url_params["offset"] = offset
                 if db_mode:
                     url_params["db_mode"] = db_mode
@@ -197,7 +185,7 @@ class MaSession:
                         if isinstance(data, dict):
                             data = [data]
                     except JSONDecodeError as e:
-                        print(f'No valid JSON returned {e}')
+                        print(f"No valid JSON returned {e}")
                         return []
                 else:
                     return []
@@ -215,39 +203,32 @@ class MaSession:
 
                 print(traceback.print_exc())
                 return records
-            
-    
+
     def _complete_async_task(
-            self,
-            endpoint,
-            method="post",
-            db_mode='sql',
-            **url_params
+        self, endpoint, method="post", db_mode="sql", **url_params
     ):
-        if url_params.get('db_mode') == None:
-            url_params['db_mode'] = db_mode
+        if url_params.get("db_mode") == None:
+            url_params["db_mode"] = db_mode
         try:
-            response = getattr(self.session, method.lower())(
-                        endpoint, json=url_params
-                    )
+            response = getattr(self.session, method.lower())(endpoint, json=url_params)
             if response.status_code not in [200, 201]:
                 raise ValueError("Error - {}".format(response.text))
             data = response.json()
-            task_id = data['response']['task_id']
+            task_id = data["response"]["task_id"]
             while True:
                 try:
                     response = self.session.get(
-                            endpoint+'/'+task_id, json=url_params
-                        )
+                        endpoint + "/" + task_id, json=url_params
+                    )
                     sleep(1)
                     if response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     data = response.json()
-                    state = data['response']['state']
-                    if state == 'SUCCESS':
-                        return data['response']['meta']['results']
-                    
-                    if state == 'FAILURE' or state == 'REVOKED':
+                    state = data["response"]["state"]
+                    if state == "SUCCESS":
+                        return data["response"]["meta"]["results"]
+
+                    if state == "FAILURE" or state == "REVOKED":
                         raise ValueError("Error - {}".format(response.text))
                 except:
                     import traceback
@@ -272,7 +253,6 @@ class MaSession:
             }
         )
 
-
     def get_starttime_endtime_keys(self, **kwargs):
         """
         This function takes kwargs as input and tried to identify starttime and endtime key provided by user and returns
@@ -282,7 +262,7 @@ class MaSession:
         starttime_key = ""
         endtime_key = ""
 
-        times = {i: kwargs[i] for i in kwargs if 'time' in i.lower()}
+        times = {i: kwargs[i] for i in kwargs if "time" in i.lower()}
 
         if times:
             starttime = min(times.values())

@@ -4,7 +4,7 @@ from smsdk import client
 
 
 def test_client_init():
-    """ Test the client initialization. """
+    """Test the client initialization."""
 
     cli = client.Client("demo")
 

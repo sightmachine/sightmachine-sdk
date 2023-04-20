@@ -348,9 +348,27 @@ class Client(ClientV0):
             constraints_normal.append(self.normalize_constraint(constraint))
         return constraints_normal
     
-    def create_share_link(self, *args, **kwargs):
+    xAxisTime = {
+        "unit": "",
+        "type": "datetime",
+        "data_type": "datetime",
+        "stream_types": [],
+        "raw_data_field": "",
+        "id": "endtime",
+        "title": "Time",
+        "isEnabled": True
+    }
+    def create_share_link(self, assets, chartType, yAxis, xAxis=xAxisTime, model='line', *args, **kwargs):
         dataViz = smsdkentities.get('dataViz')
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return dataViz(self.session, base_url).create_share_link(*args, **kwargs)
+        if assets and model == 'cycle':
+            machine_types = []
+            for asset in assets:
+                machine_types.append(self.get_type_from_machine(asset, **kwargs))
+            assets = {
+                "machine_source": assets,
+                "machine_type": list(set(machine_types))
+            }
+        return dataViz(self.session, base_url).create_share_link(*args, assets, chartType, yAxis, xAxis, model, **kwargs)

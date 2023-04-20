@@ -42,66 +42,40 @@ class DataViz(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def create_share_link(self, *args, **kwargs):
+    def create_share_link(self, asset, chartType, yAxis, xAxis, model, *args, **kwargs):
         """
         Creates a share link
         """
         url = "{}{}".format(self.base_url, ENDPOINTS['DataViz']['share_link'])
-        url_params= {}
+        url_params= kwargs
         url_params['state_hash'] = str(uuid.uuid4())[:8]
         url_params['context'] = "/analysis/datavis"
         url_params['state'] = {
-            'dataModel': 'cycle',
-            'asset': {
-                'machine_source': ["F1_010_BodyMaker_1"],
-                'machine_type': ["Body_Maker"]
-            },
-            'chartType': 'line',
-            'xAxis': {
-                'data_type': "datetime",
-                'id': "endtime",
-                'isEnabled': True,
-                'raw_data_field': "",
-                'stream_types': [],
-                'title': "Time",
-                'type': "datetime",
-                'unit': ""    
-            },
-            'yAxis': {
-                "unit": "",
-                "type": "discrete",
-                "data_type": "int",
-                "stream_types": [],
-                "raw_data_field": "",
-                "id": "cycle_count",
-                "title": "Cycle Count",
-                "isEnabled": True
-            },
-            'yAxisMulti':[
-                {
-                    "unit": "",
-                    "type": "continuous",
-                    "data_type": "float",
-                    "stream_types": [],
-                    "raw_data_field": "BM_008_COUT",
-                    "formatting": {
-                    "is_convertible": False
-                    },
-                    "annotations": {},
-                    "ui_hidden": False,
-                    "ui_hidden_machines": [],
-                    "ui_hidden_facilities": [],
-                    "machine_type": {
-                    "id": "707d74d48771b446b9019b38",
-                    "name": "Body_Maker",
-                    "name_clean": "Body Maker"
-                    },
-                    "id": "stats__0_BM 008: Cans Out__val",
-                    "title": "0_BM 008: Cans Out",
-                    "isEnabled": True
-                }
-            ]
+            'dataModel': model,
+            'asset': asset,
+            'chartType': chartType,
+            'xAxis': xAxis,
+            # xAxis: {
+            #     'id': "endtime",
+            #     'title': "Time",
+            # },
+            # 'yAxis':
+            # {
+            #         "id": "stats__0_BM 008: Cans Out__val",
+            #         "title": "0_BM 008: Cans Out",
+            # }
+            # 'yAxisMulti':
+            # [
+            #     {
+            #         "id": "stats__0_BM 008: Cans Out__val",
+            #         "title": "0_BM 008: Cans Out",
+            #     }
+            # ]
         }
+        if isinstance(yAxis, List):
+             url_params['state']['yAxisMulti'] = yAxis
+        else:
+            url_params['state']['yAxis'] = yAxis
         response = getattr(self.session, 'post')(
                     url, json=url_params
                 )

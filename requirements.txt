@@ -1,0 +1,9 @@
+pytest==7.2.1
+numpy>=1.18.4
+requests>=2.24.0
+pytest>=6.0.2
+pandas>=0.25.2
+mock>=4.0.2
+importlib-resources>=3.0.0
+pathos>=0.2.7
+coverage >= 7.2.3

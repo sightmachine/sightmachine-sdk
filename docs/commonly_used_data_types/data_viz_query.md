@@ -1,5 +1,5 @@
-# Data Vizualation Query
-Data Viz Queries are used whenever the SDK calls our Data Vizualation APIs.  The functions you call via SDK do some work on the query for you so this Query will look slightly different from the one our API uses directly.  We will break down each field in some more detail futher along in this doc but as an example a full Data Viz Query looks like the following:
+# Data Visualization Query
+Data Viz Queries are used whenever the SDK calls our Data Visualization APIs.  The functions you call via SDK do some work on the query for you so this Query will look slightly different from the one our API uses directly.  We will break down each field in some more detail futher along in this doc but as an example a full Data Viz Query looks like the following:
 ```
 {
   "asset_selection": {

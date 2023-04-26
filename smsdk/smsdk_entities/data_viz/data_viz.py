@@ -52,11 +52,27 @@ class DataViz(SmsdkEntities, MaSession):
         url_params = kwargs
         url_params["state_hash"] = str(uuid.uuid4())[:8]
         url_params["context"] = "/analysis/datavis"
+        if time_selection["time_type"] == 'relative':
+            dateRange = {
+                "mode": 'relative',
+                "relativeAmount": time_selection["relative_start"],
+                "relativeUnit": time_selection["relative_unit"],
+                "selectedTimeZone": time_selection["ctime_tz"]
+            }
+        
+        elif time_selection["time_type"] == "absolute":
+            dateRange ={
+                "mode": 'absolute',
+                "startDate": time_selection["start_time"],
+                "endDate": time_selection["end_time"],
+                "selectedTimeZone": time_selection["time_zone"]
+            }
         url_params["state"] = {
             "dataModel": model,
             "asset": asset,
             "chartType": chartType,
             "xAxis": xAxis,
+            "dateRange": dateRange,
         }
         if model == "line":
             del url_params["state"]["asset"]

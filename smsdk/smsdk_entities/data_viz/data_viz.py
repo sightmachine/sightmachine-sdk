@@ -57,22 +57,6 @@ class DataViz(SmsdkEntities, MaSession):
             "asset": asset,
             "chartType": chartType,
             "xAxis": xAxis,
-            # xAxis: {
-            #     'id': "endtime",
-            #     'title': "Time",
-            # },
-            # 'yAxis':
-            # {
-            #         "id": "stats__0_BM 008: Cans Out__val",
-            #         "title": "0_BM 008: Cans Out",
-            # }
-            # 'yAxisMulti':
-            # [
-            #     {
-            #         "id": "stats__0_BM 008: Cans Out__val",
-            #         "title": "0_BM 008: Cans Out",
-            #     }
-            # ]
         }
         if model == "line":
             del url_params["state"]["asset"]

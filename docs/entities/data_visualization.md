@@ -67,4 +67,3 @@ This is a string and is the data model you wish to use.  It will default to 'cyc
 
 #### time_selection
 This works like other time selections, more details [here](/docs/commonly_used_data_types/data_viz_query.md#time_selection).  This defaults to one week relative if not set.
-

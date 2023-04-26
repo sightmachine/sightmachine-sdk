@@ -42,19 +42,21 @@ class DataViz(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def create_share_link(self, asset, chartType, yAxis, xAxis, model, time_selection, *args, **kwargs):
+    def create_share_link(
+        self, asset, chartType, yAxis, xAxis, model, time_selection, *args, **kwargs
+    ):
         """
         Creates a share link
         """
-        url = "{}{}".format(self.base_url, ENDPOINTS['DataViz']['share_link'])
-        url_params= kwargs
-        url_params['state_hash'] = str(uuid.uuid4())[:8]
-        url_params['context'] = "/analysis/datavis"
-        url_params['state'] = {
-            'dataModel': model,
-            'asset': asset,
-            'chartType': chartType,
-            'xAxis': xAxis,
+        url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["share_link"])
+        url_params = kwargs
+        url_params["state_hash"] = str(uuid.uuid4())[:8]
+        url_params["context"] = "/analysis/datavis"
+        url_params["state"] = {
+            "dataModel": model,
+            "asset": asset,
+            "chartType": chartType,
+            "xAxis": xAxis,
             # xAxis: {
             #     'id': "endtime",
             #     'title': "Time",
@@ -72,72 +74,69 @@ class DataViz(SmsdkEntities, MaSession):
             #     }
             # ]
         }
-        if model == 'line':
-            del url_params['state']['asset']
-            url_params['state']['lineProcess'] = {}
-            if not isinstance(asset, List) and asset.get('assetOffsets'):
-                url_params['state']['lineProcess']['assetOffsets'] = asset.get('assetOffsets')
-            if not isinstance(asset, List) and asset.get('assets'):
+        if model == "line":
+            del url_params["state"]["asset"]
+            url_params["state"]["lineProcess"] = {}
+            if not isinstance(asset, List) and asset.get("assetOffsets"):
+                url_params["state"]["lineProcess"]["assetOffsets"] = asset.get(
+                    "assetOffsets"
+                )
+            if not isinstance(asset, List) and asset.get("assets"):
                 selectedMachines = []
-                for machine in asset['assets']:
-                    selectedMachines.append({
-                        'machineName': machine
-                    })
-                url_params['state']['lineProcess']['selectedMachines'] = selectedMachines
-            else: 
+                for machine in asset["assets"]:
+                    selectedMachines.append({"machineName": machine})
+                url_params["state"]["lineProcess"][
+                    "selectedMachines"
+                ] = selectedMachines
+            else:
                 selectedMachines = []
                 for machine in asset:
-                    selectedMachines.append({
-                        'machineName': machine
-                    })
-                url_params['state']['lineProcess']['selectedMachines'] = selectedMachines
+                    selectedMachines.append({"machineName": machine})
+                url_params["state"]["lineProcess"][
+                    "selectedMachines"
+                ] = selectedMachines
 
-            if xAxis.get('id') == 'endtime':
-                url_params['state']['lineXAxis'] = [
-                    {
-                        "field": {
-                        "name": "offset_endtime",
-                        "type": "datetime"
-                        }
-                    }
+            if xAxis.get("id") == "endtime":
+                url_params["state"]["lineXAxis"] = [
+                    {"field": {"name": "offset_endtime", "type": "datetime"}}
                 ]
             else:
-                url_params['state']['lineXAxis'] = xAxis
+                url_params["state"]["lineXAxis"] = xAxis
             if isinstance(yAxis, List):
                 lineYAxis = []
                 for y in yAxis:
                     lineYAxis.append(
                         {
-                        "field": {
-                            "name": y.get('field'),
-                            "machine_type": {
-                                "name": y.get('machineType'),
-                            }
-                        },
-                        "machineName": y.get('machineName'),
-                    }
+                            "field": {
+                                "name": y.get("field"),
+                                "machine_type": {
+                                    "name": y.get("machineType"),
+                                },
+                            },
+                            "machineName": y.get("machineName"),
+                        }
                     )
-                url_params['state']['lineYAxisMulti'] = lineYAxis
-            
+                url_params["state"]["lineYAxisMulti"] = lineYAxis
+
             else:
-                url_params['state']['lineYAxisMulti'] = [
+                url_params["state"]["lineYAxisMulti"] = [
                     {
                         "field": {
-                            "name": yAxis.get('field'),
+                            "name": yAxis.get("field"),
                             "machine_type": {
-                                "name": yAxis.get('machineType'),
-                            }
+                                "name": yAxis.get("machineType"),
+                            },
                         },
-                        "machineName": yAxis.get('machineName'),
+                        "machineName": yAxis.get("machineName"),
                     }
                 ]
 
         else:
             if isinstance(yAxis, List):
-                url_params['state']['yAxisMulti'] = yAxis
+                url_params["state"]["yAxisMulti"] = yAxis
             else:
-                url_params['state']['yAxis'] = yAxis
-        response = getattr(self.session, 'post')(
-                    url, json=url_params
-                )
-        return "{}/#/analysis/datavis/s/{}".format(self.base_url, response.json()['state_hash'])
+                url_params["state"]["yAxis"] = yAxis
+        response = getattr(self.session, "post")(url, json=url_params)
+        return "{}/#/analysis/datavis/s/{}".format(
+            self.base_url, response.json()["state_hash"]
+        )

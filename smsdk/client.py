@@ -473,3 +473,63 @@ class Client(ClientV0):
         return lines(self.session, base_url).get_line_data(
             limit=limit, offset=offset, **kwargs
         )
+
+    xAxisTime = {
+        "unit": "",
+        "type": "datetime",
+        "data_type": "datetime",
+        "stream_types": [],
+        "raw_data_field": "",
+        "id": "endtime",
+        "title": "Time",
+        "isEnabled": True,
+    }
+    one_week_relative = {
+        "time_type": "relative",
+        "relative_start": 1,
+        "relative_unit": "week",
+        "ctime_tz": "America/Los_Angeles",
+    }
+
+    def create_share_link(
+        self,
+        assets,
+        chartType,
+        yAxis,
+        xAxis=xAxisTime,
+        model="cycle",
+        time_selection=one_week_relative,
+        *args,
+        **kwargs,
+    ):
+        dataViz = smsdkentities.get("dataViz")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        if assets and model == "cycle" or assets and model == "kpi":
+            machine_types = []
+            for asset in assets:
+                machine_types.append(self.get_type_from_machine(asset, **kwargs))
+            assets = {
+                "machine_source": assets,
+                "machine_type": list(set(machine_types)),
+            }
+
+        if model == "kpi" and not isinstance(yAxis, list):
+            yAxis = [yAxis]
+
+        if model == "line" and isinstance(yAxis, list):
+            newYAxis = []
+            for y in yAxis:
+                if y.get("machineType"):
+                    newYAxis.append(y)
+                else:
+                    y["machineType"] = self.get_type_from_machine(y["machineName"])
+                    newYAxis.append(y)
+            yAxis = newYAxis
+        elif model == "line":
+            if not yAxis.get("machineType"):
+                yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
+        return dataViz(self.session, base_url).create_share_link(
+            *args, assets, chartType, yAxis, xAxis, model, time_selection, **kwargs
+        )

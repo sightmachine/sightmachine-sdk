@@ -26,7 +26,8 @@
   "DataViz": {
     "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
     "estimate_part": "/v1/selector/datavis/estimate/part",
-    "task": "/v1/datavis/task/async"
+    "task": "/v1/datavis/task/async",
+    "share_link": "/v1/obj/ui_share_state"
   },
   "KPI": {
     "availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"
@@ -38,5 +39,8 @@
     "get_cookbooks": "/v1/obj/recipe/cookbook",
     "top_results": "/v1/recipe/top_results/{}?limit={}",
     "current_value": "/v1/recipe/current_value"
+  },
+  "Line": {
+    "url": "/v1/datatab/line"
   }
 }

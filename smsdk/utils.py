@@ -2,15 +2,16 @@ import typing
 import re
 
 ENCODING_MAP = {
-    '.': '__',
-    '_': '_5F',
-    '5': '5',
-    'F': 'F',
-    '$': '_24',
-    '2': '2',
-    '4': '4',
+    ".": "__",
+    "_": "_5F",
+    "5": "5",
+    "F": "F",
+    "$": "_24",
+    "2": "2",
+    "4": "4",
 }
-ENCODING_RE = re.compile(r'_*_5F|_*_24|_*_\.__*|_*_\.|\.__*|___*|\$|\.')
+ENCODING_RE = re.compile(r"_*_5F|_*_24|_*_\.__*|_*_\.|\.__*|___*|\$|\.")
+
 
 def module_utility():
     """
@@ -42,6 +43,7 @@ def get_url(protocol, tenant, site_domain):
 
     return "{}://{}.{}".format(protocol, tenant, site_domain)
 
+
 def check_kw(kw: str) -> bool:
     """This function is used to remove code duplicacy where
     it checks whether the kw is of special type of keyword supported
@@ -50,21 +52,23 @@ def check_kw(kw: str) -> bool:
     """
 
     for key in [
-        "machine_type", 
+        "machine_type",
         "Machine",
-        "machine__source", 
+        "machine__source",
         "End Time",
         "endtime",
         "Start Time",
-        "starttime"
+        "starttime",
     ]:
         if kw.startswith("_") or key in kw:
             return False
     return True
 
+
 def escape_replacement(m):
     # type: (typing.Match) -> str
-    return ''.join(map(ENCODING_MAP.__getitem__, m.group()))
+    return "".join(map(ENCODING_MAP.__getitem__, m.group()))
+
 
 def escape_mongo_field_name(field_name):
     # type: (str) -> str

@@ -2,7 +2,7 @@ import pandas as pd
 from requests.sessions import Session
 from tests.parts.part_data import JSON_PART
 
-from smsdk.smsdk_entities.parts.parts import Parts
+from smsdk.smsdk_entities.parts.partsV1 import Parts
 
 
 def test_get_parts(monkeypatch):

@@ -1,7 +1,7 @@
 import pandas as pd
 from requests.sessions import Session
 from tests.cycle.cycle_data import JSON_MACHINE_CYCLE_50
-from smsdk.smsdk_entities.cycle.cycle import Cycle
+from smsdk.smsdk_entities.cycle.cycleV1 import Cycle
 
 
 def test_get_cycles(monkeypatch):

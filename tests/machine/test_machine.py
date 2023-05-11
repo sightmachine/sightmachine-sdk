@@ -4,7 +4,7 @@ import pandas as pd
 from requests.sessions import Session
 from smsdk.client import Client
 from tests.machine.machine_data import JSON_MACHINE, MACHINE_TYPE
-from smsdk.smsdk_entities.machine.machine import Machine
+from smsdk.smsdk_entities.machine.machineV1 import Machine
 
 
 def test_get_machines(monkeypatch):

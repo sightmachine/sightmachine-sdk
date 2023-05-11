@@ -114,16 +114,16 @@ def test_auth__auth_apikey_success(mocked):
         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())
     )
 
-    tenant = ""
+    tenant = "demo"
     secret_id = "secret_Test"
     key_id = "key_test"
     cli = client.Client(tenant)
     authed = cli.auth
 
     assert authed._auth_apikey(secret_id=secret_id, key_id=key_id) is True
-    mocked.return_value.get.assert_called_once_with(
-        f"https://{tenant}.sightmachine.io/api/cycle",
-        params={"_only": ["_id"], "_offset": 0, "_limit": 1},
+    mocked.return_value.post.assert_called_once_with(
+        f"https://{tenant}.sightmachine.io/v1/datatab/cycle",
+        json={'_limit': 1, '_only': ['_id'], 'limit': 50000, 'db_mode': 'sql'}
     )
 
 
@@ -175,9 +175,9 @@ def test_auth_check_auth_success(mocked):
     authed = cli.auth
 
     assert authed.check_auth() is True
-    mocked.return_value.get.assert_called_once_with(
-        f"https://{tenant}.sightmachine.io/api/cycle",
-        params={"_only": ["_id"], "_offset": 0, "_limit": 1},
+    mocked.return_value.post.assert_called_once_with(
+        f"https://{tenant}.sightmachine.io/v1/datatab/cycle",
+        json={'_limit': 1, '_only': ['_id'], 'limit': 50000, 'db_mode': 'sql'}
     )
 
 

@@ -1,6 +1,9 @@
 import typing
 import re
 
+import pandas as pd
+from pandas import json_normalize
+
 ENCODING_MAP = {
     ".": "__",
     "_": "_5F",
@@ -87,3 +90,35 @@ def escape_mongo_field_name(field_name):
     See ma.tests.unit.utils.test_mongoutils.TestMongoEscapeUtils for test cases
     """
     return ENCODING_RE.sub(escape_replacement, field_name)
+
+def dict_to_df(data, normalize=True):
+    if normalize:
+        # special case to handle the 'stats' block
+        if data and "stats" in data[0]:
+            if isinstance(data[0]["stats"], dict):
+                # part stats are dict
+                df = json_normalize(data)
+            else:
+                # machine type stats are list
+                cols = [*data[0]]
+                cols.remove("stats")
+                df = json_normalize(
+                    data, "stats", cols, record_prefix="stats.", errors="ignore"
+                )
+        else:
+            try:
+                df = json_normalize(data)
+            except:
+                # From cases like _distinct which don't have a "normal" return format
+                return pd.DataFrame({"values": data})
+    else:
+        df = pd.DataFrame(data)
+
+    if len(df) > 0:
+        if "_id" in df.columns:
+            df.set_index("_id", inplace=True)
+
+        if "id" in df.columns:
+            df.set_index("id", inplace=True)
+
+    return df

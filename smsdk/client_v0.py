@@ -15,7 +15,7 @@ try:
 except ImportError:
     from pandas.io.json import json_normalize
 
-from smsdk.utils import get_url, escape_mongo_field_name
+from smsdk.utils import get_url, escape_mongo_field_name, dict_to_df
 from smsdk.Auth.auth import Authenticator
 from smsdk.tool_register import smsdkentities
 
@@ -40,38 +40,6 @@ def time_string_to_epoch(time_string):
         return 0
 
     return time_epoch
-
-
-def dict_to_df(data, normalize=True):
-    if normalize:
-        # special case to handle the 'stats' block
-        if data and "stats" in data[0]:
-            if isinstance(data[0]["stats"], dict):
-                # part stats are dict
-                df = json_normalize(data)
-            else:
-                # machine type stats are list
-                cols = [*data[0]]
-                cols.remove("stats")
-                df = json_normalize(data, "stats", cols, record_prefix="stats.")
-        else:
-            try:
-                df = json_normalize(data)
-            except:
-                # From cases like _distinct which don't have a "normal" return format
-                return pd.DataFrame({"values": data})
-    else:
-        df = pd.DataFrame(data)
-
-    if len(df) > 0:
-        if "_id" in df.columns:
-            df.set_index("_id", inplace=True)
-
-        if "id" in df.columns:
-            df.set_index("id", inplace=True)
-
-    return df
-
 
 # We don't have a downtime schema, so hard code one
 downmap = {

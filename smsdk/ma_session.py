@@ -6,7 +6,6 @@ import requests
 
 import numpy as np
 import pandas as pd
-from pandas import json_normalize
 
 from requests.structures import CaseInsensitiveDict
 from requests.sessions import Session
@@ -18,7 +17,7 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 from smsdk import config
-from smsdk.utils import escape_mongo_field_name
+from smsdk.utils import escape_mongo_field_name, dict_to_df
 
 RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.json"))
 
@@ -26,68 +25,6 @@ SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
 X_SM_DB_SCHEMA = RESOURCE_CONFIG["x_sm_db_schema"]
-
-
-def dict_to_df(data, normalize=True):
-    if normalize:
-        # special case to handle the 'stats' block
-        if data and "stats" in data[0]:
-            if isinstance(data[0]["stats"], dict):
-                # part stats are dict
-                df = json_normalize(data)
-            else:
-                # machine type stats are list
-                cols = [*data[0]]
-                cols.remove("stats")
-                df = json_normalize(
-                    data, "stats", cols, record_prefix="stats.", errors="ignore"
-                )
-        else:
-            try:
-                df = json_normalize(data)
-            except:
-                # From cases like _distinct which don't have a "normal" return format
-                return pd.DataFrame({"values": data})
-    else:
-        df = pd.DataFrame(data)
-
-    if len(df) > 0:
-        if "_id" in df.columns:
-            df.set_index("_id", inplace=True)
-        elif "id" in df.columns:
-            df.set_index("id", inplace=True)
-    return df
-
-
-def dict_to_df(data, normalize=True):
-    if normalize:
-        # special case to handle the 'stats' block
-        if data and "stats" in data[0]:
-            if isinstance(data[0]["stats"], dict):
-                # part stats are dict
-                df = json_normalize(data)
-            else:
-                # machine type stats are list
-                cols = [*data[0]]
-                cols.remove("stats")
-                df = json_normalize(
-                    data, "stats", cols, record_prefix="stats.", errors="ignore"
-                )
-        else:
-            try:
-                df = json_normalize(data)
-            except:
-                # From cases like _distinct which don't have a "normal" return format
-                return pd.DataFrame({"values": data})
-    else:
-        df = pd.DataFrame(data)
-
-    if len(df) > 0:
-        if "_id" in df.columns:
-            df.set_index("_id", inplace=True)
-        elif "id" in df.columns:
-            df.set_index("id", inplace=True)
-    return df
 
 
 import logging

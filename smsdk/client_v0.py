@@ -41,6 +41,7 @@ def time_string_to_epoch(time_string):
 
     return time_epoch
 
+
 # We don't have a downtime schema, so hard code one
 downmap = {
     "machine__source": "Machine",

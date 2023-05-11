@@ -36,6 +36,7 @@ def time_string_to_epoch(time_string):
 
     return time_epoch
 
+
 def generator_to_df(generator) -> pd.DataFrame:
     data = pd.concat([page for page in generator])
     return data

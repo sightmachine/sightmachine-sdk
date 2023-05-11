@@ -91,6 +91,7 @@ def escape_mongo_field_name(field_name):
     """
     return ENCODING_RE.sub(escape_replacement, field_name)
 
+
 def dict_to_df(data, normalize=True):
     if normalize:
         # special case to handle the 'stats' block

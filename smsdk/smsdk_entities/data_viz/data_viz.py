@@ -49,7 +49,7 @@ class DataViz(SmsdkEntities, MaSession):
         Creates a share link
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["share_link"])
-        url_params = kwargs
+        url_params = {}
         url_params["state_hash"] = str(uuid.uuid4())[:8]
         url_params["context"] = "/analysis/datavis"
         if time_selection["time_type"] == "relative":
@@ -74,6 +74,7 @@ class DataViz(SmsdkEntities, MaSession):
             "xAxis": xAxis,
             "dateRange": dateRange,
         }
+        url_params['state'].update(kwargs)
         if model == "line":
             del url_params["state"]["asset"]
             url_params["state"]["lineProcess"] = {}

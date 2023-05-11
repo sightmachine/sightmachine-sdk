@@ -8,7 +8,7 @@ from smsdk.smsdk_entities.parts.parts import Parts
 def test_get_parts(monkeypatch):
     # Setup
     def mockapi(self, session, endpoint, **kwargs):
-        if endpoint.startswith("/api/part"):
+        if endpoint.startswith("/v1/datatab/part"):
             return pd.DataFrame(JSON_PART)
         return pd.DataFrame()
 
@@ -17,7 +17,7 @@ def test_get_parts(monkeypatch):
     dt = Parts(Session(), "demo")
 
     # Run
-    df = dt.get_parts(Session(), "/api/part")
+    df = dt.get_parts(Session(), "/v1/datatab/part")
     assert df.shape == (1, 29)
 
     cols = [

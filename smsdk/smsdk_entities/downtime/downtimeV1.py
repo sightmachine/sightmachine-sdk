@@ -49,11 +49,8 @@ class Downtime(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Downtime"]["url_v1"])
 
-        if "/api/downtime" in url:
-            records = self._get_records(url, **kwargs)
-        else:
-            kwargs = self.modify_input_params(**kwargs)
-            records = self._get_records_v1(url, **kwargs)
+        kwargs = self.modify_input_params(**kwargs)
+        records = self._get_records_v1(url, **kwargs)
 
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))

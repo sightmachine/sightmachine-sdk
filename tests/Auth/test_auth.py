@@ -203,7 +203,7 @@ def test_auth_check_auth_success(mocked):
 
 #     assert authed.check_auth() is False
 #     mocked.return_value.get.assert_called_once_with(
-#         f"https://{tenant}.sightmachine.io/api/cycle",
+#         f"https://{tenant}.sightmachine.io/v1/datatab/cycle",
 #         params={"_limit": 1, "_only": ["_id"]},
 #     )
 

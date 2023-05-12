@@ -125,7 +125,7 @@ class Client(ClientV0):
     def select_db_schema(self, schema_name):
         # remove X_SM_WRKSPACE_ID from self.session.headers
         self.session.headers.update({X_SM_DB_SCHEMA: schema_name})
-        if X_SM_WORKSPACE_ID in self.session.headers:         
+        if X_SM_WORKSPACE_ID in self.session.headers:
             del self.session.headers[X_SM_WORKSPACE_ID]
 
     def select_workspace_id(self, workspace_id):

@@ -3,7 +3,7 @@
   "auth_header-api-secret_old": "X-SM-API-Key",
   "auth_header-api-key": "X-SM-API-Key-Id",
   "x_sm_db_schema":"x-sm-db-schema",
-  "x_sm_workspace_id":"x-sm-workspace-id",
+  "x_sm_workspace_id":"X-Sm-Workspace-Id",
   "keywords": {
     "KEYWORD_MISSING_ACCOUNT": "No such account",
     "KEYWORD_INCORRECT_PASSWORD": "password does not match",

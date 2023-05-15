@@ -129,7 +129,7 @@ class Client(ClientV0):
             del self.session.headers[X_SM_WORKSPACE_ID]
 
     def select_workspace_id(self, workspace_id):
-        self.session.headers.update({X_SM_WORKSPACE_ID: workspace_id})
+        self.session.headers.update({X_SM_WORKSPACE_ID: str(workspace_id)})
         if X_SM_DB_SCHEMA in self.session.headers:
             del self.session.headers[X_SM_DB_SCHEMA]
 

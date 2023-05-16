@@ -22,5 +22,5 @@ setup(
     author_email="support@sightmachine.com",
     url="http://sightmachine.com/",
     description="Sight Machine SDK",
-    python_requires=">=3.10",
+    python_requires=">=3.8",
 )

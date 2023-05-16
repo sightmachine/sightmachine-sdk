@@ -23,6 +23,7 @@ SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
 X_SM_DB_SCHEMA = RESOURCE_CONFIG["x_sm_db_schema"]
+X_SM_WORKSPACE_ID = RESOURCE_CONFIG["x_sm_workspace_id"]
 
 
 class Authenticator(MaSession):

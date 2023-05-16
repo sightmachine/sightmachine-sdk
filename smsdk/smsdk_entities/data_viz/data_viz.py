@@ -74,7 +74,7 @@ class DataViz(SmsdkEntities, MaSession):
             "xAxis": xAxis,
             "dateRange": dateRange,
         }
-        url_params['state'].update(kwargs)
+        url_params["state"].update(kwargs)
         if model == "line":
             del url_params["state"]["asset"]
             url_params["state"]["lineProcess"] = {}

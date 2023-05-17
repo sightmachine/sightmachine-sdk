@@ -12,7 +12,7 @@ except ImportError:
     from pandas.io.json import json_normalize
 
 from smsdk.utils import get_url, escape_mongo_field_name, dict_to_df
-from smsdk.Auth.auth import Authenticator, X_SM_DB_SCHEMA
+from smsdk.Auth.auth import Authenticator, X_SM_DB_SCHEMA, X_SM_WORKSPACE_ID
 from smsdk.tool_register import smsdkentities
 from smsdk.client_v0 import ClientV0
 
@@ -97,7 +97,15 @@ class Client(ClientV0):
         self.session = self.auth.session
 
     def select_db_schema(self, schema_name):
+        # remove X_SM_WRKSPACE_ID from self.session.headers
         self.session.headers.update({X_SM_DB_SCHEMA: schema_name})
+        if X_SM_WORKSPACE_ID in self.session.headers:
+            del self.session.headers[X_SM_WORKSPACE_ID]
+
+    def select_workspace_id(self, workspace_id):
+        self.session.headers.update({X_SM_WORKSPACE_ID: str(workspace_id)})
+        if X_SM_DB_SCHEMA in self.session.headers:
+            del self.session.headers[X_SM_DB_SCHEMA]
 
     def get_data_v1(self, ename, util_name, normalize=True, *args, **kwargs):
         """

@@ -11,7 +11,7 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
-from smsdk.utils import module_utility
+from smsdk.utils import module_utility, check_kw
 from smsdk import config
 from smsdk.ma_session import MaSession
 
@@ -49,11 +49,8 @@ class Downtime(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["Downtime"]["url_v1"])
 
-        if "/api/downtime" in url:
-            records = self._get_records(url, **kwargs)
-        else:
-            kwargs = self.modify_input_params(**kwargs)
-            records = self._get_records_v1(url, **kwargs)
+        kwargs = self.modify_input_params(**kwargs)
+        records = self._get_records_v1(url, **kwargs)
 
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
@@ -92,16 +89,8 @@ class Downtime(SmsdkEntities, MaSession):
             )
 
         for kw in kwargs:
-            if (
-                kw[0] != "_"
-                and "machine_type" not in kw
-                and "Machine" not in kw
-                and "machine__source" not in kw
-                and "End Time" not in kw
-                and "endtime" not in kw
-                and "Start Time" not in kw
-                and "starttime" not in kw
-            ):
+            if check_kw(kw):
+                # if kw[0] != '_' and 'machine_type' not in kw and 'Machine' not in kw and 'machine__source' not in kw and 'End Time' not in kw and 'endtime' not in kw and 'Start Time' not in kw and 'starttime' not in kw:
                 if "__" not in kw:
                     where.append({"name": kw, "op": "eq", "value": kwargs[kw]})
                 else:

@@ -11,7 +11,7 @@ try:
 except ImportError:
     from pandas.io.json import json_normalize
 
-from smsdk.utils import get_url
+from smsdk.utils import get_url, escape_mongo_field_name, dict_to_df
 from smsdk.Auth.auth import Authenticator, X_SM_DB_SCHEMA, X_SM_WORKSPACE_ID
 from smsdk.tool_register import smsdkentities
 from smsdk.client_v0 import ClientV0
@@ -37,35 +37,9 @@ def time_string_to_epoch(time_string):
     return time_epoch
 
 
-def dict_to_df(data, normalize=True):
-    if normalize:
-        # special case to handle the 'stats' block
-        if data and "stats" in data[0]:
-            if isinstance(data[0]["stats"], dict):
-                # part stats are dict
-                df = json_normalize(data)
-            else:
-                # machine type stats are list
-                cols = [*data[0]]
-                cols.remove("stats")
-                df = json_normalize(data, "stats", cols, record_prefix="stats.")
-        else:
-            try:
-                df = json_normalize(data)
-            except:
-                # From cases like _distinct which don't have a "normal" return format
-                return pd.DataFrame({"values": data})
-    else:
-        df = pd.DataFrame(data)
-
-    if len(df) > 0:
-        if "_id" in df.columns:
-            df.set_index("_id", inplace=True)
-
-        if "id" in df.columns:
-            df.set_index("id", inplace=True)
-
-    return df
+def generator_to_df(generator) -> pd.DataFrame:
+    data = pd.concat([page for page in generator])
+    return data
 
 
 # We don't have a downtime schema, so hard code one
@@ -170,15 +144,26 @@ class Client(ClientV0):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            if util_name in ["get_cycles", "get_downtime", "get_parts"]:
+            if util_name in [
+                "get_cycles",
+                "get_downtime",
+                "get_parts",
+                "get_factories",
+                "get_machines",
+                "get_machine_types",
+            ]:
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
 
             if len(sub_kwargs) == 1:
-                data = dict_to_df(
-                    getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
-                )
+                if util_name in ["get_factories", "get_machines", "get_machine_types"]:
+                    # data = dict_to_df(getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize)
+                    return getattr(cls, util_name)(normalize, *args, **sub_kwargs[0])
+                else:
+                    data = dict_to_df(
+                        getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
+                    )
             else:
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
@@ -192,7 +177,7 @@ class Client(ClientV0):
                     data.drop(joined_cols, axis=1)
 
             # To keep consistent, rename columns back from '.' to '__'
-            data.columns = [name.replace(".", "__") for name in data.columns]
+            data.columns = [escape_mongo_field_name(name) for name in data.columns]
 
         else:
             # raise error if requested for unregistered utility
@@ -351,6 +336,123 @@ class Client(ClientV0):
             fields = [field for field in fields if field.get("type") in types]
 
         return fields
+
+    def _get_factories(self, *args, normalize=True, **kwargs):
+        """
+        Get list of factories and associated metadata.  Note this includes extensive internal metadata.
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data_v1(
+            "factory_v1", "get_factories", normalize, *args, **kwargs
+        )
+
+    def _get_machines(self, *args, normalize=True, **kwargs) -> pd.DataFrame:
+        """
+        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
+        then see also get_machine_names().
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data_v1(
+            "machine_v1", "get_machines", normalize, *args, **kwargs
+        )
+
+    def _get_machine_types(self, *args, normalize=True, **kwargs):
+        """
+        Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
+        then see also get_machine_type_names().
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+
+        return self.get_data_v1(
+            "machine_type_v1", "get_machine_types", normalize, *args, **kwargs
+        )
+
+    def get_factories(self, *args, normalize=True, **kwargs):
+        generator = self._get_factories(normalize=normalize, *args, **kwargs)
+        data = generator_to_df(generator)
+        return data
+
+    def get_machines(self, *args, normalize=True, **kwargs):
+        generator = self._get_machines(normalize=normalize, *args, **kwargs)
+        data = generator_to_df(generator)
+        return data
+
+    def get_machine_types(self, *args, normalize=True, **kwargs):
+        generator = self._get_machine_types(normalize=normalize, *args, **kwargs)
+        data = generator_to_df(generator)
+        return data
+
+    def get_machine_names(self, source_type=None, clean_strings_out=True):
+        """
+        Get a list of machine names.  This is a simplified version of get_machines().
+
+        :param source_type: filter the list to only the specified source_type
+        :type source_type: str
+        :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine names.
+        :return: list
+        """
+
+        query_params = {
+            "select": ["source", "source_clean", "source_type"],
+            "order_by": [{"name": "source_clean"}],
+        }
+
+        if source_type:
+            # Double check the type
+            mt = self.get_machine_types(source_type=source_type)
+            # If it was found, then no action to take, otherwise try looking up from clean string
+            mt = (
+                self.get_machine_types(source_type_clean=source_type)
+                if not len(mt)
+                else []
+            )
+            if len(mt):
+                source_type = mt["source_type"].iloc[0]
+            else:
+                log.error("Machine Type not found")
+                return []
+
+            query_params["source_type"] = source_type
+
+        machines = self.get_data_v1(
+            "machine_v1", "get_machines", normalize=True, **query_params
+        )
+        machines = generator_to_df(machines)
+
+        if clean_strings_out:
+            return machines["source_clean"].to_list()
+        else:
+            return machines["source"].to_list()
+
+    def get_machine_type_names(self, clean_strings_out=True):
+        """
+        Get a list of machine type names.  This is a simplified version of get_machine_types().
+
+        :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
+        :return: list
+        """
+        query_params = {
+            "select": ["source_type", "source_type_clean"],
+            "order_by": [{"name": "source_type_clean"}],
+        }
+        machine_types = self.get_data_v1(
+            "machine_type_v1", "get_machine_types", normalize=True, **query_params
+        )
+        machine_types = generator_to_df(machine_types)
+
+        if clean_strings_out:
+            return machine_types["source_type_clean"].to_list()
+        else:
+            return machine_types["source_type"].to_list()
 
     def get_cookbooks(self, **kwargs):
         """

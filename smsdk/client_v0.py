@@ -15,7 +15,7 @@ try:
 except ImportError:
     from pandas.io.json import json_normalize
 
-from smsdk.utils import get_url
+from smsdk.utils import get_url, escape_mongo_field_name, dict_to_df
 from smsdk.Auth.auth import Authenticator
 from smsdk.tool_register import smsdkentities
 
@@ -40,37 +40,6 @@ def time_string_to_epoch(time_string):
         return 0
 
     return time_epoch
-
-
-def dict_to_df(data, normalize=True):
-    if normalize:
-        # special case to handle the 'stats' block
-        if data and "stats" in data[0]:
-            if isinstance(data[0]["stats"], dict):
-                # part stats are dict
-                df = json_normalize(data)
-            else:
-                # machine type stats are list
-                cols = [*data[0]]
-                cols.remove("stats")
-                df = json_normalize(data, "stats", cols, record_prefix="stats.")
-        else:
-            try:
-                df = json_normalize(data)
-            except:
-                # From cases like _distinct which don't have a "normal" return format
-                return pd.DataFrame({"values": data})
-    else:
-        df = pd.DataFrame(data)
-
-    if len(df) > 0:
-        if "_id" in df.columns:
-            df.set_index("_id", inplace=True)
-
-        if "id" in df.columns:
-            df.set_index("id", inplace=True)
-
-    return df
 
 
 # We don't have a downtime schema, so hard code one
@@ -271,7 +240,7 @@ class ClientV0(object):
                     data.drop(joined_cols, axis=1)
 
             # To keep consistent, rename columns back from '.' to '__'
-            data.columns = [name.replace(".", "__") for name in data.columns]
+            data.columns = [escape_mongo_field_name(name) for name in data.columns]
 
         else:
             # raise error if requested for unregistered utility
@@ -526,13 +495,13 @@ class ClientV0(object):
             try:
                 stats = self.get_machine_types(
                     normalize=False, _limit=1, source_type=machine_type
-                )["stats"][0]
+                )
             except KeyError:
                 # explicitly embed string to machine type names esp JCP
                 machine_type = f"'{machine_type}'"
                 stats = self.get_machine_types(
                     normalize=False, _limit=1, source_type=machine_type
-                )["stats"][0]
+                )
             except Exception as ex:
                 print(f"Exception in getting machine type stats {ex}")
             kwargs["stats"] = stats
@@ -715,7 +684,7 @@ class ClientV0(object):
 
         return merged
 
-    def get_factories(self, normalize=True, *args, **kwargs):
+    def get_factories(self, *args, normalize=True, **kwargs):
         """
         Get list of factories and associated metadata.  Note this includes extensive internal metadata.
 
@@ -725,7 +694,7 @@ class ClientV0(object):
         """
         return self.get_data("factory", "get_factories", normalize, *args, **kwargs)
 
-    def get_machines(self, normalize=True, *args, **kwargs):
+    def get_machines(self, *args, normalize=True, **kwargs) -> pd.DataFrame:
         """
         Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
         then see also get_machine_names().
@@ -755,13 +724,16 @@ class ClientV0(object):
             # Double check the type
             mt = self.get_machine_types(source_type=source_type)
             # If it was found, then no action to take, otherwise try looking up from clean string
-            if not len(mt):
-                mt = self.get_machine_types(source_type_clean=source_type)
-                if len(mt):
-                    source_type = mt["source_type"].iloc[0]
-                else:
-                    log.error("Machine Type not found")
-                    return []
+            mt = (
+                self.get_machine_types(source_type_clean=source_type)
+                if not len(mt)
+                else []
+            )
+            if len(mt):
+                source_type = mt["source_type"].iloc[0]
+            else:
+                log.error("Machine Type not found")
+                return []
 
             query_params["source_type"] = source_type
 
@@ -822,7 +794,7 @@ class ClientV0(object):
 
         return timezone
 
-    def get_machine_types(self, normalize=True, *args, **kwargs):
+    def get_machine_types(self, *args, normalize=True, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
         then see also get_machine_type_names().

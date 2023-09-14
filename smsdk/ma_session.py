@@ -5,6 +5,7 @@ import json
 import requests
 
 import numpy as np
+import pandas as pd
 
 from requests.structures import CaseInsensitiveDict
 from requests.sessions import Session
@@ -16,6 +17,7 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 from smsdk import config
+from smsdk.utils import escape_mongo_field_name, dict_to_df
 
 RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.json"))
 
@@ -24,6 +26,7 @@ SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
 SM_AUTH_HEADER_KEY_ID = RESOURCE_CONFIG["auth_header-api-key"]
 X_SM_DB_SCHEMA = RESOURCE_CONFIG["x_sm_db_schema"]
 X_SM_WORKSPACE_ID = RESOURCE_CONFIG["x_sm_workspace_id"]
+
 
 import logging
 
@@ -94,10 +97,8 @@ class MaSession:
                     return records
                 _offset += this_loop_limit
 
-            except:
-                import traceback
-
-                print(traceback.print_exc())
+            except Exception as e:
+                log.exception(str(e), exc_info=1)
                 return records
 
     def _get_schema(self, endpoint, method="get", **url_params):
@@ -199,10 +200,8 @@ class MaSession:
                     return records
                 offset += this_loop_limit
 
-            except:
-                import traceback
-
-                print(traceback.print_exc())
+            except Exception as e:
+                log.exception(str(e), exc_info=1)
                 return records
 
     def _complete_async_task(
@@ -278,3 +277,87 @@ class MaSession:
                     continue
 
         return starttime_key, endtime_key
+
+    def _get_records_mongo_v1(
+        self,
+        endpoint,
+        normalize=True,
+        method="get",
+        limit=np.Inf,
+        offset=1,
+        **url_params,
+    ):
+        """
+        Function to get api call and fetch data from MA APIs
+        :param endpoint: complete url endpoint
+        :param method: Reqested method. Default = get
+        :param enable_pagination: if pagination is enabled then
+        the records are fetched with limit offset pagination
+        :param limit: Limit the number of records for pagination
+        :param offset: pagination offset
+        :param url_params: dict of params for API ex filtering, columns etc
+        :return: List of records
+        """
+        next_page = ""
+        offset = int(offset)
+        try:
+            limit = int(limit)
+        except:
+            limit = float(limit)
+
+        if "machine_type" in url_params:
+            url_params.pop("machine_type")
+        max_page_size = 2000
+        limit = min(max_page_size, limit)
+        if not url_params.get("per_page"):
+            url_params["per_page"] = 5
+
+        if limit < url_params["per_page"]:
+            url_params["per_page"] = limit
+
+        def _fetch_data(endpoint, url_params):
+            response = getattr(self.session, method.lower())(
+                endpoint, params=url_params
+            )
+            if response.text:
+                if response.status_code not in [200, 201]:
+                    raise ValueError("Error - {}".format(response.text))
+                try:
+                    data = response.json()
+                    try:
+                        next_page = data["next_page"]
+                    except:
+                        next_page = ""
+                    if data["success"]:
+                        data = data["objects"]
+                except JSONDecodeError as e:
+                    print(f"No valid JSON returned {e}")
+                    data = []
+            else:
+                data = []
+            return data, next_page
+
+        while limit > 0:
+            if next_page:
+                data, next_page = _fetch_data(endpoint=next_page, url_params={})
+                if not next_page:
+                    limit = 0
+                else:
+                    limit -= len(data)
+            else:
+                data, next_page = _fetch_data(endpoint=endpoint, url_params=url_params)
+                if not next_page:
+                    limit = 0
+                else:
+                    limit -= len(data)
+            data = dict_to_df(data, normalize=normalize)
+
+            # To keep consistent, rename columns back from '.' to '__'
+            data.columns = [escape_mongo_field_name(name) for name in data.columns]
+
+            if "endtime" in data.columns:
+                data["endtime"] = pd.to_datetime(data["endtime"])
+            if "starttime" in data.columns:
+                data["starttime"] = pd.to_datetime(data["starttime"])
+
+            yield data

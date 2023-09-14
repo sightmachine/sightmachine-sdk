@@ -3,13 +3,13 @@ import pandas as pd
 from requests.sessions import Session
 from smsdk.client import Client
 from tests.machine_type.machine_type_data import JSON_MACHINETYPE, MACHINE_TYPE_FIELDS
-from smsdk.smsdk_entities.machine_type.machinetype import MachineType
+from smsdk.smsdk_entities.machine_type.machinetypeV1 import MachineType
 
 
 def test_get_machine_types(monkeypatch):
     # Setup
     def mockapi(self, session, endpoint):
-        if endpoint == "/api/machinetype":
+        if endpoint == "/v1/obj/machine_types":
             return pd.DataFrame(JSON_MACHINETYPE)
         return pd.DataFrame()
 
@@ -18,7 +18,7 @@ def test_get_machine_types(monkeypatch):
     dt = MachineType(Session(), "demo")
 
     # Run
-    df = dt.get_machine_types(Session(), "/api/machinetype")
+    df = dt.get_machine_types(Session(), "/v1/obj/machine_types")
 
     # Verify
     assert df.shape == (2, 22)

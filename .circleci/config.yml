@@ -125,7 +125,6 @@ jobs:
           command: |
             set -x
             pip install -r requirements-coveralls.txt
-            coverage combine /tmp/workspace/coverage-report-*/.coverage
             coverage html -d htmlcov
             coveralls
       - store_artifacts:

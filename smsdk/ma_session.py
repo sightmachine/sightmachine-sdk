@@ -178,7 +178,7 @@ class MaSession:
 
                 if response.text:
                     if response.status_code not in [200, 201]:
-                        raise ValueError("Error - {}".format(response.text))
+                        raise ValueError(format(response.text))
                     try:
                         data = response.json()
                         if results_under:
@@ -199,6 +199,8 @@ class MaSession:
                     return records
                 offset += this_loop_limit
 
+            except ValueError as e:
+                raise e
             except:
                 import traceback
 

@@ -321,7 +321,11 @@ class Client(ClientV0):
             field for field in fields if not field.get("ui_hidden") or show_hidden
         ]
         if len(types) > 0:
-            fields = [field for field in fields if field.get("type") in types]
+            fields = [
+                field
+                for field in fields
+                if field.get("type") in types or field.get("data_type") in types
+            ]
 
         frame = pd.DataFrame(fields).rename(
             columns={

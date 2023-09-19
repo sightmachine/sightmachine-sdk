@@ -122,8 +122,8 @@ def test_auth__auth_apikey_success(mocked):
 
     assert authed._auth_apikey(secret_id=secret_id, key_id=key_id) is True
     mocked.return_value.get.assert_called_once_with(
-        f"https://{tenant}.sightmachine.io/api/cycle",
-        params={"_only": ["_id"], "_offset": 0, "_limit": 1},
+        f"https://{tenant}.sightmachine.io/v1/selector/assets",
+        params={"limit": 50000, "db_mode": "sql"},
     )
 
 
@@ -176,8 +176,8 @@ def test_auth_check_auth_success(mocked):
 
     assert authed.check_auth() is True
     mocked.return_value.get.assert_called_once_with(
-        f"https://{tenant}.sightmachine.io/api/cycle",
-        params={"_only": ["_id"], "_offset": 0, "_limit": 1},
+        f"https://{tenant}.sightmachine.io/v1/selector/assets",
+        params={"limit": 50000, "db_mode": "sql"},
     )
 
 

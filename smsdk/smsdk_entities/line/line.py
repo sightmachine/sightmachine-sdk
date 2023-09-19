@@ -34,6 +34,13 @@ class Line(SmsdkEntities, MaSession):
         self.base_url = base_url
 
     @mod_util
+    def get_utilities(self, *args, **kwargs) -> List:
+        """
+        Get the list of registered utilites by name
+        """
+        return [*self.mod_util.all]
+
+    @mod_util
     def get_lines(self, *args, **kwargs):
         """
         Returns a list of all lines

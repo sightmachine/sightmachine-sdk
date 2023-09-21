@@ -46,5 +46,8 @@
   },
   "Line": {
     "url": "/v1/datatab/line"
+  },
+  "RawData": {
+    "url": "/v1/datatab/raw_data"
   }
 }

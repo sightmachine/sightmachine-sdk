@@ -1,0 +1,11 @@
+[run]
+source = sightmachine-sdk
+branch = True
+
+[paths]
+source =
+    /home/circleci/project
+
+[report]
+omit =
+    */tests/*

@@ -7,6 +7,8 @@ workflows:
           context: org-sightmachine
       - run-unit-tests:
           context: org-sightmachine
+      - code-coverage-report:
+          context: org-sightmachine
 
 orbs:
   gcp-gke: circleci/gcp-gke@0.2.0
@@ -94,3 +96,37 @@ jobs:
               echo "Unformatted code detected. Please run black --fast . locally and commit to format your code." >&2
               exit 1
             fi
+
+  ## ------------------ Generate Code Coverage Report ------------------
+
+  code-coverage-report:
+    parameters:
+      with_merge: # Part of the PR-merge workflow
+        type: boolean
+        default: false
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: cimg/python:3.11.0
+    steps:
+      - when:
+          condition: << parameters.with_merge >>
+          steps:
+            - disable_build_if_not_pr
+      # Make sure that the build doesn't accidentally pull images from Docker Hub.
+      # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
+      - disable_docker_hub
+      # Coverage html requires source code to build HTML views
+      - checkout
+      # Need a workspace for all the coverage reports
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Compile Coverage Reports
+          command: |
+            set -x
+            pip install -r requirements-coveralls.txt
+            coverage html -d htmlcov
+            coveralls
+      - store_artifacts:
+          name: Save Coverage Report
+          path: htmlcov/

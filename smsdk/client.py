@@ -547,9 +547,6 @@ class Client(ClientV0):
         )
 
     def get_raw_data(self, raw_data_table, fields=[], time_selection=one_day_relative, limit=400, offset=0, **kwargs):
-        '''
-        The work is still in progress as some exception handling still need to be done.
-        '''
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]

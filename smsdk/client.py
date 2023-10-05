@@ -48,7 +48,9 @@ def dict_to_df(data, normalize=True):
                 # machine type stats are list
                 cols = [*data[0]]
                 cols.remove("stats")
-                df = json_normalize(data, "stats", cols, record_prefix="stats.")
+                df = json_normalize(
+                    data, "stats", cols, record_prefix="stats.", errors="ignore"
+                )
         else:
             try:
                 df = json_normalize(data)
@@ -544,4 +546,31 @@ class Client(ClientV0):
                 yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
         return dataViz(self.session, base_url).create_share_link(
             *args, assets, chartType, yAxis, xAxis, model, time_selection, **kwargs
+        )
+
+    def get_machines(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
+        then see also get_machine_names().
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+        return self.get_data_v1(
+            "machine_v1", "get_machines", normalize, *args, **kwargs
+        )
+
+    def get_machine_types(self, normalize=True, *args, **kwargs):
+        """
+        Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
+        then see also get_machine_type_names().
+
+        :param normalize: Flatten nested data structures
+        :type normalize: bool
+        :return: pandas dataframe
+        """
+
+        return self.get_data_v1(
+            "machine_type_v1", "get_machine_types", normalize, *args, **kwargs
         )

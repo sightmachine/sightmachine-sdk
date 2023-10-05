@@ -546,23 +546,31 @@ class Client(ClientV0):
             *args, assets, chartType, yAxis, xAxis, model, time_selection, **kwargs
         )
 
-    def get_raw_data(self, raw_data_table, fields=[], time_selection=one_day_relative, limit=400, offset=0, **kwargs):
+    def get_raw_data(
+        self,
+        raw_data_table,
+        normalize=True,
+        fields=[],
+        time_selection=one_day_relative,
+        limit=400,
+        offset=0,
+        *args,
+        **kwargs,
+    ):
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         select = []
-        if len(fields)>0:
+        if len(fields) > 0:
             for field in fields:
-                dict_={}
-                dict_['name'] = field
+                dict_ = {}
+                dict_["name"] = field
                 select.append(dict_)
 
-        kwargs["asset_selection"] = {'raw_data_table':raw_data_table}
+        kwargs["asset_selection"] = {"raw_data_table": raw_data_table}
         kwargs["select"] = select
         kwargs["time_selection"] = time_selection
         kwargs["db_mode"] = "sql"
 
-        return raw_data(self.session, base_url).get_raw_data(
-            limit=limit, offset=offset, **kwargs
-        )
+        return self.get_data_v1("raw_data", "get_raw_data", normalize, *args, **kwargs)

@@ -6,6 +6,7 @@ RAW_DATA_TABLE = "cycle_raw_data"
 NUM_ROWS = 400
 URL_V1 = "/v1/datatab/raw_data"
 
+
 def test_get_utilities(get_session):
     raw_data = RawData(get_session, TENANT)
 
@@ -17,6 +18,8 @@ def test_get_utilities(get_session):
     assert len(all_utilites) == len(expected_list)
     assert all([a == b for a, b in zip(all_utilites, expected_list)])
 
+
 def test_get_raw_data(get_client):
     raw_data = get_client.get_raw_data(RAW_DATA_TABLE)
-    assert len(raw_data)==NUM_ROWS
+    assert len(raw_data) == NUM_ROWS
+    assert raw_data.shape == (400, 33)

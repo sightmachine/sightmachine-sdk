@@ -95,7 +95,7 @@ class MaSession:
                 _offset += this_loop_limit
 
             except Exception as e:
-                print(f'Error getting data, but continuing. {e}')
+                print(f"Error getting data, but continuing. {e}")
                 continue
 
     def _get_schema(self, endpoint, method="get", **url_params):
@@ -200,7 +200,7 @@ class MaSession:
             except ValueError as e:
                 raise e
             except Exception as e:
-                print(f'Error getting data, retrying with smaller page size. {e}')
+                print(f"Error getting data, retrying with smaller page size. {e}")
                 # Try throttling down the page size
                 max_page_size = int(max_page_size / 2)
                 continue

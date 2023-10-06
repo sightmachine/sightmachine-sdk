@@ -82,8 +82,8 @@ class MaSession:
                             data = data["results"]
 
                     except JSONDecodeError as e:
-                        print(f"No valid JSON returned {e}")
-                        return []
+                        print(f"No valid JSON returned, but continuing. {e}")
+                        continue
                 else:
                     return []
 
@@ -94,11 +94,9 @@ class MaSession:
                     return records
                 _offset += this_loop_limit
 
-            except:
-                import traceback
-
-                print(traceback.print_exc())
-                return records
+            except Exception as e:
+                print(f"Error getting data, but continuing. {e}")
+                continue
 
     def _get_schema(self, endpoint, method="get", **url_params):
         """
@@ -178,7 +176,7 @@ class MaSession:
 
                 if response.text:
                     if response.status_code not in [200, 201]:
-                        raise ValueError("Error - {}".format(response.text))
+                        raise ValueError(format(response.text))
                     try:
                         data = response.json()
                         if results_under:
@@ -199,11 +197,13 @@ class MaSession:
                     return records
                 offset += this_loop_limit
 
-            except:
-                import traceback
-
-                print(traceback.print_exc())
-                return records
+            except ValueError as e:
+                raise e
+            except Exception as e:
+                print(f"Error getting data, retrying with smaller page size. {e}")
+                # Try throttling down the page size
+                max_page_size = int(max_page_size / 2)
+                continue
 
     def _complete_async_task(
         self, endpoint, method="post", db_mode="sql", **url_params

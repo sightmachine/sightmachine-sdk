@@ -12,7 +12,7 @@ with open("requirements.txt", "r") as fh:
 
 setup(
     name="smsdk",
-    version="1.0.18",
+    version="1.0.21",
     packages=find_packages(exclude=["test*"]),
     include_package_data=True,
     install_requires=install_requires,

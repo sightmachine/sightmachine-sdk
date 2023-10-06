@@ -91,3 +91,8 @@ def test_get_fields_of_machine_type_types(mocked_machines):
 
     # Verify
     assert names == ["stat__test_float"]
+
+
+def test_get_machines_types_v1(get_client):
+    machine_types = get_client.get_machine_types()
+    assert machine_types.shape == (114, 25)

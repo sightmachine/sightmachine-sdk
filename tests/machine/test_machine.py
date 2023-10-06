@@ -126,3 +126,8 @@ def test_get_machine_schema_types_return_mtype(mocked_types, mocked_machines):
         "stat__test_float",
         "stat__test_string",
     ]
+
+
+def test_get_machines_v1(get_client):
+    machines = get_client.get_machines()
+    assert machines.shape == (49, 10)

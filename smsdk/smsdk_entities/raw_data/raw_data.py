@@ -37,7 +37,6 @@ class RawData(SmsdkEntities, MaSession):
         """
         return [*self.mod_util.all]
 
-
     @mod_util
     def get_raw_data(self, limit=400, offset=0, *args, **kwargs):
         url = "{}{}".format(self.base_url, ENDPOINTS["RawData"]["url"])

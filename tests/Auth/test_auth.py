@@ -105,10 +105,11 @@ def test_auth__auth_apikey_success(mocked):
     class Response:
         ok = True
         text = "Success"
+        status_code = 200
 
         @staticmethod
         def json():
-            return []
+            return {"results": []}
 
     mocked.return_value = MagicMock(
         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())
@@ -161,10 +162,11 @@ def test_auth_check_auth_success(mocked):
     class Response:
         ok = True
         text = "Success"
+        status_code = 200
 
         @staticmethod
         def json():
-            return []
+            return {"results": []}
 
     mocked.return_value = MagicMock(
         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())

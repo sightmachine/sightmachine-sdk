@@ -1,6 +1,6 @@
 from json.decoder import JSONDecodeError
 from time import sleep
-from typing import List
+import typing as t_
 import json
 import requests
 
@@ -8,16 +8,21 @@ import numpy as np
 
 from requests.structures import CaseInsensitiveDict
 from requests.sessions import Session
-
-try:
-    import importlib.resources as pkg_resources
-except ImportError:
-    # Try backported to PY<37 `importlib_resources`.
-    import importlib_resources as pkg_resources
-
 from smsdk import config
 
-RESOURCE_CONFIG = json.loads(pkg_resources.read_text(config, "message_config.json"))
+try:
+    import importlib.resources
+
+    RESOURCE_CONFIG = json.loads(
+        importlib.resources.read_text(config, "message_config.json")
+    )
+except ImportError:
+    # Try backported to PY<37 `importlib_resources`.
+    import importlib_resources
+
+    RESOURCE_CONFIG = json.loads(
+        importlib_resources.read_text(config, "message_config.json")
+    )
 
 SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
@@ -31,13 +36,18 @@ log = logging.getLogger(__name__)
 
 
 class MaSession:
-    def __init__(self):
+    def __init__(self) -> None:
         self.requests = requests
         self.session = Session()
 
     def _get_records(
-        self, endpoint, method="get", _limit=np.Inf, _offset=0, **url_params
-    ):
+        self,
+        endpoint: str,
+        method: str = "get",
+        _limit: float = np.Inf,
+        _offset: float = 0.0,
+        **url_params: t_.Any,
+    ) -> t_.List[t_.Dict[str, t_.Any]]:
         """
         Function to get api call and fetch data from MA APIs
         :param endpoint: complete url endpoint
@@ -53,7 +63,7 @@ class MaSession:
             url_params.pop("machine_type")
         max_page_size = 2000
 
-        records: List = []
+        records: t_.List[t_.Dict[str, t_.Any]] = []
         while True:
             try:
                 remaining_limit = _limit - len(records)
@@ -98,7 +108,9 @@ class MaSession:
                 print(f"Error getting data, but continuing. {e}")
                 continue
 
-    def _get_schema(self, endpoint, method="get", **url_params):
+    def _get_schema(
+        self, endpoint: str, method: str = "get", **url_params: t_.Any
+    ) -> t_.Any:
         """
         This function can be used to fetch HLO schemas like AIDP
         Function to get api call and fetch data from MA APIs
@@ -130,14 +142,14 @@ class MaSession:
 
     def _get_records_v1(
         self,
-        endpoint,
-        method="post",
-        limit=np.Inf,
-        offset=0,
-        db_mode="sql",
-        results_under="results",
-        **url_params,
-    ):
+        endpoint: str,
+        method: str = "post",
+        limit: float = np.Inf,
+        offset: float = 0,
+        db_mode: str = "sql",
+        results_under: str = "results",
+        **url_params: t_.Any,
+    ) -> t_.List[t_.Dict[str, t_.Any]]:
         """
         Function to get api call and fetch data from MA APIs
         :param endpoint: complete url endpoint
@@ -151,7 +163,7 @@ class MaSession:
         """
         max_page_size = 50000
 
-        records: List = []
+        records: t_.List[t_.Dict[str, t_.Any]] = []
         while True:
             try:
                 if limit:
@@ -206,8 +218,12 @@ class MaSession:
                 continue
 
     def _complete_async_task(
-        self, endpoint, method="post", db_mode="sql", **url_params
-    ):
+        self,
+        endpoint: str,
+        method: str = "post",
+        db_mode: str = "sql",
+        **url_params: t_.Any,
+    ) -> t_.Any:
         if url_params.get("db_mode") == None:
             url_params["db_mode"] = db_mode
         try:
@@ -234,15 +250,15 @@ class MaSession:
                 except:
                     import traceback
 
-                    print(traceback.print_exc())
+                    traceback.print_exc()
                     return []
         except:
             import traceback
 
-            print(traceback.print_exc())
+            traceback.print_exc()
             return []
 
-    def get_json_headers(self):
+    def get_json_headers(self) -> CaseInsensitiveDict:
         """
         Headers for json requests
         """
@@ -254,7 +270,7 @@ class MaSession:
             }
         )
 
-    def get_starttime_endtime_keys(self, **kwargs):
+    def get_starttime_endtime_keys(self, **kwargs: t_.Any) -> t_.Tuple[str, str]:
         """
         This function takes kwargs as input and tried to identify starttime and endtime key provided by user and returns
         :param kwargs:

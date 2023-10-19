@@ -93,6 +93,11 @@ def test_get_fields_of_machine_type_types(mocked_machines):
     assert names == ["stat__test_float"]
 
 
+"""
+This test is against the demo environment and if the environment is changed then this test has to change as well.
+"""
+
+
 def test_get_machines_types_v1(get_client):
     machine_types = get_client.get_machine_types()
     assert machine_types.shape == (114, 25)

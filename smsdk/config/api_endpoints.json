@@ -4,28 +4,23 @@
   },
   "Cycle": {
     "url_v1": "/v1/datatab/cycle",
-    "url": "/api/cycle",
     "alt_url": "/api/cycle"
   },
   "Factory": {
     "url" : "/api/factory"
   },
   "MachineType": {
-    "url" : "/api/machinetype",
     "url_v1" : "/v1/obj/machine_type",
     "fields": "/v1/selector/datatab/cycle/{}/field"
   },
   "Machine": {
-    "url" : "/api/machine",
     "url_v1" : "/v1/obj/machine"
   },
   "Parts": {
-    "url" : "/api/part",
     "url_v1": "/v1/datatab/part",
     "part_schema": "/v1/obj/part_type"
   },
   "Downtime": {
-    "url" : "/api/downtime",
     "url_v1" : "/v1/datatab/downtime"
 
   },

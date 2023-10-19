@@ -21,5 +21,12 @@ def test_get_utilities(get_session):
 
 def test_get_raw_data(get_client):
     raw_data = get_client.get_raw_data(RAW_DATA_TABLE)
+
+    # check index
+    assert raw_data.index.name == "_id"
+
+    # check timestamp column
+    assert "timestamp" in raw_data.columns.to_list()
+
     assert len(raw_data) == NUM_ROWS
     assert raw_data.shape == (400, 33)

@@ -561,13 +561,7 @@ class Client(ClientV0):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        select = []
-        if len(fields) > 0:
-            for field in fields:
-                dict_ = {}
-                dict_["name"] = field
-                select.append(dict_)
-
+        select = [{"name": field} for field in fields]
         kwargs["asset_selection"] = {"raw_data_table": raw_data_table}
         kwargs["select"] = select
         kwargs["time_selection"] = time_selection

@@ -12,10 +12,12 @@
   },
   "MachineType": {
     "url" : "/api/machinetype",
+    "url_v1" : "/v1/obj/machine_type",
     "fields": "/v1/selector/datatab/cycle/{}/field"
   },
   "Machine": {
-    "url" : "/api/machine"
+    "url" : "/api/machine",
+    "url_v1" : "/v1/obj/machine"
   },
   "Parts": {
     "url" : "/api/part",

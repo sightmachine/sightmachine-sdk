@@ -1,50 +1,78 @@
 import pandas as pd
-from requests.sessions import Session
 from smsdk.client import Client
+from tests.conftest import TENANT
 from smsdk.smsdk_entities.line.line import Line
 from mock import mock_open, MagicMock, patch
-
 from tests.lines.line_data import AVALIBLE_LINE_JSON, LINE_DATA_JSON
 
 
-@patch("smsdk.ma_session.Session")
-def test_get_lines(mocked):
-    class ResponseGet:
-        ok = True
-        text = "Success"
-        status_code = 200
+# # Define all the constants used in the test
+START_DATETIME = "2023-04-01T08:00:00.000Z"
+END_DATETIME = "2023-04-02T23:00:00.000Z"
+TIME_ZONE = "America/Los_Angeles"
+MAX_ROWS = 50
+LINE_INDEX = 0
+EXP_NUM_LINES = 1
+NAME_ATRIB = "name"
+LINE_NAME = "JB_NG_PickAndPlace_1"
+MACHINE4 = "JB_NG_PickAndPlace_1_Stage4"
+FIELD_NAME1 = "stats__BLOCKED__val"
+FIELD_NAME2 = "stats__PneumaticPressure__val"
+MIN_PRESSURE = 75.25
+EXP_NUM_ROWS = 14
+URL_V1 = "/v1/datatab/line"
 
-        @staticmethod
-        def json():
-            return {"results": [{"line": AVALIBLE_LINE_JSON}]}
 
-    mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
-
-    dt = Client("demo")
+def test_get_utilities(get_session):
+    line = Line(get_session, TENANT)
 
     # Run
-    lines = dt.get_lines()
+    all_utilites = line.get_utilities(get_session, URL_V1)
+
+    expected_list = ["get_utilities", "get_lines", "get_line_data"]
+
+    assert len(all_utilites) == len(expected_list)
+    assert all([a == b for a, b in zip(all_utilites, expected_list)])
+
+
+def test_get_lines(get_client):
+    # Call the get_lines API
+    lines = get_client.get_lines()
 
     # Verify
-    assert len(lines) == 6
+    assert len(lines) == EXP_NUM_LINES
+    assert lines[LINE_INDEX][NAME_ATRIB] == LINE_NAME
 
-    assert lines[0]["name"] == "F2_CANNING_L1"
 
+def test_get_line_data(get_client):
+    assets = [MACHINE4]
+    fields = [
+        {"asset": MACHINE4, "name": FIELD_NAME1},
+        {"asset": MACHINE4, "name": FIELD_NAME2},
+    ]
 
-@patch("smsdk.ma_session.Session")
-def test_get_line_data(mocked):
-    class ResponsePost:
-        ok = True
-        text = "Success"
-        status_code = 200
+    time_selection = {
+        "time_type": "absolute",
+        "start_time": START_DATETIME,
+        "end_time": END_DATETIME,
+        "time_zone": TIME_ZONE,
+    }
 
-        @staticmethod
-        def json():
-            return {"results": LINE_DATA_JSON}
+    filters = [
+        {
+            "asset": MACHINE4,
+            "name": FIELD_NAME2,
+            "op": "gte",
+            "value": MIN_PRESSURE,
+        }
+    ]
 
-    mocked.return_value = MagicMock(post=MagicMock(return_value=ResponsePost()))
+    df = get_client.get_line_data(
+        assets, fields, time_selection, filters=filters, limit=MAX_ROWS
+    )
 
-    dt = Client("demo")
-    data = dt.get_line_data(["test"])
-    assert len(data) == 3
-    assert data[0]["F2_010_BodyMaker_1:stats__0_BM 008: Cans Out__val"] == 35440.0
+    assert len(df) == EXP_NUM_ROWS
+
+    # Check each element in the df for the pneumatic pressure
+    for i, expected_value in enumerate(df):
+        assert df[i][f"{MACHINE4}:{FIELD_NAME2}"] >= MIN_PRESSURE

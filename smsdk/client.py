@@ -545,3 +545,26 @@ class Client(ClientV0):
         return dataViz(self.session, base_url).create_share_link(
             *args, assets, chartType, yAxis, xAxis, model, time_selection, **kwargs
         )
+
+    def get_raw_data(
+        self,
+        raw_data_table,
+        normalize=True,
+        fields=[],
+        time_selection=one_day_relative,
+        limit=400,
+        offset=0,
+        *args,
+        **kwargs,
+    ):
+        raw_data = smsdkentities.get("raw_data")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        select = [{"name": field} for field in fields]
+        kwargs["asset_selection"] = {"raw_data_table": raw_data_table}
+        kwargs["select"] = select
+        kwargs["time_selection"] = time_selection
+        kwargs["db_mode"] = "sql"
+
+        return self.get_data_v1("raw_data", "get_raw_data", normalize, *args, **kwargs)

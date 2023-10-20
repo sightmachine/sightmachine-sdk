@@ -262,6 +262,24 @@ class Client(ClientV0):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
+
+        # Get machine_types dataframe to check display name
+        machine_types_df = self.get_machine_types()
+        machine_types = []
+        # This loop is getting system name of machine_type if provided only display name in request.
+        for machine_type in kwargs["asset_selection"]["machine_type"]:
+            source_type = machine_types_df.loc[
+                machine_types_df["source_type_clean"] == machine_type, "source_type"
+            ]
+            if not source_type.empty:
+                source_type = list(set(source_type.to_list()))
+                machine_types.extend(source_type)
+            else:
+                machine_types.append(machine_type)
+
+        # updating kwargs with machine_type's system name only
+        kwargs["asset_selection"]["machine_type"] = machine_types
+
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
 
     def get_kpi_data_viz(

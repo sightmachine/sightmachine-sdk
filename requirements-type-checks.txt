@@ -1,0 +1,5 @@
+--index-url https://circleci-read-user:X5KJ7hOBIM@sightmachine.jfrog.io/sightmachine/api/pypi/python-dependencies/simple
+
+pyre-check==0.9.18
+mypy==1.6.0
+lxml==4.9.3

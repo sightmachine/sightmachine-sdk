@@ -5,6 +5,8 @@ workflows:
     jobs:
       - black-python-code-formatter:
           context: org-sightmachine
+      - mypy-type-checks:
+          context: org-sightmachine
       - run-unit-tests:
           context: org-sightmachine
 
@@ -94,3 +96,42 @@ jobs:
               echo "Unformatted code detected. Please run black --fast . locally and commit to format your code." >&2
               exit 1
             fi
+
+  ## ------------------ Mypy for Static Type Checking python code ------------------
+  mypy-type-checks:
+    parameters:
+      with_merge: # Part of the PR-merge workflow
+        type: boolean
+        default: false
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: cimg/python:3.11.0
+    steps:
+      - when:
+          condition: << parameters.with_merge >>
+          steps:
+            - disable_build_if_not_pr
+      - checkout
+      # Run Pyre type checking
+      - run:
+          name: Run Static type checking
+          command: |
+            set -x
+            # Install Python packages for type checking
+            pip wheel --wheel-dir=./wheel-dir -r requirements-type-checks.txt
+            pip install --find-links=./wheel-dir -r requirements-type-checks.txt
+            # Using 'git diff ...' to fetch newly added Python files from the repo
+            # Conducting static type checking on the files obtained
+            # Re-running static type checking on the files listed in 'mypy.ini'
+            mypy $(git diff --name-only --diff-filter=A origin/master HEAD | grep '\.py$') && mypy
+            if [ $? -ne 0 ]; then
+                echo "MyPy finds static type error(s) in the Python codebase. Please fix all type-related errors before committing the code." >&2
+                exit 1
+            fi
+      # Store MyPy type checking results
+      - store_test_results:
+          path: mypy-results
+      # Store MyPy type checking artifacts (e.g., HTML reports)
+      - store_artifacts:
+          name: MyPy Artifacts
+          path: mypy-results/mypy-html

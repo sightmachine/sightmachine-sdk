@@ -1,20 +1,26 @@
-def module_utility():
-    """
-    Function to register class functions as tool functions
-    :return:
-    """
-    registry = {}
-
-    def registrar(func):
-        registry[func.__name__] = func
-        return func  # normally a decorator returns a wrapped function,
-        # but here we return func unmodified, after registering it
-
-    registrar.all = registry
-    return registrar
+import typing as t_
+import functools
+from typing import Any
 
 
-def get_url(protocol, tenant, site_domain):
+class ModuleUtility:
+    def __init__(self) -> None:
+        self.registry: t_.Dict[str, t_.Callable[..., t_.Any]] = {}
+
+    def __call__(self, func: t_.Callable[..., t_.Any]) -> t_.Callable[..., t_.Any]:
+        self.registry[func.__name__] = func
+        return func
+
+    @property
+    def all(self) -> t_.Dict[str, t_.Callable[..., t_.Any]]:
+        return self.registry
+
+
+# To avoid modifying all the files with the class name, this alias is created.
+module_utility = ModuleUtility
+
+
+def get_url(protocol: str, tenant: str, site_domain: str) -> str:
     """
     Get the URL of the web address.
 
@@ -26,4 +32,4 @@ def get_url(protocol, tenant, site_domain):
     :type site_domain: :class:`string`
     """
 
-    return "{}://{}.{}".format(protocol, tenant, site_domain)
+    return f"{protocol}://{tenant}.{site_domain}"

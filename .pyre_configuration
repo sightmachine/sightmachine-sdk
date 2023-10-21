@@ -1,0 +1,13 @@
+{
+  "site_package_search_strategy": "all",
+  "source_directories": [
+      {
+          "import_root": ".",
+          "source": "smsdk"
+      }
+  ],
+  "search_path": [
+    "smsdk"
+  ],
+  "strict": true
+}

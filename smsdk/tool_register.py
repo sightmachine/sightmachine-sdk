@@ -4,6 +4,7 @@ import enum
 from typing import List, Dict, NamedTuple, Tuple, Union
 
 from smsdk.register import Registry
+import typing as t_
 
 
 @enum.unique
@@ -47,9 +48,13 @@ class SmsdkEntities(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def __init__(self, session, base_url) -> None:
-        self.session = session
-        self.base_url = base_url
+    # The subclasses of the SmsdkEntities class will be responsible
+    # for defining their own __init__() methods, which will initialize
+    # the session and base_url attributes.
+    def __init__(self, session: t_.Any, base_url: str) -> None:
+        # self.session = session
+        # self.base_url = base_url
+        pass
 
 
 smsdkentities = Registry(SmsdkEntities)

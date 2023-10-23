@@ -262,6 +262,44 @@ class Client(ClientV0):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
+
+        # Get machine_types dataframe to check display name
+        machine_types_df = self.get_machine_types()
+
+        # Creating lookup table against display_name:system_name from machine type dataframe.
+        alias_tbl = (
+            machine_types_df.loc[:, ["source_type", "source_type_clean"]]
+            .set_index("source_type_clean")
+            .groupby("source_type_clean")["source_type"]
+            .apply(set)
+            .to_dict()
+        )
+
+        machine_types = []
+        for machine_type in kwargs["asset_selection"]["machine_type"]:
+            machine_types.extend(alias_tbl.get(machine_type, (machine_type,)))
+
+        # updating kwargs with machine_type's system name
+        kwargs["asset_selection"]["machine_type"] = machine_types
+
+        if "machine_source" in kwargs["asset_selection"]:
+            # Get machines dataframe to check display/clean name
+            machine_sources_df = self.get_machines()
+            alias_tbl = (
+                machine_sources_df.loc[:, ["source", "source_clean"]]
+                .set_index("source_clean")
+                .groupby("source_clean")["source"]
+                .apply(set)
+                .to_dict()
+            )
+
+            machine_sources = []
+            for machine_source in kwargs["asset_selection"]["machine_source"]:
+                machine_sources.extend(alias_tbl.get(machine_source, (machine_source,)))
+
+            # updating kwargs with machine_source's system name
+            kwargs["asset_selection"]["machine_source"] = machine_sources
+
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
 
     def get_kpi_data_viz(

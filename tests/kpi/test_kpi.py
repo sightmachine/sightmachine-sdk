@@ -83,3 +83,30 @@ def test_get_kpi_data_viz(mocked):
     data = dt.get_kpi_data_viz()
     assert len(data) == 3
     assert data[0]["d_vals"]["quality"]["avg"] == 95.18072289156626
+
+
+def test_kpi_for_asset_display_name(get_client):
+    kpis = ["performance", "oee", "quality", "availability"]
+    # Query against machine type system name and machine source system name
+    query = {
+        "asset_selection": {
+            "machine_type": ["PickAndPlace"],
+            "machine_source": ["JB_NG_PickAndPlace_1_Stage6"],
+        }
+    }
+    df1 = get_client.get_kpis_for_asset(**query)
+    assert len(df1) > 0
+    assert df1[0]["name"] in kpis
+
+    # Query against machine type display name and machine source display name
+    query = {
+        "asset_selection": {
+            "machine_type": ["Pick & Place"],
+            "machine_source": ["Nagoya - Pick and Place 6"],
+        }
+    }
+    df2 = get_client.get_kpis_for_asset(**query)
+    assert len(df2) > 0
+    assert df2[0]["name"] in kpis
+
+    assert df1 == df2

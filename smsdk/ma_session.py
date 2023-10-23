@@ -92,6 +92,7 @@ class MaSession:
                             data = data["results"]
 
                     except JSONDecodeError as e:
+                        # Just a log statement to inform the user that valid json is not returned but still continuing the execution.
                         print(f"No valid JSON returned, but continuing. {e}")
                         continue
                 else:
@@ -248,15 +249,9 @@ class MaSession:
                     if state == "FAILURE" or state == "REVOKED":
                         raise ValueError("Error - {}".format(response.text))
                 except:
-                    import traceback
-
-                    traceback.print_exc()
-                    return []
+                    return response.text
         except:
-            import traceback
-
-            traceback.print_exc()
-            return []
+            return response.text
 
     def get_json_headers(self) -> CaseInsensitiveDict:
         """

@@ -257,12 +257,7 @@ class Client(ClientV0):
         )
         return kpis(self.session, base_url).get_kpis(**kwargs)
 
-    def get_kpis_for_asset(self, **kwargs):
-        kpis = smsdkentities.get("kpi")
-        base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
-        )
-
+    def get_machine_type_from_clean_name(self, kwargs):
         # Get machine_types dataframe to check display name
         machine_types_df = self.get_machine_types()
 
@@ -274,31 +269,45 @@ class Client(ClientV0):
             .apply(set)
             .to_dict()
         )
-
         machine_types = []
         for machine_type in kwargs["asset_selection"]["machine_type"]:
             machine_types.extend(alias_tbl.get(machine_type, (machine_type,)))
 
-        # updating kwargs with machine_type's system name
-        kwargs["asset_selection"]["machine_type"] = machine_types
+        return machine_types
+
+    def get_machine_source_from_clean_name(self, kwargs):
+        # Get machines dataframe to check display/clean name
+        machine_sources_df = self.get_machines()
+        alias_tbl = (
+            machine_sources_df.loc[:, ["source", "source_clean"]]
+            .set_index("source_clean")
+            .groupby("source_clean")["source"]
+            .apply(set)
+            .to_dict()
+        )
+
+        machine_sources = []
+        for machine_source in kwargs["asset_selection"]["machine_source"]:
+            machine_sources.extend(alias_tbl.get(machine_source, (machine_source,)))
+
+        return machine_sources
+
+    def get_kpis_for_asset(self, **kwargs):
+        kpis = smsdkentities.get("kpi")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        if "machine_type" in kwargs["asset_selection"]:
+            # updating kwargs with machine_type's system name in case of user provides display name.
+            kwargs["asset_selection"][
+                "machine_type"
+            ] = self.get_machine_type_from_clean_name(kwargs)
 
         if "machine_source" in kwargs["asset_selection"]:
-            # Get machines dataframe to check display/clean name
-            machine_sources_df = self.get_machines()
-            alias_tbl = (
-                machine_sources_df.loc[:, ["source", "source_clean"]]
-                .set_index("source_clean")
-                .groupby("source_clean")["source"]
-                .apply(set)
-                .to_dict()
-            )
-
-            machine_sources = []
-            for machine_source in kwargs["asset_selection"]["machine_source"]:
-                machine_sources.extend(alias_tbl.get(machine_source, (machine_source,)))
-
-            # updating kwargs with machine_source's system name
-            kwargs["asset_selection"]["machine_source"] = machine_sources
+            # updating kwargs with machine_source's system name in case of user provides display name.
+            kwargs["asset_selection"][
+                "machine_source"
+            ] = self.get_machine_source_from_clean_name(kwargs)
 
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
 
@@ -337,6 +346,19 @@ class Client(ClientV0):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
+
+        if "machine_type" in kwargs["asset_selection"]:
+            # updating kwargs with machine_type's system name in case of user provides display name.
+            kwargs["asset_selection"][
+                "machine_type"
+            ] = self.get_machine_type_from_clean_name(kwargs)
+
+        if "machine_source" in kwargs["asset_selection"]:
+            # updating kwargs with machine_source's system name in case of user provides display name.
+            kwargs["asset_selection"][
+                "machine_source"
+            ] = self.get_machine_source_from_clean_name(kwargs)
+
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
     def get_type_from_machine(self, machine_source=None, **kwargs):

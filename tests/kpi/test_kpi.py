@@ -110,3 +110,63 @@ def test_kpi_for_asset_display_name(get_client):
     assert df2[0]["name"] in kpis
 
     assert df1 == df2
+
+
+def test_get_kpi_data_viz(get_client):
+    data_viz_query = {
+        "asset_selection": {
+            "machine_source": ["JB_NG_PickAndPlace_1_Stage6"],
+            "machine_type": ["PickAndPlace"],
+        },
+        "d_vars": [{"name": "quality", "aggregate": ["avg"]}],
+        "i_vars": [
+            {
+                "name": "endtime",
+                "time_resolution": "day",
+                "query_tz": "America/Los_Angeles",
+                "output_tz": "America/Los_Angeles",
+                "bin_strategy": "user_defined2",
+                "bin_count": 50,
+            }
+        ],
+        "time_selection": {
+            "time_type": "relative",
+            "relative_start": 7,
+            "relative_unit": "year",
+            "ctime_tz": "America/Los_Angeles",
+        },
+        "where": [],
+        "db_mode": "sql",
+    }
+
+    df1 = get_client.get_kpi_data_viz(**data_viz_query)
+
+    data_viz_query = {
+        "asset_selection": {
+            "machine_source": ["Nagoya - Pick and Place 6"],
+            "machine_type": ["Pick & Place"],
+        },
+        "d_vars": [{"name": "quality", "aggregate": ["avg"]}],
+        "i_vars": [
+            {
+                "name": "endtime",
+                "time_resolution": "day",
+                "query_tz": "America/Los_Angeles",
+                "output_tz": "America/Los_Angeles",
+                "bin_strategy": "user_defined2",
+                "bin_count": 50,
+            }
+        ],
+        "time_selection": {
+            "time_type": "relative",
+            "relative_start": 7,
+            "relative_unit": "year",
+            "ctime_tz": "America/Los_Angeles",
+        },
+        "where": [],
+        "db_mode": "sql",
+    }
+
+    df2 = get_client.get_kpi_data_viz(**data_viz_query)
+
+    assert len(df1) == len(df2)

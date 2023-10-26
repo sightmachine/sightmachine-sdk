@@ -36,7 +36,7 @@ def test_get_downtime_monkeypatch(monkeypatch, get_session):
 
     monkeypatch.setattr(Downtime, "get_downtime", mockapi)
 
-    dt = Downtime(get_session, "demo")
+    dt = Downtime(get_session, "demo-sdk-test")
 
     # Run
     df = dt.get_downtime(get_session, URL_V1)

@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 def test_auth_init():
     """Test that Authenticator host is set properly"""
-    tenant = "demo"
+    tenant = "demo-sdk-test"
     cli = client.Client(tenant)
     authed = cli.auth
 
@@ -64,7 +64,7 @@ def test_auth__auth_basic_failure(mocked):
         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())
     )
 
-    tenant = "demo"
+    tenant = "demo-sdk-test"
     user = "user@domain.com"
     passw = "password"
     cli = client.Client(tenant)
@@ -80,7 +80,7 @@ def test_auth_route_auth(mocked_apikey, mocked_basic):
     """
     Test that Authenticator can properly route to auth methods
     """
-    tenant = "demo"
+    tenant = "demo-sdk-test"
     user = "user@domain.com"
     passw = "password"
 
@@ -144,7 +144,7 @@ def test_auth__auth_apikey_failure(mocked):
         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())
     )
 
-    tenant = "demo"
+    tenant = "demo-sdk-test"
     user = "user@domain.com"
     passw = "password"
 
@@ -172,7 +172,7 @@ def test_auth_check_auth_success(mocked):
         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())
     )
 
-    tenant = "demo"
+    tenant = "demo-sdk-test"
     cli = client.Client(tenant)
     authed = cli.auth
 
@@ -199,7 +199,7 @@ def test_auth_check_auth_success(mocked):
 #         post=MagicMock(return_value=Response()), get=MagicMock(return_value=Response())
 #     )
 
-#     tenant = "demo"
+#     tenant = "demo-sdk-test"
 #     cli = client.Client(tenant)
 #     authed = cli.auth
 

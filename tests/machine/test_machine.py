@@ -16,7 +16,7 @@ def test_get_machines(monkeypatch):
 
     monkeypatch.setattr(Machine, "get_machines", mockapi)
 
-    dt = Machine(Session(), "demo")
+    dt = Machine(Session(), "demo-sdk-test")
 
     # Run
     df = dt.get_machines(Session(), "/api/machine")
@@ -50,7 +50,7 @@ def test_get_type(mocked):
 
     mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     type = dt.get_type_from_machine("test")
@@ -64,7 +64,7 @@ def test_get_type(mocked):
 def test_get_machine_schema(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
     mocked_types.return_value = "test"
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_machine_schema("test")
@@ -81,7 +81,7 @@ def test_get_machine_schema(mocked_types, mocked_machines):
 def test_get_machine_schema_hidden(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
     mocked_types.return_value = "test"
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_machine_schema("test", show_hidden=True)
@@ -100,7 +100,7 @@ def test_get_machine_schema_hidden(mocked_types, mocked_machines):
 def test_get_machine_schema_types(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
     mocked_types.return_value = "test"
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_machine_schema("test", types=["float"])
@@ -115,7 +115,7 @@ def test_get_machine_schema_types(mocked_types, mocked_machines):
 def test_get_machine_schema_types_return_mtype(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
     mocked_types.return_value = "test"
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_machine_schema("test", return_mtype=True)
@@ -129,7 +129,7 @@ def test_get_machine_schema_types_return_mtype(mocked_types, mocked_machines):
 
 
 """
-This test is against the demo environment and if the environment is changed then this test has to change as well.
+This test is against the demo-sdk-test environment and if the environment is changed then this test has to change as well.
 """
 
 

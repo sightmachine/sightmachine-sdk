@@ -20,7 +20,16 @@ def test_get_utilities(get_session):
 
 
 def test_get_raw_data(get_client):
-    raw_data = get_client.get_raw_data(RAW_DATA_TABLE)
+    timeselection = {
+        "time_type": "absolute",
+        "start_time": "2023-10-18T18:30:00.000Z",
+        "end_time": "2023-10-19T18:29:59.999Z",
+        "time_zone": "America/Los_Angeles",
+    }
+    select = []
+    raw_data = get_client.get_raw_data(
+        RAW_DATA_TABLE, fields=select, time_selection=timeselection
+    )
 
     # check index
     assert raw_data.index.name == "_id"

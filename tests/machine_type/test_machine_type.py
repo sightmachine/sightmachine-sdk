@@ -15,7 +15,7 @@ def test_get_machine_types(monkeypatch):
 
     monkeypatch.setattr(MachineType, "get_machine_types", mockapi)
 
-    dt = MachineType(Session(), "demo")
+    dt = MachineType(Session(), "demo-sdk-test")
 
     # Run
     df = dt.get_machine_types(Session(), "/api/machinetype")
@@ -54,7 +54,7 @@ def test_get_machine_types(monkeypatch):
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 def test_get_fields_of_machine_type(mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE_FIELDS
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_fields_of_machine_type("test")
@@ -67,7 +67,7 @@ def test_get_fields_of_machine_type(mocked_machines):
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 def test_get_fields_of_machine_type_hidden(mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE_FIELDS
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_fields_of_machine_type("test", show_hidden=True)
@@ -82,7 +82,7 @@ def test_get_fields_of_machine_type_hidden(mocked_machines):
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 def test_get_fields_of_machine_type_types(mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE_FIELDS
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     fields = dt.get_fields_of_machine_type("test", types=["float"])
@@ -94,7 +94,7 @@ def test_get_fields_of_machine_type_types(mocked_machines):
 
 
 """
-This test is against the demo environment and if the environment is changed then this test has to change as well.
+This test is against the demo-sdk-test environment and if the environment is changed then this test has to change as well.
 """
 
 

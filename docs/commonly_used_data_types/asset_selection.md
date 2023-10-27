@@ -16,7 +16,6 @@ asset_selection: {
 }
 ```
 
-~~NOTE: The machine_type strings must match source_type, NOT source_type_clean.~~
 
 NOTE: Now we can use source_type_clean as well in asset_selection like below for KPIs related SDK functions-
 

@@ -248,15 +248,9 @@ class MaSession:
                     if state == "FAILURE" or state == "REVOKED":
                         raise ValueError("Error - {}".format(response.text))
                 except:
-                    import traceback
-
-                    traceback.print_exc()
-                    return []
+                    return response.text
         except:
-            import traceback
-
-            traceback.print_exc()
-            return []
+            return response.text
 
     def get_json_headers(self) -> CaseInsensitiveDict:
         """

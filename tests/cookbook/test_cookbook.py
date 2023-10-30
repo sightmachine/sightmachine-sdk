@@ -19,7 +19,7 @@ def test_get_cookbooks(mocked):
 
     mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     cookbooks = dt.get_cookbooks()
@@ -43,7 +43,7 @@ def test_get_top_results(mocked):
 
     mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     runs = dt.get_cookbook_top_results("recipe_group_id", 1)
@@ -65,7 +65,7 @@ def test_get_current_value(mocked):
 
     mocked.return_value = MagicMock(post=MagicMock(return_value=ResponseGet()))
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     value = dt.get_cookbook_current_value([{"asset": "test", "name": "test_field"}])

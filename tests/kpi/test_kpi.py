@@ -19,7 +19,7 @@ def test_get_kpi(mocked):
 
     mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     kpis = dt.get_kpis()
@@ -39,7 +39,7 @@ def test_get_kpi_for_asset(monkeypatch):
 
     monkeypatch.setattr(KPI, "get_kpis_for_asset", mockapi)
 
-    dt = KPI(Session(), "demo")
+    dt = KPI(Session(), "demo-sdk-test")
 
     # Run
     df = dt.get_kpis_for_asset(Session(), "/v1/selector/datavis/kpi/y_axis")
@@ -79,7 +79,7 @@ def test_get_kpi_data_viz(mocked):
         get=MagicMock(return_value=ResponseGet()),
     )
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
     data = dt.get_kpi_data_viz()
     assert len(data) == 3
     assert data[0]["d_vals"]["quality"]["avg"] == 95.18072289156626

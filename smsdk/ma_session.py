@@ -45,7 +45,7 @@ class MaSession:
         endpoint: str,
         method: str = "get",
         _limit: float = np.Inf,
-        _offset: float = 0.0,
+        _offset: int = 0,
         **url_params: t_.Any,
     ) -> t_.List[t_.Dict[str, t_.Any]]:
         """

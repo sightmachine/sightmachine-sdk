@@ -317,14 +317,22 @@ class ClientV0(object):
                 only_names = schema["name"].tolist()[:50]
                 kwargs["_only"] = only_names
             else:
-                if ("End Time" not in kwargs["_only"]) and (
-                    "endtime" not in kwargs["_only"]
+                if all(
+                    i not in {"End Time", "endtime", "Cycle End Time"}
+                    for i in kwargs["_only"]
                 ):
                     print("Adding End Time to _only")
                     kwargs["_only"].insert(0, "End Time")
 
-                if ("Machine" not in kwargs["_only"]) and (
-                    "machine__source" not in kwargs["_only"]
+                if all(
+                    i not in {"Start Time", "starttime", "Cycle Start Time"}
+                    for i in kwargs["_only"]
+                ):
+                    print("Adding Start Time to _only")
+                    kwargs["_only"].insert(0, "Start Time")
+
+                if all(
+                    i not in {"Machine", "machine__source"} for i in kwargs["_only"]
                 ):
                     print("Adding Machine to _only")
                     kwargs["_only"].insert(0, "Machine")

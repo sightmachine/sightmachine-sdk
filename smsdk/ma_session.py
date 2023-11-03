@@ -67,7 +67,7 @@ class MaSession:
         while True:
             try:
                 remaining_limit = _limit - len(records)
-                this_loop_limit = min(remaining_limit, max_page_size)
+                this_loop_limit = int(min(remaining_limit, max_page_size))
 
                 # If we exactly hit our desired number of records -- limit is 0 -- then can stop
                 if this_loop_limit <= 0:
@@ -134,7 +134,9 @@ class MaSession:
 
                 return data
             except JSONDecodeError as e:
-                raise JSONDecodeError("Error - {}".format(response.text))
+                raise JSONDecodeError(
+                    "Error decoding JSON response", response.text, e.pos
+                )
         else:
             return []
 
@@ -192,7 +194,9 @@ class MaSession:
                         if isinstance(data, dict):
                             data = [data]
                     except JSONDecodeError as e:
-                        raise JSONDecodeError("Error - {}".format(response.text))
+                        raise JSONDecodeError(
+                            "Error decoding JSON response", response.text, e.pos
+                        )
                 else:
                     return []
 

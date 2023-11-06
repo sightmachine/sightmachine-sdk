@@ -1,4 +1,5 @@
 # Use public repo for coverall upload
 
+codecov==2.1.13
 coverage==6.5.0
 coveralls

@@ -325,18 +325,6 @@ class ClientV0(object):
                     kwargs["_only"].insert(0, "End Time")
 
                 if all(
-                    i not in {"Start Time", "starttime", "Cycle Start Time"}
-                    for i in kwargs["_only"]
-                ):
-                    print("Adding Start Time to _only")
-                    if isinstance(kwargs['_only'], list):
-                        kwargs["_only"].insert(0, "Start Time")
-                    else:
-                        # kwargs _only assumed to be set
-                        kwargs["_only"].add("Start Time")
-
-
-                if all(
                     i not in {"Machine", "machine__source"} for i in kwargs["_only"]
                 ):
                     print("Adding Machine to _only")

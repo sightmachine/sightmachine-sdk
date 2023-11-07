@@ -4,6 +4,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import pandas as pd
+import numpy as np
 
 try:
     # for newer pandas versions >1.X
@@ -640,7 +641,9 @@ class Client(ClientV0):
             # Double check the type
             mt = self.get_machine_types(source_type=source_type)
             # If it was found, then no action to take, otherwise try looking up from clean string
-            if not len(mt):
+            if len(mt) > 0:
+                source_type = mt["source_type"].iloc[0]
+            else:
                 mt = self.get_machine_types(source_type_clean=source_type)
                 if len(mt):
                     source_type = mt["source_type"].iloc[0]
@@ -651,25 +654,28 @@ class Client(ClientV0):
             query_params["source_type"] = source_type
 
         machines = self.get_data_v1("machine_v1", "get_machines", True, **query_params)
+        # machine api endpoint doesn't seem to accept query params
+        machines = machines[machines["source_type"] == source_type]
 
         if clean_strings_out:
             return machines["source_clean"].to_list()
         else:
             return machines["source"].to_list()
 
-    def get_machine_types(self, normalize=True, *args, **kwargs):
+    def get_machine_types(self, source_type=None, *args, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
         then see also get_machine_type_names().
 
-        :param normalize: Flatten nested data structures
-        :type normalize: bool
         :return: pandas dataframe
         """
 
-        return self.get_data_v1(
-            "machine_type_v1", "get_machine_types", normalize, *args, **kwargs
+        mts = self.get_data_v1(
+            "machine_type_v1", "get_machine_types", *args, **kwargs
         )
+        mts = mts[np.logical_or(mts["source_type"] == source_type, mts["source_type_clean"] == source_type)]
+        
+        return mts
 
     def get_machine_type_names(self, clean_strings_out=True):
         """

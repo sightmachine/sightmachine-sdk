@@ -67,7 +67,7 @@ class MaSession:
         while True:
             try:
                 remaining_limit = _limit - len(records)
-                this_loop_limit = min(remaining_limit, max_page_size)
+                this_loop_limit = int(min(remaining_limit, max_page_size))
 
                 # If we exactly hit our desired number of records -- limit is 0 -- then can stop
                 if this_loop_limit <= 0:
@@ -76,11 +76,9 @@ class MaSession:
                 url_params["_offset"] = _offset
                 url_params["_limit"] = this_loop_limit
 
-                # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
-                # print(f"response text -- {response.text}")
 
                 if response.text:
                     if response.status_code not in [200, 201]:
@@ -92,19 +90,20 @@ class MaSession:
                             data = data["results"]
 
                     except JSONDecodeError as e:
+                        # No need to raise an error as this will still continue execution.
                         print(f"No valid JSON returned, but continuing. {e}")
                         continue
                 else:
                     return []
 
                 records.extend(data)
-                # print(f'sizes {len(data)} vs {this_loop_limit}')
                 if len(data) < this_loop_limit:
                     # Cursor exhausted, so just return
                     return records
                 _offset += this_loop_limit
 
             except Exception as e:
+                # No need to raise an error as this will still continue execution.
                 print(f"Error getting data, but continuing. {e}")
                 continue
 
@@ -135,8 +134,9 @@ class MaSession:
 
                 return data
             except JSONDecodeError as e:
-                print(f"No valid JSON returned {e}")
-                return []
+                raise JSONDecodeError(
+                    "Error decoding JSON response", response.text, e.pos
+                )
         else:
             return []
 
@@ -180,8 +180,6 @@ class MaSession:
                 if db_mode:
                     url_params["db_mode"] = db_mode
 
-                # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
-
                 response = getattr(self.session, method.lower())(
                     endpoint, json=url_params
                 )
@@ -196,8 +194,9 @@ class MaSession:
                         if isinstance(data, dict):
                             data = [data]
                     except JSONDecodeError as e:
-                        print(f"No valid JSON returned {e}")
-                        return []
+                        raise JSONDecodeError(
+                            "Error decoding JSON response", response.text, e.pos
+                        )
                 else:
                     return []
 
@@ -212,6 +211,7 @@ class MaSession:
             except ValueError as e:
                 raise e
             except Exception as e:
+                # No need to raise an error as retrying with smaller page size.
                 print(f"Error getting data, retrying with smaller page size. {e}")
                 # Try throttling down the page size
                 max_page_size = int(max_page_size / 2)
@@ -247,16 +247,10 @@ class MaSession:
 
                     if state == "FAILURE" or state == "REVOKED":
                         raise ValueError("Error - {}".format(response.text))
-                except:
-                    import traceback
-
-                    traceback.print_exc()
-                    return []
-        except:
-            import traceback
-
-            traceback.print_exc()
-            return []
+                except Exception as e:
+                    raise e
+        except Exception as e:
+            raise e
 
     def get_json_headers(self) -> CaseInsensitiveDict:
         """

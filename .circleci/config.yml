@@ -60,7 +60,7 @@ jobs:
           name: Run Unit Tests
           command: |
             set -x
-            pip install -r requirements-coveralls.txt
+            pip install -r requirements-codecoverage.txt
             mkdir test-results
             coverage run -m pytest --junitxml=test-results/junit.xml tests
       - run:

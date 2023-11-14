@@ -2,6 +2,7 @@
 # coding: utf-8
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
+from _version import version_check
 
 import pandas as pd
 import numpy as np
@@ -152,12 +153,14 @@ class Client(ClientV0):
         self.session = self.auth.session
 
     def select_db_schema(self, schema_name):
+        version_check()
         # remove X_SM_WRKSPACE_ID from self.session.headers
         self.session.headers.update({X_SM_DB_SCHEMA: schema_name})
         if X_SM_WORKSPACE_ID in self.session.headers:
             del self.session.headers[X_SM_WORKSPACE_ID]
 
     def select_workspace_id(self, workspace_id):
+        version_check()
         self.session.headers.update({X_SM_WORKSPACE_ID: str(workspace_id)})
         if X_SM_DB_SCHEMA in self.session.headers:
             del self.session.headers[X_SM_DB_SCHEMA]
@@ -170,6 +173,7 @@ class Client(ClientV0):
         :param normalize: Flatten nested data structures
         :return: pandas dataframe
         """
+        version_check()
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
@@ -244,6 +248,7 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
+        version_check()
         df = self.get_data_v1("cycle_v1", "get_cycles", normalize, *args, **kwargs)
 
         return df
@@ -258,6 +263,7 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
+        version_check()
         df = self.get_data_v1("downtime_v1", "get_downtime", normalize, *args, **kwargs)
 
         return df
@@ -273,11 +279,13 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
+        version_check()
         df = self.get_data_v1("part_v1", "get_parts", normalize, *args, **kwargs)
 
         return df
 
     def get_kpis(self, **kwargs):
+        version_check()
         kpis = smsdkentities.get("kpi")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -285,6 +293,7 @@ class Client(ClientV0):
         return kpis(self.session, base_url).get_kpis(**kwargs)
 
     def get_machine_type_from_clean_name(self, kwargs):
+        version_check()
         # Get machine_types dataframe to check display name
         machine_types_df = self.get_machine_types()
         machine_types_df["source_type_clean"] = machine_types_df[
@@ -305,6 +314,7 @@ class Client(ClientV0):
         return machine_types
 
     def get_machine_source_from_clean_name(self, kwargs):
+        version_check()
         # Get machines dataframe to check display/clean name
         machine_sources_df = self.get_machines()
         machine_sources_df["source_clean"] = machine_sources_df["source_clean"].map(
@@ -325,6 +335,7 @@ class Client(ClientV0):
         return machine_sources
 
     def get_kpis_for_asset(self, **kwargs):
+        version_check()
         kpis = smsdkentities.get("kpi")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -351,6 +362,7 @@ class Client(ClientV0):
         time_selection=None,
         **kwargs,
     ):
+        version_check()
         kpi_entity = smsdkentities.get("kpi")
         if machine_sources:
             machine_types = []
@@ -391,6 +403,7 @@ class Client(ClientV0):
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
     def get_type_from_machine(self, machine_source=None, **kwargs):
+        version_check()
         machine = smsdkentities.get("machine")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -407,6 +420,7 @@ class Client(ClientV0):
         return_mtype=False,
         **kwargs,
     ):
+        version_check()
         machineType = smsdkentities.get("machine_type")
         machine_type = self.get_type_from_machine(machine_source)
         base_url = get_url(
@@ -443,6 +457,7 @@ class Client(ClientV0):
         show_hidden=False,
         **kwargs,
     ):
+        version_check()
         machineType = smsdkentities.get("machine_type")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -465,6 +480,7 @@ class Client(ClientV0):
         Gets all of the cookbooks accessable to the logged in user.
         :return: list of cookbooks
         """
+        version_check()
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -478,6 +494,7 @@ class Client(ClientV0):
         :param limit: The max number of runs wished to return.  Defaults to 10.
         :return: List of runs
         """
+        version_check()
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -493,6 +510,7 @@ class Client(ClientV0):
         :param minutes: The number of minutes to consider when grabing the current value, defaults to 1440 or 1 day
         :return: A list of values associated with the proper fields.
         """
+        version_check()
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -507,6 +525,7 @@ class Client(ClientV0):
         :param constraint: A range constraint field most have a to and from key.
         :return: A string
         """
+        version_check()
         to_val = constraint.get("to")
         from_val = constraint.get("from")
         to_symbol = "[" if constraint.get("to_is_inclusive") else "("
@@ -519,6 +538,7 @@ class Client(ClientV0):
         :param constraint: A list range constraint field each most have a to and from key.
         :return: A list of strings
         """
+        version_check()
         constraints_normal = []
         for constraint in constraints:
             constraints_normal.append(self.normalize_constraint(constraint))
@@ -528,6 +548,7 @@ class Client(ClientV0):
         """
         Returns all the lines for the facility
         """
+        version_check()
         lines = smsdkentities.get("line")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -555,6 +576,7 @@ class Client(ClientV0):
         :param limit: A limit of records to grab defaults to 400
         :param offset: The offset to start the data at
         """
+        version_check()
         lines = smsdkentities.get("line")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -594,6 +616,7 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
+        version_check()
         dataViz = smsdkentities.get("dataViz")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -635,6 +658,7 @@ class Client(ClientV0):
         :type normalize: bool
         :return: pandas dataframe
         """
+        version_check()
         return self.get_data_v1(
             "machine_v1", "get_machines", normalize, *args, **kwargs
         )
@@ -648,6 +672,7 @@ class Client(ClientV0):
         :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine names.
         :return: list
         """
+        version_check()
         query_params = {
             "_only": ["source", "source_clean", "source_type"],
             "_order_by": "source_clean",
@@ -683,6 +708,7 @@ class Client(ClientV0):
 
         :return: pandas dataframe
         """
+        version_check()
         mts = self.get_data_v1("machine_type_v1", "get_machine_types", *args, **kwargs)
 
         if source_type is not None:
@@ -702,6 +728,7 @@ class Client(ClientV0):
         :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
         :return: list
         """
+        version_check()
         query_params = {
             "_only": ["source_type", "source_type_clean"],
             "_order_by": "source_type_clean",
@@ -725,6 +752,7 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
+        version_check()
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]

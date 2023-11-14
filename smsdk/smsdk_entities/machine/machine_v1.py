@@ -86,14 +86,18 @@ class Machine(SmsdkEntities, MaSession):
                 order_by.append(orderby_query)
 
         select = [{"name": i} for i in eval(kwargs.get("_only", "[]"))]
+        if len(where) > 0:
+            where = json.dumps(where, ensure_ascii=False)
+            params["where"] = where
+        if len(order_by) > 0:
+            order_by = json.dumps(order_by, ensure_ascii=False)
+            params["order_by"] = order_by
+        if len(select) > 0:
+            select = json.dumps(select, ensure_ascii=False)
+            params["select"] = select
 
-        where = json.dumps(where, ensure_ascii=False)
-        order_by = json.dumps(order_by, ensure_ascii=False)
-        select = json.dumps(select, ensure_ascii=False)
+        if params:
+            encoded_params = urlencode(params)
+            url = urlunparse(("", "", url, "", encoded_params, ""))
 
-        params = {"where": where, "order_by": order_by, "select": select}
-
-        encoded_params = urlencode(params)
-        final_url = urlunparse(("", "", url, "", encoded_params, ""))
-
-        return final_url
+        return url

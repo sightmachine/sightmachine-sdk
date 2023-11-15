@@ -7,6 +7,11 @@ from tests.machine.machine_data import JSON_MACHINE, MACHINE_TYPE
 from smsdk.smsdk_entities.machine.machine import Machine
 
 
+# Define all the constants used in the test
+LASERCUT_MACHINE_TYPE = "Lasercut"
+MACHINE_INDEX = 0
+
+
 def test_get_machines(monkeypatch):
     # Setup
     def mockapi(self, session, endpoint):
@@ -152,3 +157,11 @@ def test_get_machines_with_query_params(get_client):
 
     # Checking that we should only get these three columns that we have provided on query params.
     assert machines.columns.tolist() == ["source", "source_clean", "source_type"]
+
+    
+def test_get_type_from_machine(get_client):
+    machines = get_client.get_machine_names(LASERCUT_MACHINE_TYPE)
+    machine = machines[MACHINE_INDEX]
+
+    type = get_client.get_type_from_machine(machine)
+    assert type == LASERCUT_MACHINE_TYPE

@@ -6,6 +6,9 @@ from tests.machine_type.machine_type_data import JSON_MACHINETYPE, MACHINE_TYPE_
 from smsdk.smsdk_entities.machine_type.machinetype import MachineType
 
 
+MACHINE_TYPE_NAMES_EXPECT = ["Lasercut", "Pick & Place", "Diecast", "Fusion"]
+
+
 def test_get_machine_types(monkeypatch):
     # Setup
     def mockapi(self, session, endpoint):
@@ -101,3 +104,8 @@ This test is against the demo-sdk-test environment and if the environment is cha
 def test_get_machines_types_v1(get_client):
     machine_types = get_client.get_machine_types()
     assert machine_types.shape == (114, 25)
+
+
+def test_get_machines_type_names_v1(get_client):
+    machine_type_names = get_client.get_machine_type_names()
+    assert machine_type_names == MACHINE_TYPE_NAMES_EXPECT

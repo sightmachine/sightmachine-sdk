@@ -6,6 +6,7 @@ import typing
 import itertools
 import requests
 import warnings
+import functools
 
 
 class VersionInfo(typing.NamedTuple):
@@ -45,27 +46,30 @@ def get_latest_sdk_release():
         return None
 
 
-def check_version():
-    # Define a global flag to track whether the API version has been printed
-    global api_version_printed
-    if not api_version_printed:
-        latest_sdk_release = get_latest_sdk_release()
-        installed_sdk_release = version
+def version_check_decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Define a global flag to track whether the API version has been printed
+        global api_version_printed
+        if not api_version_printed:
+            latest_sdk_release = get_latest_sdk_release()
+            installed_sdk_release = version
 
-        if installed_sdk_release is not None:
-            print(f"SDK Version: {installed_sdk_release}")
+            if (
+                installed_sdk_release is not None
+                and latest_sdk_release is not None
+                and latest_sdk_release != installed_sdk_release
+            ):
+                warnings.warn(
+                    f"Installed SDK Version: {installed_sdk_release}. It is recommended to install release version ({latest_sdk_release}).",
+                    DeprecationWarning,
+                )
+            # Set the flag to True to indicate that the version has been printed
+            api_version_printed = True
 
-        if (
-            installed_sdk_release is not None
-            and latest_sdk_release is not None
-            and latest_sdk_release != installed_sdk_release
-        ):
-            warnings.warn(
-                f"Installed SDK Version: {installed_sdk_release}. It is recommended to install release version ({latest_sdk_release}).",
-                DeprecationWarning,
-            )
-        # Set the flag to True to indicate that the version has been printed
-        api_version_printed = True
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 # Initialize the flag to False

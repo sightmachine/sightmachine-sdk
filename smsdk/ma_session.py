@@ -182,11 +182,14 @@ class MaSession:
 
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
 
-                response = getattr(self.session, method.lower())(
-                    endpoint, json=url_params
-                )
-
-                if response.text:
+                try:
+                    response = getattr(self.session, method.lower())(
+                        endpoint, json=url_params
+                    )
+                except requests.exceptions.ConnectionError:
+                    raise ValueError(f"Error connecting to {endpoint}.  Check your tenant name")
+                
+                if response and response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError(format(response.text))
                     try:

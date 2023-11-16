@@ -670,16 +670,13 @@ class Client(ClientV0):
         :return: pandas dataframe
         """
 
-        mts = self.get_data_v1("machine_type_v1", "get_machine_types", *args, **kwargs)
-
+        mts = self.get_data_v1(
+            "machine_type_v1", "get_machine_types", *args, **kwargs
+        )
+        
         if source_type is not None:
-            mts = mts[
-                np.logical_or(
-                    mts["source_type"] == source_type,
-                    mts["source_type_clean"] == source_type,
-                )
-            ]
-
+            mts = mts[np.logical_or(mts["source_type"] == source_type, mts["source_type_clean"] == source_type)]
+        
         return mts
 
     def get_machine_type_names(self, clean_strings_out=True):

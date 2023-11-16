@@ -30,25 +30,28 @@ version_info = VersionInfo(1, 26, 0, "", None)
 version = str(f"v{version_info}")
 
 
-def get_latest_sdk_release():
+def get_latest_sdk_release() -> typing.Optional[typing.Any]:
     api_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
-    response = requests.get(api_url)
 
-    if response.status_code == 200:
+    try:
+        response = requests.get(api_url)
+
+        # To raise an HTTPError for any bad responses
+        response.raise_for_status()
+
         releases = response.json()
         if releases:
             latest_release = releases[0]
-            release_number = latest_release["tag_name"]
-            return release_number
-        else:
-            return None
-    else:
-        return None
+            return latest_release["tag_name"]
+    except requests.RequestException as e:
+        print(f"Error fetching latest SDK release: {e}")
+
+    return None
 
 
-def version_check_decorator(func):
+def version_check_decorator(func: typing.Any) -> typing.Any:
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
         # Define a global flag to track whether the API version has been printed
         global api_version_printed
         if not api_version_printed:

@@ -308,10 +308,14 @@ class ClientV0(object):
                 machine = kwargs.get("machine__source__in", kwargs.get("Machine__in"))
             kwargs["machine__source"] = machine
             if isinstance(machine, str):
-                machine_type, schema = self.get_machine_schema(machine, return_mtype=True)
-            else: # it is a list of machines, work with first name in list
-                machine_type, schema = self.get_machine_schema(machine[0], return_mtype=True)
-                
+                machine_type, schema = self.get_machine_schema(
+                    machine, return_mtype=True
+                )
+            else:  # it is a list of machines, work with first name in list
+                machine_type, schema = self.get_machine_schema(
+                    machine[0], return_mtype=True
+                )
+
             if not "_limit" in kwargs:
                 print("_limit not specified.  Maximum of 5000 rows will be returned.")
 
@@ -326,13 +330,6 @@ class ClientV0(object):
                 ):
                     print("Adding End Time to _only")
                     kwargs["_only"].insert(0, "End Time")
-
-                if all(
-                    i not in {"Start Time", "starttime", "Cycle Start Time"}
-                    for i in kwargs["_only"]
-                ):
-                    print("Adding Start Time to _only")
-                    kwargs["_only"].insert(0, "Start Time")
 
                 if all(
                     i not in {"Machine", "machine__source"} for i in kwargs["_only"]

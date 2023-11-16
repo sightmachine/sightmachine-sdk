@@ -195,7 +195,7 @@ class Client(ClientV0):
                     data.drop(joined_cols, axis=1)
 
             # To keep consistent, rename columns back from '.' to '__'
-            data.columns = [name.replace(".", "__") for name in data.columns]
+            # data.columns = [name.replace(".", "__") for name in data.columns]
 
         else:
             # raise error if requested for unregistered utility

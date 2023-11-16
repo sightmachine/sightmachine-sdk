@@ -187,8 +187,10 @@ class MaSession:
                         endpoint, json=url_params
                     )
                 except requests.exceptions.ConnectionError:
-                    raise ValueError(f"Error connecting to {endpoint}.  Check your tenant name")
-                
+                    raise ValueError(
+                        f"Error connecting to {endpoint}.  Check your tenant name"
+                    )
+
                 if response and response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError(format(response.text))

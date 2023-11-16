@@ -111,7 +111,11 @@ class Authenticator(MaSession):
             }
         )
         if not self.check_auth():
-            print("Failed login attempt to {}. Check tenant name, secret, and key".format(self.host))
+            print(
+                "Failed login attempt to {}. Check tenant name, secret, and key".format(
+                    self.host
+                )
+            )
             success = False
         else:
             success = True

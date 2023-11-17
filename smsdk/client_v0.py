@@ -1077,12 +1077,13 @@ class ClientV0(object):
                     return table
 
         # Handle EF type machine names
-        if len(machine) <= 6 and machine[:3].isnumeric():
-            machine = f"'{machine}'"
+        # Commenting these out because we already are getting machine_names as string even if they are in numerics.
+        # if len(machine) <= 6 and machine[:3].isnumeric():
+        #     machine = f"'{machine}'"
 
         # Handle EF type machine names
-        if len(machine) == 5 and machine[:3].isnumeric():
-            machine = f"'{machine}'"
+        # if len(machine) == 5 and machine[:3].isnumeric():
+        #     machine = f"'{machine}'"
 
         schema = self.get_machine_schema(machine)
 

@@ -15,9 +15,18 @@ And will return something like the following:
 ```
 
 ### get_machine_schema
-The get_machine_schema functions returns the fields of the machine schema for a given machine source and is called this way:
+The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two APIs:
+
+#### Old API:
+
 ```
 cli.get_machine_schema(machine_source, types, show_hidden, return_mtype)
+```
+
+#### New API:
+
+```
+cli.get_machine_schema(machine_source=machine_source, types=types, show_hidden=show_hidden, return_mtype=return_mtype)
 ```
 
 The only required field in this case is the machine_source, we will go over each variable in a second.  The function will return a pandas data frame that looks like the following:
@@ -28,6 +37,8 @@ The only required field in this case is the machine_source, we will go over each
 2               stats__DOWN__val                          DOWN        float
 3     stats__DefectCategory__val               Defect Category       string
 ```
+
+In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
 
 #### machine_source
 This is the name of the machine that you are trying to grab the schema of.  This will also work with it's display name or source_clean.  This is the only required parameter for this function.

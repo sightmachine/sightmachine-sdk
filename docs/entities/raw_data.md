@@ -25,8 +25,17 @@ timeselection (dict) = {"time_type":"relative","relative_start":1,"relative_unit
 
 select (list) = ['stats__ConveyorInput__val','stats__ConveyorOutput__val']
 ```
+
+#### Old API:
+
 ```
 cli.get_raw_data(raw_data_table, fields=select, time_selection=timeselection)
+```
+
+#### New API:
+
+```
+cli.get_raw_data(raw_data_table=raw_data_table, fields=select, time_selection=timeselection)
 ```
 
 And will return something like the following:
@@ -37,4 +46,6 @@ None                  0.0                        0.0
 
 None                  0.0                        0.0
 ```
+
+In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
 

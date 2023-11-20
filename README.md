@@ -104,31 +104,81 @@ dropdown boxes.
 
 #### Selecting Machine Types
 
-The easiest way to get a list of all known Machine Types is with:
+The easiest way to get a list of all known Machine Type name is by utilizing either of the two APIs:
+
+#### Old API:
 
 ```
-cli.get_machine_type_names()
+cli.get_machine_type_names(clean_strings_out)
 ```
 
-This returns a python list with the machine type names.
+#### New API:
+
+```
+cli.get_machine_type_names(clean_strings_out=clean_strings_out)
+cli.get_machine_names(source_type=machine_type)
+```
+
+The function returns a Python list containing the names of machine types.
+
+An optional flag, `clean_strings_out`, determines the format of the returned list. If set to true, the list will use UI-based display names. If set to false, the list will contain Sight Machine internal machine types. If this flag is not provided, the function will default to returning UI-based display names.
+
+In the new API, all positional arguments from the old API can be utilized as keyword arguments. If both positional and keyword arguments are supplied, positional arguments will be disregarded.
 
 #### Selecting Machines
 
-The easiest way to get a list of Machines is with:
+The most straightforward way to obtain a list of Machines is by utilizing either of the two APIs:
+
+#### Old API:
+
+```
+cli.get_machine_names(machine_type)
+```
+
+#### New API:
 
 ```
 cli.get_machine_names(source_type=machine_type)
 ```
 
-The *machine_type* variable would be a machine type name retrieved from a previous step.  The `source_type` argument is optional.  If you do not provide it, then
-this function will return all machine names in the system.
+The *machine_type* variable would be a machine type name retrieved from a previous step.  The `source_type` argument is optional.  If you do not provide it, then this function will return all machine names in the system.
+
+In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+
+#### Machine Types
+
+The most straightforward way to obtain a list of Machine Types and associated Metadata is by utilizing either of the two APIs:
+
+#### Old API:
+
+```
+cli.get_machine_types(machine_type)
+```
+
+#### New API:
+
+```
+cli.get_machine_types(source_type=machine_type)
+```
+
+The *machine_type* variable would be a machine type name retrieved from a previous step.  The `source_type` argument is optional.  If you do not provide it, then this function will return all machine types and associated metadata in the system.
+
+In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
 
 #### Machine Schema
 
-Although not requred, it is sometimes helpful to get a list of all stats available for a given machine.  That is done with the `get_machine_schema` function.  
+Although not requred, it is sometimes helpful to get a list of all stats available for a given Machine.  That is done with the any one of the following SDK function calls:  
+
+##### Old API:
 
 ```
 cli.get_machine_schema(machine_name)
+```
+
+##### New API:
+
+```
+cli.get_machine_schema(*args, **query)
 ```
 
 This returns a Pandas data frame with each stats Sight Machine internal name, display name, and type.  It takes an optional `types` argument, which filters the returned list to only a specific set of data types.  For example, to get the display names of all numeric stats on a machine, use:
@@ -136,6 +186,8 @@ This returns a Pandas data frame with each stats Sight Machine internal name, di
 ```
 cli.get_machine_schema(machine_name, types=['int', 'float'])['display'].tolist()
 ```
+
+In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
 
 #### Retrieving Cycle Data
 

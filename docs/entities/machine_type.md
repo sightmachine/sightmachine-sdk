@@ -4,15 +4,26 @@ Machine Types are the schema for the various machines in a factory.
 ## Functions
 
 ### get_fields_of_machine_type
-The get_fields_of_machine_type function returns the fields of the machine schema for a given machine type and is called this way:
+The get_fields_of_machine_type function returns the fields of the machine schema for a specified machine type. This function can be called using either of the two APIs:
+
+#### Old API:
+
 ```
 cli.get_fields_of_machine_type(machine_type, types, show_hidden)
+```
+
+#### New API:
+
+```
+cli.get_fields_of_machine_type(machine_type=machine_type, types=types, show_hidden=show_hidden)
 ```
 
 The only required field in this case is the machine_type, we will go over each variable in a second.  The function will return a pandas list that looks like the following:
 ```
 [{'display_name': 'Machine', 'unit': '', 'type': 'categorical', 'data_type': 'string', 'stream_types': [], 'raw_data_field': '', 'name': 'machine__source'}, {'display_name': 'Cycle Start Time', 'unit': '', 'type': 'datetime', 'data_type': 'datetime', 'stream_types': [], 'raw_data_field': '', 'name': 'starttime'},..]
 ```
+
+In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
 
 #### machine_type
 This is the name of the machine type that you are trying to grab the fields of.  This is the only required parameter for this function.

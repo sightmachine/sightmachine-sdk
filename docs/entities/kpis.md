@@ -34,17 +34,14 @@ For more info on [asset_selection](/docs/commonly_used_data_types/asset_selectio
 In order to make use of the data viz function you'll need the name of the KPI you wish to get.
 
 ### Get KPI Data Viz
-
 Once you have the name of the KPI you wish to access and a logged in client you can make a call to the data viz api with the following SDK function using either of the two API calling styles:
 
 #### Old Style API Call:
-
 ```
 cli.get_kpi_data_viz(machine_source, kpis, i_vars, time_selection, **optional_data_viz_query)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_kpi_data_viz(machine_sources=machine_source, kpis=kpis, i_vars=i_vars, time_selection=time_selection, **optional_data_viz_query)
 ```
@@ -92,7 +89,6 @@ This is an object, this is the same as the [time_selection](/docs/commonly_used_
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 machine_sources = ["Nagoya - Pick and Place 6"]
 kpis = ["quality"]
@@ -125,7 +121,6 @@ print(len(df))
 ```
 
 ##### New Style API Call:
-
 ```
 machine_sources = ["Nagoya - Pick and Place 6"]
 kpis = ["quality"]

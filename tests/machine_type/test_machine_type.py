@@ -122,12 +122,10 @@ def test_get_fields_of_machine_type(get_client):
     # Run
     fields = get_client.get_fields_of_machine_type(machine_type)
     assert len(fields) == 35
-    # print(len(fields))
 
     # Run
     fields = get_client.get_fields_of_machine_type(machine_type, types)
     assert len(fields) == 16
-    # print(len(fields))
 
     query = {
         "machine_type": machine_type,
@@ -138,4 +136,3 @@ def test_get_fields_of_machine_type(get_client):
     # Run
     fields = get_client.get_fields_of_machine_type(**query)
     assert len(fields) == 16
-    print(len(fields))

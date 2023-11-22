@@ -126,16 +126,17 @@ The two APIs exhibit fundamental similarities. While the old API exclusively sup
 
 ##### Example:
 
-###### UI-Based Display Names:
+###### Old Style API Call:
 
 ```
 types_ui_based = cli.get_machine_type_names()
 print(types_ui_based)
+
 # Output:
 # ['Lasercut', 'Pick & Place', 'Diecast', 'Fusion']
 ```
 
-###### Internal Machine Types:
+###### New Style API Call:
 
 ```
 query = {
@@ -144,6 +145,7 @@ query = {
 
 types_internal = cli.get_machine_type_names(**query)
 print(types_internal)
+
 # Output:
 # ['Lasercut', 'PickAndPlace', 'Diecast', 'Fusion']
 ```
@@ -172,16 +174,17 @@ The two APIs exhibit fundamental similarities. While the old API exclusively sup
 
 ##### Example:
 
-###### UI-Based Display Names:
+###### Old Style API Call:
 
 ```
 machine_names_ui_based = cli.get_machine_names("Lasercut", True)
 print(machine_names_ui_based[0:3])
+
 # Output:
 # ['Lima - Lasercut 1', 'Carmel - Lasercut 2', 'Carmel - Lasercut 5']
 ```
 
-###### Internal Machine Names:
+###### New Style API Call:
 
 ```
 query = {
@@ -191,6 +194,7 @@ query = {
 
 machine_names_internal = cli.get_machine_names(**query**)
 print(machine_names_internal[0:3])
+
 # Output:
 # ['JB_LM_Lasercut_1', 'JB_CA_Lasercut_2', 'JB_CA_Lasercut_5']
 ```
@@ -222,6 +226,7 @@ The two APIs exhibit fundamental similarities. While the old API exclusively sup
 ```
 machine_types = get_client.get_machine_types()
 print(machine_types.shape)
+
 # Output:
 # (114, 25)
 ```
@@ -235,6 +240,7 @@ query = {
 
 machine_types = cli.get_machine_types(**query)
 print(machine_types.shape)
+
 # Output:
 # (29, 25)
 ```
@@ -322,5 +328,3 @@ You can use the `_only` parameter to provide a list of column names to retrieve.
 specify the list of columns, it will default to pulling the first 50 columns of data from the machine type.  This is to prevent unexpectedly large and slow queries for machines with many columns of data.  To pull more than these 50 columns, please specificy all desired columns.
 
 ----
-
-

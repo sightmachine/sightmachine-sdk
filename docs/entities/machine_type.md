@@ -7,13 +7,11 @@ Machine Types are the schema for the various machines in a factory.
 The get_fields_of_machine_type function returns the fields of the machine schema for a specified machine type. This function can be called using either of the two API calling styles:
 
 #### Old Style API Call:
-
 ```
 cli.get_fields_of_machine_type(machine_type, types, show_hidden)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_fields_of_machine_type(machine_type=machine_type, types=types, show_hidden=show_hidden)
 ```
@@ -40,7 +38,6 @@ This is an optional parameter and is a boolean.  There are a few fields we have 
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 machine_type = "Lasercut"
 types = ["string", "float"]
@@ -53,7 +50,6 @@ print(len(fields))
 ```
 
 ##### New Style API Call:
-
 ```
 machine_type = "Lasercut"
 types = ["string", "float"]

@@ -19,13 +19,11 @@ This will return a list of lines and will like the following:
 This function allows you to pull data from our line model.  This function can be called using either of the two API calling styles:
 
 #### Old Style API Call:
-
 ```
 cli.get_line_data(assets, fields,  time_selection, asset_time_offset, filters, limit, offset)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_line_data(assets=assets, fields=fields,  time_selection=time_selection, asset_time_offset=asset_time_offset, filters=filters, limit=limit, offset=offset)
 ```
@@ -106,7 +104,6 @@ The number of records at the begining you wish to skip.
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 assets = [MACHINE]
 fields = [
@@ -133,7 +130,6 @@ filters = [
 df = get_client.get_line_data(
     assets, fields, time_selection, filters=filters, limit=MAX_ROWS
 )
-
 print(len(df))
 
 # Output:
@@ -141,7 +137,6 @@ print(len(df))
 ```
 
 ##### New Style API Call:
-
 ```
 assets = [MACHINE]
 fields = [
@@ -174,9 +169,9 @@ query = {
 }
 
 df = get_client.get_line_data(**query)
-
 print(len(df))
 
 # Output:
 # 14
 ```
+

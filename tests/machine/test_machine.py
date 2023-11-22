@@ -251,7 +251,5 @@ def test_get_machine_schema(get_client):
 
     # Run
     df = get_client.get_machine_schema(**query)
-    # print(df[0])
-    # print(df[1].shape)
     assert df[1].shape == (16, 13)
     assert df[0] == LASERCUT_MACHINE_TYPE

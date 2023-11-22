@@ -479,7 +479,12 @@ class Client(ClientV0):
         elif types is None:
             types = []
 
-        show_hidden = kwargs.pop("show_hidden", False)
+        show_hidden = kwargs.pop("show_hidden", None)
+        if show_hidden is None and args:
+            show_hidden = args[0]
+            args = args[1:]
+        elif show_hidden is None:
+            show_hidden = False
 
         machineType = smsdkentities.get("machine_type")
         base_url = get_url(
@@ -490,7 +495,11 @@ class Client(ClientV0):
             field for field in fields if not field.get("ui_hidden") or show_hidden
         ]
         if len(types) > 0:
-            fields = [field for field in fields if field.get("type") in types]
+            fields = [
+                field
+                for field in fields
+                if field.get("type") in types or field.get("data_type") in types
+            ]
 
         return fields
 
@@ -680,12 +689,7 @@ class Client(ClientV0):
             limit=limit, offset=offset, **kwargs
         )
 
-    def create_share_link(
-        self,
-        *args,
-        **kwargs,
-    ):
-        print(f"DebugInfo:: create_share_link")
+    def create_share_link(self, *args, **kwargs):
         assets = kwargs.pop("assets", None)
         if assets is None and args:
             assets = args[0]
@@ -788,9 +792,6 @@ class Client(ClientV0):
         elif clean_strings_out is None:
             clean_strings_out = True
 
-        if "clean_strings_out" in kwargs:
-            clean_strings_out = kwargs["clean_strings_out"]
-
         query_params = {
             "_only": ["source", "source_clean", "source_type"],
             "_order_by": "source_clean",
@@ -890,6 +891,20 @@ class Client(ClientV0):
         elif time_selection is None:
             time_selection = ONE_DAY_RELATIVE
 
+        limit = kwargs.pop("limit", None)
+        if limit is None and args:
+            limit = args[0]
+            args = args[1:]
+        elif limit is None:
+            limit = 400
+
+        offset = kwargs.pop("offset", None)
+        if offset is None and args:
+            offset = args[0]
+            args = args[1:]
+        elif offset is None:
+            offset = 0
+
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -899,5 +914,7 @@ class Client(ClientV0):
         kwargs["select"] = select
         kwargs["time_selection"] = time_selection
         kwargs["db_mode"] = "sql"
+        kwargs["limit"] = limit
+        kwargs["offset"] = offset
 
         return self.get_data_v1("raw_data", "get_raw_data", True, *args, **kwargs)

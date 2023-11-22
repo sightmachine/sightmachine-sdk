@@ -18,13 +18,11 @@ And will return something like the following:
 The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two API calling styles:
 
 #### Old Style API Call:
-
 ```
 cli.get_machine_schema(machine_source, types, show_hidden, return_mtype)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_machine_schema(machine_source=machine_source, types=types, show_hidden=show_hidden, return_mtype=return_mtype)
 ```
@@ -66,7 +64,6 @@ This is an optional parameter and is a boolean. If set to True this will instead
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 fields = get_client.get_machine_schema(machine)
 print(fields.shape)
@@ -82,7 +79,6 @@ print(fields[1].shape)
 ```
 
 ##### New Style API Call:
-
 ```
 query = {
     "machine_source" : machine,

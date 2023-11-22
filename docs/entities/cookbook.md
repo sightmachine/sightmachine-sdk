@@ -15,13 +15,11 @@ This will return a list of [cookbooks](/docs/commonly_used_data_types/cookbook.m
 This function will get you the top runs of the recipe group you input. This function can be called using either of the two API calling styles:
 
 #### Old Style API Call:
-
 ```
 cli.get_cookbook_top_results(recipe_group_id, limit)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_cookbook_top_results(recipe_group_id=recipe_group_id, limit=limit)
 ```
@@ -47,7 +45,6 @@ This is an int and is optional, if not entered it will default to 10.  This is t
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 runs = cli.get_cookbook_top_results("recipe_group_id", 1)
 print(len(runs["runs"]))
@@ -57,7 +54,6 @@ print(len(runs["runs"]))
 ```
 
 ##### New Style API Call:
-
 ```
 query = {
     "recipe_group_id" : "recipe_group_id",
@@ -75,13 +71,11 @@ print(len(runs["runs"]))
 This function gets the current values of the fields passed into it. This function can be called using either of the two API calling styles:
 
 #### Old Style API Call:
-
 ```
 cli.get_cookbook_current_value(variables, minutes)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_cookbook_current_value(variables=variables, minutes=minutes)
 ```
@@ -113,7 +107,6 @@ This is an optional parameter and is passed in as integer.  This is the number o
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 value = cli.get_cookbook_current_value([{"asset": "test", "name": "test_field"}])
 print(value)
@@ -123,7 +116,6 @@ print(value)
 ```
 
 ##### New Style API Call:
-
 ```
 query = {
     "variables" : [{"asset": "test", "name": "test_field"}],

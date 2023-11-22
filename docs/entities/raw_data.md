@@ -27,13 +27,11 @@ select (list) = ['stats__ConveyorInput__val','stats__ConveyorOutput__val']
 ```
 
 #### Old Style API Call:
-
 ```
-cli.get_raw_data(raw_data_table, fields=select, time_selection=timeselection)
+cli.get_raw_data(raw_data_table, select, timeselection)
 ```
 
 #### New Style API Call:
-
 ```
 cli.get_raw_data(raw_data_table=raw_data_table, fields=select, time_selection=timeselection)
 ```
@@ -53,7 +51,6 @@ The two APIs exhibit fundamental similarities. While the old API exclusively sup
 #### Example:
 
 ##### Old Style API Call:
-
 ```
 raw_data_table = RAW_DATA_TABLE
 select = []
@@ -75,7 +72,6 @@ print(raw_data.shape)
 ```
 
 ##### New Style API Call:
-
 ```
 raw_data_table = RAW_DATA_TABLE
 select = []
@@ -101,3 +97,4 @@ print(raw_data.shape)
 # _id
 # (400, 33)
 ```
+

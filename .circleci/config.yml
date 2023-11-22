@@ -13,6 +13,7 @@ workflows:
 orbs:
   gcp-gke: circleci/gcp-gke@0.2.0
   python: circleci/python@2.1.1
+  codecov: codecov/codecov@3.3.0
 
 commands:
   disable_docker_hub:
@@ -58,10 +59,15 @@ jobs:
       - run:
           name: Run Unit Tests
           command: |
+            set -x
+            pip install -r requirements-codecoverage.txt
             mkdir test-results
             coverage run -m pytest --junitxml=test-results/junit.xml tests
-            coverage report
-            coverage html
+      - run:
+          name: Compile Coverage Report
+          command: |
+            coverage html -d htmlcov
+            codecov --required
 
       # Store the test results on each node so we can see failures
       - store_test_results:

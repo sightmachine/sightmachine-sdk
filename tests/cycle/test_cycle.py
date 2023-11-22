@@ -89,7 +89,7 @@ def test_get_cycles_machine_tag(get_client):
 
     df = get_client.get_cycles(**query)
 
-    assert df.shape != (NUM_ROWS, len(select_columns))
+    assert df.shape == (NUM_ROWS, len(select_columns) + 1)
 
     select_columns = [
         "machine__source",
@@ -123,7 +123,6 @@ def test_get_cycles_starttime_tag(get_client):
 
     select_columns = [
         "Machine",
-        # "Cycle Start Time",
         "Cycle End Time",
         "Production Day",
         "Cycle Time (Net)",
@@ -221,7 +220,7 @@ def test_get_cycles_endtime_tag(get_client):
 
     df = get_client.get_cycles(**query)
 
-    assert df.shape != (NUM_ROWS, len(select_columns))
+    assert df.shape == (NUM_ROWS, len(select_columns) + 1)
 
     select_columns = [
         "Machine",

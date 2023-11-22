@@ -2,7 +2,7 @@
 # coding: utf-8
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
-from _version import version_check_decorator
+from smsdk._version import version_check_decorator
 
 import pandas as pd
 import numpy as np

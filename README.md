@@ -104,58 +104,108 @@ dropdown boxes.
 
 #### Selecting Machine Types
 
-The easiest way to get a list of all known Machine Type name is by utilizing either of the two APIs:
+To obtain a list of all known Machine Type names, This can be invoked using either of the two API calling styles:
 
-#### Old API:
+##### Old Style API Call:
 
 ```
 cli.get_machine_type_names(clean_strings_out)
 ```
 
-#### New API:
+##### New Style API Call:
 
 ```
 cli.get_machine_type_names(clean_strings_out=clean_strings_out)
-cli.get_machine_names(source_type=machine_type)
 ```
 
 The function returns a Python list containing the names of machine types.
 
 An optional flag, `clean_strings_out`, determines the format of the returned list. If set to true, the list will use UI-based display names. If set to false, the list will contain Sight Machine internal machine types. If this flag is not provided, the function will default to returning UI-based display names.
 
-In the new API, all positional arguments from the old API can be utilized as keyword arguments. If both positional and keyword arguments are supplied, positional arguments will be disregarded.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+
+##### Example:
+
+###### UI-Based Display Names:
+
+```
+types_ui_based = cli.get_machine_type_names()
+print(types_ui_based)
+# Output:
+# ['Lasercut', 'Pick & Place', 'Diecast', 'Fusion']
+```
+
+###### Internal Machine Types:
+
+```
+query = {
+    "clean_strings_out" : False
+}
+
+types_internal = cli.get_machine_type_names(**query)
+print(types_internal)
+# Output:
+# ['Lasercut', 'PickAndPlace', 'Diecast', 'Fusion']
+```
 
 #### Selecting Machines
 
-The most straightforward way to obtain a list of Machines is by utilizing either of the two APIs:
+The most straightforward way to obtain a list of Machines is by utilizing either of the two API calling styles:
 
-#### Old API:
-
-```
-cli.get_machine_names(machine_type)
-```
-
-#### New API:
+##### Old Style API Call:
 
 ```
-cli.get_machine_names(source_type=machine_type)
+cli.get_machine_names(machine_type, clean_strings_out)
+```
+
+##### New Style API Call:
+
+```
+cli.get_machine_names(source_type=machine_type, clean_strings_out=clean_strings_out)
 ```
 
 The *machine_type* variable would be a machine type name retrieved from a previous step.  The `source_type` argument is optional.  If you do not provide it, then this function will return all machine names in the system.
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+An optional flag, `clean_strings_out`, determines the format of the returned list. If set to true, the list will use UI-based display names. If set to false, the list will contain Sight Machine internal machine types. If this flag is not provided, the function will default to returning UI-based display names.
+
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+
+##### Example:
+
+###### UI-Based Display Names:
+
+```
+machine_names_ui_based = cli.get_machine_names("Lasercut", True)
+print(machine_names_ui_based[0:3])
+# Output:
+# ['Lima - Lasercut 1', 'Carmel - Lasercut 2', 'Carmel - Lasercut 5']
+```
+
+###### Internal Machine Names:
+
+```
+query = {
+    "source_type" : "Lasercut",
+    "clean_strings_out" : False,
+}
+
+machine_names_internal = cli.get_machine_names(**query**)
+print(machine_names_internal[0:3])
+# Output:
+# ['JB_LM_Lasercut_1', 'JB_CA_Lasercut_2', 'JB_CA_Lasercut_5']
+```
 
 #### Machine Types
 
-The most straightforward way to obtain a list of Machine Types and associated Metadata is by utilizing either of the two APIs:
+The most straightforward way to obtain a list of Machine Types and associated Metadata is by utilizing either of the two API calling styles:
 
-#### Old API:
+##### Old Style API Call:
 
 ```
 cli.get_machine_types(machine_type)
 ```
 
-#### New API:
+##### New Style API Call:
 
 ```
 cli.get_machine_types(source_type=machine_type)
@@ -163,31 +213,92 @@ cli.get_machine_types(source_type=machine_type)
 
 The *machine_type* variable would be a machine type name retrieved from a previous step.  The `source_type` argument is optional.  If you do not provide it, then this function will return all machine types and associated metadata in the system.
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+
+##### Example:
+
+###### Old Style API Call:
+
+```
+machine_types = get_client.get_machine_types()
+print(machine_types.shape)
+# Output:
+# (114, 25)
+```
+
+###### New Style API Call:
+
+```
+query = {
+    "source_type" : "Lasercut",
+}
+
+machine_types = cli.get_machine_types(**query)
+print(machine_types.shape)
+# Output:
+# (29, 25)
+```
 
 #### Machine Schema
 
-Although not requred, it is sometimes helpful to get a list of all stats available for a given Machine.  That is done with the any one of the following SDK function calls:  
+It is sometimes helpful to get a list of all stats available for a given Machine.  This function can be invoked using either of the two API calling styles:  
 
-##### Old API:
-
-```
-cli.get_machine_schema(machine_name)
-```
-
-##### New API:
+##### Old Style API Call:
 
 ```
-cli.get_machine_schema(*args, **query)
+cli.get_machine_schema(machine_name, types,show_hidden, return_mtype)
 ```
 
-This returns a Pandas data frame with each stats Sight Machine internal name, display name, and type.  It takes an optional `types` argument, which filters the returned list to only a specific set of data types.  For example, to get the display names of all numeric stats on a machine, use:
+##### New Style API Call:
 
 ```
-cli.get_machine_schema(machine_name, types=['int', 'float'])['display'].tolist()
+cli.get_machine_schema(machine_source=machine_name, types=types, show_hidden=show_hidden, return_mtype=return_mtype)
 ```
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+This returns a Pandas DataFrame with each stat's Sight Machine internal name, display name, and type. Except for `machine_source`, all the other three arguments are optional. The argument `types` specifies the list of data types used to filter the returned data set. By default, the list is empty.
+
+The other optional argument `show_hidden` is used to control the display of hidden content in the data set. The default value is set to False.
+
+The final optional argument `return_mtype` has a default value of False. If set to True, the API will return a tuple of (machine type, Pandas DataFrame) instead of just the Pandas DataFrame.
+
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+
+##### Example:
+
+###### Old Style API Call:
+
+```
+fields = get_client.get_machine_schema(machine)
+print(fields.shape)
+
+fields = get_client.get_machine_schema(machine, ["string", "int"], False, True)
+print(fields[0])
+print(fields[1].shape)
+
+# Output:
+# (35, 13)
+# Lasercut
+# (16, 13)
+```
+
+###### New Style API Call:
+
+```
+query = {
+    "machine_source" : machine,
+    "types" : ["string", "int"],
+    "show_hidden" : False,
+    "return_mtype" : True
+}
+
+fields = get_client.get_machine_schema(**query)
+print(fields[0])
+print(fields[1].shape)
+
+# Output:
+# Lasercut
+# (16, 13)
+```
 
 #### Retrieving Cycle Data
 

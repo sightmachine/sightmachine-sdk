@@ -15,15 +15,15 @@ And will return something like the following:
 ```
 
 ### get_machine_schema
-The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two APIs:
+The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two API calling styles:
 
-#### Old API:
+#### Old Style API Call:
 
 ```
 cli.get_machine_schema(machine_source, types, show_hidden, return_mtype)
 ```
 
-#### New API:
+#### New Style API Call:
 
 ```
 cli.get_machine_schema(machine_source=machine_source, types=types, show_hidden=show_hidden, return_mtype=return_mtype)
@@ -38,7 +38,7 @@ The only required field in this case is the machine_source, we will go over each
 3     stats__DefectCategory__val               Defect Category       string
 ```
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
 
 #### machine_source
 This is the name of the machine that you are trying to grab the schema of.  This will also work with it's display name or source_clean.  This is the only required parameter for this function.
@@ -61,4 +61,41 @@ This is an optional parameter and is a boolean. If set to True this will instead
 0             stats__Alarms__val                        Alarms        float
 1            stats__BLOCKED__val                       BLOCKED        float
 ...)
+```
+
+#### Example:
+
+##### Old Style API Call:
+
+```
+fields = get_client.get_machine_schema(machine)
+print(fields.shape)
+
+fields = get_client.get_machine_schema(machine, ["string", "int"], False, True)
+print(fields[0])
+print(fields[1].shape)
+
+# Output:
+# (35, 13)
+# Lasercut
+# (16, 13)
+```
+
+##### New Style API Call:
+
+```
+query = {
+    "machine_source" : machine,
+    "types" : ["string", "int"],
+    "show_hidden" : False,
+    "return_mtype" : True
+}
+
+fields = get_client.get_machine_schema(**query)
+print(fields[0])
+print(fields[1].shape)
+
+# Output:
+# Lasercut
+# (16, 13)
 ```

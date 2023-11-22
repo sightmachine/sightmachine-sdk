@@ -349,6 +349,16 @@ class Client(ClientV0):
             kpis = args[0]
             args = args[1:]
 
+        i_vars = kwargs.pop("i_vars", None)
+        if i_vars is None and args:
+            i_vars = args[0]
+            args = args[1:]
+
+        time_selection = kwargs.pop("time_selection", None)
+        if time_selection is None and args:
+            time_selection = args[0]
+            args = args[1:]
+
         kpi_entity = smsdkentities.get("kpi")
         if machine_sources:
             machine_types = []
@@ -366,6 +376,12 @@ class Client(ClientV0):
             for kpi in kpis:
                 d_vars.append({"name": kpi, "aggregate": ["avg"]})
             kwargs["d_vars"] = d_vars
+
+        if i_vars:
+            kwargs["i_vars"] = i_vars
+
+        if time_selection:
+            kwargs["time_selection"] = time_selection
 
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -407,8 +423,19 @@ class Client(ClientV0):
         elif types is None:
             types = []
 
-        show_hidden = kwargs.pop("show_hidden", False)
-        return_mtype = kwargs.pop("return_mtype", False)
+        show_hidden = kwargs.pop("show_hidden", None)
+        if show_hidden is None and args:
+            show_hidden = args[0]
+            args = args[1:]
+        elif show_hidden is None:
+            show_hidden = False
+
+        return_mtype = kwargs.pop("return_mtype", None)
+        if return_mtype is None and args:
+            return_mtype = args[0]
+            args = args[1:]
+        elif return_mtype is None:
+            return_mtype = False
 
         machineType = smsdkentities.get("machine_type")
         machine_type = self.get_type_from_machine(machine_source)
@@ -597,10 +624,33 @@ class Client(ClientV0):
         elif time_selection is None:
             time_selection = ONE_DAY_RELATIVE
 
-        asset_time_offset = kwargs.pop("asset_time_offset", {})
-        filters = kwargs.pop("filters", [])
-        limit = kwargs.pop("limit", 400)
-        offset = kwargs.pop("offset", 0)
+        asset_time_offset = kwargs.pop("asset_time_offset", None)
+        if asset_time_offset is None and args:
+            asset_time_offset = args[0]
+            args = args[1:]
+        elif asset_time_offset is None:
+            asset_time_offset = {}
+
+        filters = kwargs.pop("filters", None)
+        if filters is None and args:
+            filters = args[0]
+            args = args[1:]
+        elif filters is None:
+            filters = []
+
+        limit = kwargs.pop("limit", None)
+        if limit is None and args:
+            limit = args[0]
+            args = args[1:]
+        elif limit is None:
+            limit = 400
+
+        offset = kwargs.pop("offset", None)
+        if offset is None and args:
+            offset = args[0]
+            args = args[1:]
+        elif offset is None:
+            offset = 0
 
         lines = smsdkentities.get("line")
         base_url = get_url(
@@ -651,9 +701,26 @@ class Client(ClientV0):
             yAxis = args[0]
             args = args[1:]
 
-        xAxis = kwargs.pop("xAxis", X_AXIS_TIME)
-        model = kwargs.pop("model", "cycle")
-        time_selection = kwargs.pop("time_selection", ONE_WEEK_RELATIVE)
+        xAxis = kwargs.pop("xAxis", None)
+        if xAxis is None and args:
+            xAxis = args[0]
+            args = args[1:]
+        elif xAxis is None:
+            xAxis = X_AXIS_TIME
+
+        model = kwargs.pop("model", None)
+        if model is None and args:
+            model = args[0]
+            args = args[1:]
+        elif model is None:
+            model = "cycle"
+
+        time_selection = kwargs.pop("time_selection", None)
+        if time_selection is None and args:
+            time_selection = args[0]
+            args = args[1:]
+        elif time_selection is None:
+            time_selection = ONE_WEEK_RELATIVE
 
         dataViz = smsdkentities.get("dataViz")
         base_url = get_url(
@@ -803,7 +870,7 @@ class Client(ClientV0):
         else:
             return machine_types["source_type"].unique().tolist()
 
-    def get_raw_data(self, *args, normalize=True, **kwargs):
+    def get_raw_data(self, *args, **kwargs):
         raw_data_table = kwargs.pop("raw_data_table", None)
         if raw_data_table is None and args:
             raw_data_table = args[0]
@@ -816,7 +883,12 @@ class Client(ClientV0):
         elif fields is None:
             fields = []
 
-        time_selection = kwargs.pop("time_selection", ONE_DAY_RELATIVE)
+        time_selection = kwargs.pop("time_selection", None)
+        if time_selection is None and args:
+            time_selection = args[0]
+            args = args[1:]
+        elif time_selection is None:
+            time_selection = ONE_DAY_RELATIVE
 
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
@@ -828,4 +900,4 @@ class Client(ClientV0):
         kwargs["time_selection"] = time_selection
         kwargs["db_mode"] = "sql"
 
-        return self.get_data_v1("raw_data", "get_raw_data", normalize, *args, **kwargs)
+        return self.get_data_v1("raw_data", "get_raw_data", True, *args, **kwargs)

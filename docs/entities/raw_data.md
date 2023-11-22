@@ -26,13 +26,13 @@ timeselection (dict) = {"time_type":"relative","relative_start":1,"relative_unit
 select (list) = ['stats__ConveyorInput__val','stats__ConveyorOutput__val']
 ```
 
-#### Old API:
+#### Old Style API Call:
 
 ```
 cli.get_raw_data(raw_data_table, fields=select, time_selection=timeselection)
 ```
 
-#### New API:
+#### New Style API Call:
 
 ```
 cli.get_raw_data(raw_data_table=raw_data_table, fields=select, time_selection=timeselection)
@@ -47,5 +47,57 @@ None                  0.0                        0.0
 None                  0.0                        0.0
 ```
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
 
+
+#### Example:
+
+##### Old Style API Call:
+
+```
+raw_data_table = RAW_DATA_TABLE
+select = []
+timeselection = {
+    "time_type": "absolute",
+    "start_time": "2023-10-18T18:30:00.000Z",
+    "end_time": "2023-10-19T18:29:59.999Z",
+    "time_zone": "America/Los_Angeles",
+}
+
+raw_data = get_client.get_raw_data(raw_data_table, select, timeselection)
+
+print(raw_data.index.name)
+print(raw_data.shape)
+
+# Output:
+# _id
+# (400, 33)
+```
+
+##### New Style API Call:
+
+```
+raw_data_table = RAW_DATA_TABLE
+select = []
+timeselection = {
+    "time_type": "absolute",
+    "start_time": "2023-10-18T18:30:00.000Z",
+    "end_time": "2023-10-19T18:29:59.999Z",
+    "time_zone": "America/Los_Angeles",
+}
+
+query = {
+    "time_selection": timeselection,
+    "raw_data_table": raw_data_table,
+    "fields": select,
+}
+
+raw_data = get_client.get_raw_data(**query)
+
+print(raw_data.index.name)
+print(raw_data.shape)
+
+# Output:
+# _id
+# (400, 33)
+```

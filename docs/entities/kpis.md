@@ -35,18 +35,18 @@ In order to make use of the data viz function you'll need the name of the KPI yo
 
 ### Get KPI Data Viz
 
-The `get_kpi_data_viz` function allows you to access KPI data through the data viz API. The SDK function call has undergone a signature update without changing the internal implementation. You can use any one of the following SDK function calls:
+Once you have the name of the KPI you wish to access and a logged in client you can make a call to the data viz api with the following SDK function using either of the two API calling styles:
 
-#### Old API:
+#### Old Style API Call:
 
 ```
 cli.get_kpi_data_viz(machine_source, kpis, i_vars, time_selection, **optional_data_viz_query)
 ```
 
-#### New API:
+#### New Style API Call:
 
 ```
-cli.get_kpi_data_viz(*args, **kwargs)
+cli.get_kpi_data_viz(machine_sources=machine_source, kpis=kpis, i_vars=i_vars, time_selection=time_selection, **optional_data_viz_query)
 ```
 
 After some time, the SDK should return a list that looks something like this:
@@ -55,9 +55,9 @@ After some time, the SDK should return a list that looks something like this:
 [{'i_vals': {'endtime': {'i_pos': 0, 'bin_no': 0, 'bin_min': '2022-10-20T00:00:00-07:00', 'bin_max': '2022-10-20T00:00:00-07:00', 'bin_avg': '2022-10-20T00:00:00-07:00'}}, 'd_vals': {'quality': {'avg': 95.18072289156626}}, '_count': 418, 'kpi_dependencies': {'quality': {'Output': 395.0, 'ScrapQuantity': 20.0}}},...]
 ```
 
-There are two ways to call this function: you can use a `data_viz_query`. For more information on [data_viz_queries](/docs/commonly_used_data_types/data_viz_query.md), click on the previous link, or have the function fill out the query for you by passing in a few variables.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+There's two ways to call this function you can use a data_viz_query,For more information on [data_viz_queries](/docs/commonly_used_data_types/data_viz_query.md) click on the previous link, or have the function fill out the query for you by passing in a few variable we will now go over one at a time.
 
 #### machine_sources
 This is a list of strings and is the name of machine(s) you wish to run a query on.
@@ -87,4 +87,78 @@ This is an object, this is the same as the [time_selection](/docs/commonly_used_
     "relative_unit": "day",
     "ctime_tz": "America/Los_Angeles"
 }
+```
+
+#### Example:
+
+##### Old Style API Call:
+
+```
+machine_sources = ["Nagoya - Pick and Place 6"]
+kpis = ["quality"]
+i_vars = [
+    {
+        "name": "endtime",
+        "time_resolution": "day",
+        "query_tz": "America/Los_Angeles",
+        "output_tz": "America/Los_Angeles",
+        "bin_strategy": "user_defined2",
+        "bin_count": 50,
+    }
+]
+time_selection = {
+    "time_type": "relative",
+    "relative_start": 7,
+    "relative_unit": "year",
+    "ctime_tz": "America/Los_Angeles",
+}
+optional_data_viz_query = {"where": [], "db_mode": "sql"}
+
+df = cli.get_kpi_data_viz(
+    machine_sources, kpis, i_vars, time_selection, **optional_data_viz_query
+)
+
+print(len(df))
+
+# Output:
+# 372
+```
+
+##### New Style API Call:
+
+```
+machine_sources = ["Nagoya - Pick and Place 6"]
+kpis = ["quality"]
+i_vars = [
+    {
+        "name": "endtime",
+        "time_resolution": "day",
+        "query_tz": "America/Los_Angeles",
+        "output_tz": "America/Los_Angeles",
+        "bin_strategy": "user_defined2",
+        "bin_count": 50,
+    }
+]
+time_selection = {
+    "time_type": "relative",
+    "relative_start": 7,
+    "relative_unit": "year",
+    "ctime_tz": "America/Los_Angeles",
+}
+
+query = {
+    "machine_sources": machine_sources,
+    "kpis": kpis,
+    "i_vars": i_vars,
+    "time_selection": time_selection,
+    "where": [],
+    "db_mode": "sql",
+}
+
+df = get_client.get_kpi_data_viz(**query)
+
+print(len(df))
+
+# Output:
+# 372
 ```

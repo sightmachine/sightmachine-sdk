@@ -6,7 +6,8 @@ from tests.machine_type.machine_type_data import JSON_MACHINETYPE, MACHINE_TYPE_
 from smsdk.smsdk_entities.machine_type.machinetype import MachineType
 
 
-MACHINE_TYPE_NAMES_EXPECT = ["Lasercut", "Pick & Place", "Diecast", "Fusion"]
+MACHINE_TYPE_NAMES_UI_BASED_EXPECT = ["Lasercut", "Pick & Place", "Diecast", "Fusion"]
+MACHINE_TYPE_NAMES_INTERNAL_EXPECT = ["Lasercut", "PickAndPlace", "Diecast", "Fusion"]
 
 
 def test_get_machine_types(monkeypatch):
@@ -55,7 +56,7 @@ def test_get_machine_types(monkeypatch):
 
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
-def test_get_fields_of_machine_type(mocked_machines):
+def test_get_fields_of_machine_type_mock(mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE_FIELDS
     dt = Client("demo-sdk-test")
 
@@ -107,5 +108,34 @@ def test_get_machines_types_v1(get_client):
 
 
 def test_get_machines_type_names_v1(get_client):
-    machine_type_names = get_client.get_machine_type_names()
-    assert machine_type_names == MACHINE_TYPE_NAMES_EXPECT
+    machine_types_ui_based = get_client.get_machine_type_names()
+    assert machine_types_ui_based == MACHINE_TYPE_NAMES_UI_BASED_EXPECT
+
+    machine_types_internal = get_client.get_machine_type_names(clean_strings_out=False)
+    assert machine_types_internal == MACHINE_TYPE_NAMES_INTERNAL_EXPECT
+
+
+def test_get_fields_of_machine_type(get_client):
+    machine_type = "Lasercut"
+    types = ["string", "int"]
+
+    # Run
+    fields = get_client.get_fields_of_machine_type(machine_type)
+    assert len(fields) == 35
+    # print(len(fields))
+
+    # Run
+    fields = get_client.get_fields_of_machine_type(machine_type, types)
+    assert len(fields) == 16
+    # print(len(fields))
+
+    query = {
+        "machine_type": machine_type,
+        "types": types,
+        "show_hidden": True,
+    }
+
+    # Run
+    fields = get_client.get_fields_of_machine_type(**query)
+    assert len(fields) == 16
+    print(len(fields))

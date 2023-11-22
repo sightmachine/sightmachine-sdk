@@ -10,6 +10,52 @@ from smsdk.smsdk_entities.machine.machine import Machine
 # Define all the constants used in the test
 LASERCUT_MACHINE_TYPE = "Lasercut"
 MACHINE_INDEX = 0
+MACHINE_NAMES_UI_BASED_EXPECT = [
+    "Abidjan - Lasercut 1",
+    "Abidjan - Lasercut 2",
+    "Abidjan - Lasercut 3",
+    "Bantam City - Lasercut 1",
+    "Bantam City - Lasercut 2",
+    "Bantam City - Lasercut 3",
+    "Carmel - Lasercut 1",
+    "Carmel - Lasercut 2",
+    "Carmel - Lasercut 3",
+    "Carmel - Lasercut 4",
+    "Carmel - Lasercut 5",
+    "Carmel - Lasercut 6",
+    "Lima - Lasercut 1",
+    "Lima - Lasercut 2",
+    "Santa Catarina - Lasercut 1",
+    "Santa Catarina - Lasercut 2",
+    "Santa Catarina - Lasercut 3",
+    "Singapore - Lasercut 1",
+    "Singapore - Lasercut 2",
+    "Singapore - Lasercut 3",
+    "Singapore - Lasercut 4",
+]
+MACHINE_NAMES_INTERNAL_EXPECT = [
+    "JB_AB_Lasercut_1",
+    "JB_AB_Lasercut_2",
+    "JB_AB_Lasercut_3",
+    "JB_BT_Lasercut_1",
+    "JB_BT_Lasercut_2",
+    "JB_BT_Lasercut_3",
+    "JB_CA_Lasercut_1",
+    "JB_CA_Lasercut_2",
+    "JB_CA_Lasercut_3",
+    "JB_CA_Lasercut_4",
+    "JB_CA_Lasercut_5",
+    "JB_CA_Lasercut_6",
+    "JB_LM_Lasercut_1",
+    "JB_LM_Lasercut_2",
+    "JB_SC_Lasercut_1",
+    "JB_SC_Lasercut_2",
+    "JB_SC_Lasercut_3",
+    "JB_SG_Lasercut_1",
+    "JB_SG_Lasercut_2",
+    "JB_SG_Lasercut_3",
+    "JB_SG_Lasercut_4",
+]
 
 
 def test_get_machines(monkeypatch):
@@ -66,7 +112,7 @@ def test_get_type(mocked):
 
 @patch("smsdk.smsdk_entities.machine_type.machinetype.MachineType.get_fields")
 @patch("smsdk.client.Client.get_type_from_machine")
-def test_get_machine_schema(mocked_types, mocked_machines):
+def test_get_machine_schema_mock(mocked_types, mocked_machines):
     mocked_machines.return_value = MACHINE_TYPE
     mocked_types.return_value = "test"
     dt = Client("demo-sdk-test")
@@ -165,3 +211,47 @@ def test_get_type_from_machine(get_client):
 
     type = get_client.get_type_from_machine(machine)
     assert type == LASERCUT_MACHINE_TYPE
+
+
+def test_get_machine_names(get_client):
+    machines = get_client.get_machine_names(
+        LASERCUT_MACHINE_TYPE,
+        clean_strings_out=True,
+    )
+    assert sorted(machines) == MACHINE_NAMES_UI_BASED_EXPECT
+
+    query = {
+        "clean_strings_out": False,
+        "source_type": LASERCUT_MACHINE_TYPE,
+    }
+
+    machines = get_client.get_machine_names(**query)
+    assert sorted(machines) == MACHINE_NAMES_INTERNAL_EXPECT
+
+
+def test_get_machine_schema(get_client):
+    machine = MACHINE_NAMES_UI_BASED_EXPECT[MACHINE_INDEX]
+    types = ["string", "int"]
+
+    # Run
+    df = get_client.get_machine_schema(machine)
+    assert df.shape == (35, 13)
+
+    # Run
+    df = get_client.get_machine_schema(machine, types)
+    assert df.shape == (16, 13)
+
+    query = {"machine_source": machine, "types": types}
+
+    # Run
+    df = get_client.get_machine_schema(**query)
+    assert df.shape == (16, 13)
+
+    query = {"machine_source": machine, "types": types, "return_mtype": True}
+
+    # Run
+    df = get_client.get_machine_schema(**query)
+    # print(df[0])
+    # print(df[1].shape)
+    assert df[1].shape == (16, 13)
+    assert df[0] == LASERCUT_MACHINE_TYPE

@@ -12,21 +12,21 @@ cli.get_cookbooks()
 This will return a list of [cookbooks](/docs/commonly_used_data_types/cookbook.md), see link for more details on what that response looks like.
 
 ### Get Top Results
-This function will get you the top runs of the recipe group you input. This function can be called using either of the two APIs:
+This function will get you the top runs of the recipe group you input. This function can be called using either of the two API calling styles:
 
-#### Old API:
+#### Old Style API Call:
 
 ```
 cli.get_cookbook_top_results(recipe_group_id, limit)
 ```
 
-#### New API:
+#### New Style API Call:
 
 ```
 cli.get_cookbook_top_results(recipe_group_id=recipe_group_id, limit=limit)
 ```
 
-This will return the following:
+The resulting output will something like:
 ```
 [{
     "runs": [runs],
@@ -34,7 +34,7 @@ This will return the following:
 }]
 ```
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
 
 For more info on the runs returned in each key see [runs](/docs/commonly_used_data_types/run.md).  The two parameter inputs do the following:
 
@@ -44,27 +44,54 @@ This is a string and is the only required parameter.  This is the id of the reci
 #### limit
 This is an int and is optional, if not entered it will default to 10.  This is the max number of runs you wish to return.
 
-### Get Current Value
-This function gets the current values of the fields passed into it. This function can be called using either of the two APIs:
+#### Example:
 
-#### Old API:
+##### Old Style API Call:
+
+```
+runs = cli.get_cookbook_top_results("recipe_group_id", 1)
+print(len(runs["runs"]))
+
+# Output:
+# 1
+```
+
+##### New Style API Call:
+
+```
+query = {
+    "recipe_group_id" : "recipe_group_id",
+    "limit" : 1
+}
+
+runs = cli.get_cookbook_top_results(**query)
+print(len(runs["runs"]))
+
+# Output:
+# 1
+```
+
+### Get Current Value
+This function gets the current values of the fields passed into it. This function can be called using either of the two API calling styles:
+
+#### Old Style API Call:
 
 ```
 cli.get_cookbook_current_value(variables, minutes)
 ```
 
-#### New API:
+#### New Style API Call:
 
 ```
 cli.get_cookbook_current_value(variables=variables, minutes=minutes)
 ```
 
-It returns something like:
+The resulting output will something like:
 ```
 [{'asset': 'JB_HM_Diecast_1', 'name': 'stats__InjectionPressureMin__val', 'values': {'latest': 35.1775016539}}]
 ```
 
-In the new API, all the positional arguments from the old API can be used as keyword arguments. If both positional arguments and keyword arguments are given, positional arguments will be neglected.
+The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
 
 The two parameter inputs do the following:
 
@@ -81,7 +108,33 @@ Asset is the name of the asset you are getting the field from.  It is usually a 
 Name is the name of the field you are grabing the value of.
 
 #### minutes
-This is an optional parameter and is passed in as integer.  This is the number of minutes you want to look bak for the current value.
+This is an optional parameter and is passed in as integer.  This is the number of minutes you want to look back for the current value.
+
+#### Example:
+
+##### Old Style API Call:
+
+```
+value = cli.get_cookbook_current_value([{"asset": "test", "name": "test_field"}])
+print(value)
+
+# Output:
+# [{'asset': 'test', 'name': 'test_field', 'values': {'latest': 42.42}}]
+```
+
+##### New Style API Call:
+
+```
+query = {
+    "variables" : [{"asset": "test", "name": "test_field"}],
+    "minutes" : 1440,
+}
+
+value = dt.get_cookbook_current_value(**query)
+
+# Output:
+# [{'asset': 'test', 'name': 'test_field', 'values': {'latest': 42.42}}]
+```
 
 ### Normalize Constraints
 This is a function to return a clean string version of constraints values. And is called like this:

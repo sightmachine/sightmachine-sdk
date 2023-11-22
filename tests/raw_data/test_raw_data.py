@@ -20,16 +20,16 @@ def test_get_utilities(get_session):
 
 
 def test_get_raw_data(get_client):
+    raw_data_table = RAW_DATA_TABLE
+    select = []
     timeselection = {
         "time_type": "absolute",
         "start_time": "2023-10-18T18:30:00.000Z",
         "end_time": "2023-10-19T18:29:59.999Z",
         "time_zone": "America/Los_Angeles",
     }
-    select = []
-    raw_data = get_client.get_raw_data(
-        RAW_DATA_TABLE, fields=select, time_selection=timeselection
-    )
+
+    raw_data = get_client.get_raw_data(raw_data_table, select, timeselection)
 
     # check index
     assert raw_data.index.name == "_id"
@@ -39,3 +39,13 @@ def test_get_raw_data(get_client):
 
     assert len(raw_data) == NUM_ROWS
     assert raw_data.shape == (400, 33)
+
+    query = {
+        "time_selection": timeselection,
+        "raw_data_table": raw_data_table,
+        "fields": select,
+    }
+
+    raw_data2 = get_client.get_raw_data(**query)
+
+    assert raw_data.equals(raw_data2)

@@ -85,7 +85,14 @@ class Machine(SmsdkEntities, MaSession):
                 orderby_query["order"] = "desc" if value.startswith("-") else "asc"
                 order_by.append(orderby_query)
 
+        """
+        Other keys we are ignoring from above loop.
+        _only and _limit are handled in below implementatioin
+        """
+
+        # Using eval as kwargs.get("_only") gives list in string format
         select = [{"name": i} for i in eval(kwargs.get("_only", "[]"))]
+        limit = kwargs.get("_limit", None)
         if len(where) > 0:
             where = json.dumps(where, ensure_ascii=False)
             params["where"] = where
@@ -95,6 +102,8 @@ class Machine(SmsdkEntities, MaSession):
         if len(select) > 0:
             select = json.dumps(select, ensure_ascii=False)
             params["select"] = select
+        if limit:
+            params["limit"] = limit
 
         if params:
             encoded_params = urlencode(params)

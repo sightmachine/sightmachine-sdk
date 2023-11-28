@@ -204,7 +204,7 @@ def test_get_machines_with_query_params(get_client):
     # Checking that we should only get these three columns that we have provided on query params.
     assert machines.columns.tolist() == ["source", "source_clean", "source_type"]
 
-    
+
 def test_get_type_from_machine(get_client):
     machines = get_client.get_machine_names(LASERCUT_MACHINE_TYPE)
     machine = machines[MACHINE_INDEX]

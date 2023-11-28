@@ -338,27 +338,14 @@ class Client(ClientV0):
 
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
 
-    def get_kpi_data_viz(self, *args, **kwargs):
-        machine_sources = kwargs.pop("machine_sources", None)
-        if machine_sources is None and args:
-            machine_sources = args[0]
-            args = args[1:]
-
-        kpis = kwargs.pop("kpis", None)
-        if kpis is None and args:
-            kpis = args[0]
-            args = args[1:]
-
-        i_vars = kwargs.pop("i_vars", None)
-        if i_vars is None and args:
-            i_vars = args[0]
-            args = args[1:]
-
-        time_selection = kwargs.pop("time_selection", None)
-        if time_selection is None and args:
-            time_selection = args[0]
-            args = args[1:]
-
+    def get_kpi_data_viz(
+        self,
+        machine_sources=None,
+        kpis=None,
+        i_vars=None,
+        time_selection=None,
+        **kwargs,
+    ):
         kpi_entity = smsdkentities.get("kpi")
         if machine_sources:
             machine_types = []
@@ -370,35 +357,32 @@ class Client(ClientV0):
                 "machine_source": machine_sources,
                 "machine_type": list(set(machine_types)),
             }
-
         if kpis:
             d_vars = []
             for kpi in kpis:
                 d_vars.append({"name": kpi, "aggregate": ["avg"]})
             kwargs["d_vars"] = d_vars
-
         if i_vars:
             kwargs["i_vars"] = i_vars
-
         if time_selection:
             kwargs["time_selection"] = time_selection
-
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
 
-        if "machine_type" in kwargs["asset_selection"]:
+        if "asset_selection" in kwargs and "machine_type" in kwargs["asset_selection"]:
             # updating kwargs with machine_type's system name in case of user provides display name.
             kwargs["asset_selection"][
                 "machine_type"
             ] = self.get_machine_type_from_clean_name(kwargs)
-
-        if "machine_source" in kwargs["asset_selection"]:
+        if (
+            "asset_selection" in kwargs
+            and "machine_source" in kwargs["asset_selection"]
+        ):
             # updating kwargs with machine_source's system name in case of user provides display name.
             kwargs["asset_selection"][
                 "machine_source"
             ] = self.get_machine_source_from_clean_name(kwargs)
-
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
     def get_type_from_machine(self, machine_source=None, **kwargs):
@@ -410,33 +394,14 @@ class Client(ClientV0):
             machine_source, **kwargs
         )
 
-    def get_machine_schema(self, *args, **kwargs):
-        machine_source = kwargs.pop("machine_source", None)
-        if machine_source is None and args:
-            machine_source = args[0]
-            args = args[1:]
-
-        types = kwargs.pop("types", None)
-        if types is None and args:
-            types = args[0]
-            args = args[1:]
-        elif types is None:
-            types = []
-
-        show_hidden = kwargs.pop("show_hidden", None)
-        if show_hidden is None and args:
-            show_hidden = args[0]
-            args = args[1:]
-        elif show_hidden is None:
-            show_hidden = False
-
-        return_mtype = kwargs.pop("return_mtype", None)
-        if return_mtype is None and args:
-            return_mtype = args[0]
-            args = args[1:]
-        elif return_mtype is None:
-            return_mtype = False
-
+    def get_machine_schema(
+        self,
+        machine_source=None,
+        types=[],
+        show_hidden=False,
+        return_mtype=False,
+        **kwargs,
+    ):
         machineType = smsdkentities.get("machine_type")
         machine_type = self.get_type_from_machine(machine_source)
         base_url = get_url(
@@ -466,26 +431,13 @@ class Client(ClientV0):
 
         return frame
 
-    def get_fields_of_machine_type(self, *args, **kwargs):
-        machine_type = kwargs.pop("machine_type", None)
-        if machine_type is None and args:
-            machine_type = args[0]
-            args = args[1:]
-
-        types = kwargs.pop("types", None)
-        if types is None and args:
-            types = args[0]
-            args = args[1:]
-        elif types is None:
-            types = []
-
-        show_hidden = kwargs.pop("show_hidden", None)
-        if show_hidden is None and args:
-            show_hidden = args[0]
-            args = args[1:]
-        elif show_hidden is None:
-            show_hidden = False
-
+    def get_fields_of_machine_type(
+        self,
+        machine_type=None,
+        types=[],
+        show_hidden=False,
+        **kwargs,
+    ):
         machineType = smsdkentities.get("machine_type")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -514,25 +466,13 @@ class Client(ClientV0):
         )
         return cookbook(self.session, base_url).get_cookbooks(**kwargs)
 
-    def get_cookbook_top_results(self, *args, **kwargs):
+    def get_cookbook_top_results(self, recipe_group_id=None, limit=10, **kwargs):
         """
         Gets the top runs for a recipe group.
         :param recipe_group_id: The id of the recipe group to get runs for.
         :param limit: The max number of runs wished to return.  Defaults to 10.
         :return: List of runs
         """
-        recipe_group_id = kwargs.pop("recipe_group_id", None)
-        if recipe_group_id is None and args:
-            recipe_group_id = args[0]
-            args = args[1:]
-
-        limit = kwargs.pop("limit", None)
-        if limit is None and args:
-            limit = args[0]
-            args = args[1:]
-        elif limit is None:
-            limit = 10
-
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -541,27 +481,13 @@ class Client(ClientV0):
             recipe_group_id, limit, **kwargs
         )
 
-    def get_cookbook_current_value(self, *args, **kwargs):
+    def get_cookbook_current_value(self, variables=[], minutes=1440, **kwargs):
         """
         Gets the current value of a field.
         :param variables: A list of fields to return values for in the format {'asset': machine_name, 'name': field_name}
         :param minutes: The number of minutes to consider when grabing the current value, defaults to 1440 or 1 day
         :return: A list of values associated with the proper fields.
         """
-        variables = kwargs.pop("variables", None)
-        if variables is None and args:
-            variables = args[0]
-            args = args[1:]
-        elif variables is None:
-            variables = []
-
-        minutes = kwargs.pop("minutes", None)
-        if minutes is None and args:
-            minutes = args[0]
-            args = args[1:]
-        elif minutes is None:
-            minutes = 1440
-
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -603,7 +529,17 @@ class Client(ClientV0):
         )
         return lines(self.session, base_url).get_lines(**kwargs)
 
-    def get_line_data(self, *args, **kwargs):
+    def get_line_data(
+        self,
+        assets=None,
+        fields=[],
+        time_selection=ONE_DAY_RELATIVE,
+        asset_time_offset={},
+        filters=[],
+        limit=400,
+        offset=0,
+        **kwargs,
+    ):
         """
         Returns all the lines for the facility
         :param assets: A list of assets you wish to get data for
@@ -614,53 +550,6 @@ class Client(ClientV0):
         :param limit: A limit of records to grab defaults to 400
         :param offset: The offset to start the data at
         """
-        assets = kwargs.pop("assets", None)
-        if assets is None and args:
-            assets = args[0]
-            args = args[1:]
-
-        fields = kwargs.pop("fields", None)
-        if fields is None and args:
-            fields = args[0]
-            args = args[1:]
-        elif fields is None:
-            fields = []
-
-        time_selection = kwargs.pop("time_selection", None)
-        if time_selection is None and args:
-            time_selection = args[0]
-            args = args[1:]
-        elif time_selection is None:
-            time_selection = ONE_DAY_RELATIVE
-
-        asset_time_offset = kwargs.pop("asset_time_offset", None)
-        if asset_time_offset is None and args:
-            asset_time_offset = args[0]
-            args = args[1:]
-        elif asset_time_offset is None:
-            asset_time_offset = {}
-
-        filters = kwargs.pop("filters", None)
-        if filters is None and args:
-            filters = args[0]
-            args = args[1:]
-        elif filters is None:
-            filters = []
-
-        limit = kwargs.pop("limit", None)
-        if limit is None and args:
-            limit = args[0]
-            args = args[1:]
-        elif limit is None:
-            limit = 400
-
-        offset = kwargs.pop("offset", None)
-        if offset is None and args:
-            offset = args[0]
-            args = args[1:]
-        elif offset is None:
-            offset = 0
-
         lines = smsdkentities.get("line")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -689,43 +578,17 @@ class Client(ClientV0):
             limit=limit, offset=offset, **kwargs
         )
 
-    def create_share_link(self, *args, **kwargs):
-        assets = kwargs.pop("assets", None)
-        if assets is None and args:
-            assets = args[0]
-            args = args[1:]
-
-        chartType = kwargs.pop("chartType", None)
-        if chartType is None and args:
-            chartType = args[0]
-            args = args[1:]
-
-        yAxis = kwargs.pop("yAxis", None)
-        if yAxis is None and args:
-            yAxis = args[0]
-            args = args[1:]
-
-        xAxis = kwargs.pop("xAxis", None)
-        if xAxis is None and args:
-            xAxis = args[0]
-            args = args[1:]
-        elif xAxis is None:
-            xAxis = X_AXIS_TIME
-
-        model = kwargs.pop("model", None)
-        if model is None and args:
-            model = args[0]
-            args = args[1:]
-        elif model is None:
-            model = "cycle"
-
-        time_selection = kwargs.pop("time_selection", None)
-        if time_selection is None and args:
-            time_selection = args[0]
-            args = args[1:]
-        elif time_selection is None:
-            time_selection = ONE_WEEK_RELATIVE
-
+    def create_share_link(
+        self,
+        assets=None,
+        chartType=None,
+        yAxis=None,
+        xAxis=X_AXIS_TIME,
+        model="cycle",
+        time_selection=ONE_WEEK_RELATIVE,
+        *args,
+        **kwargs,
+    ):
         dataViz = smsdkentities.get("dataViz")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
@@ -771,7 +634,7 @@ class Client(ClientV0):
             "machine_v1", "get_machines", normalize, *args, **kwargs
         )
 
-    def get_machine_names(self, *args, **kwargs):
+    def get_machine_names(self, source_type=None, clean_strings_out=True):
         """
         Get a list of machine names.  This is a simplified version of get_machines().
 
@@ -780,18 +643,6 @@ class Client(ClientV0):
         :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine names.
         :return: list
         """
-        source_type = kwargs.pop("source_type", None)
-        if source_type is None and args:
-            source_type = args[0]
-            args = args[1:]
-
-        clean_strings_out = kwargs.pop("clean_strings_out", None)
-        if clean_strings_out is None and args:
-            clean_strings_out = args[0]
-            args = args[1:]
-        elif clean_strings_out is None:
-            clean_strings_out = True
-
         query_params = {
             "_only": ["source", "source_clean", "source_type"],
             "_order_by": "source_clean",
@@ -820,18 +671,13 @@ class Client(ClientV0):
         else:
             return machines["source"].to_list()
 
-    def get_machine_types(self, *args, **kwargs):
+    def get_machine_types(self, source_type=None, *args, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
         then see also get_machine_type_names().
 
         :return: pandas dataframe
         """
-        source_type = kwargs.pop("source_type", None)
-        if source_type is None and args:
-            source_type = args[0]
-            args = args[1:]
-
         mts = self.get_data_v1("machine_type_v1", "get_machine_types", *args, **kwargs)
 
         if source_type is not None:
@@ -844,20 +690,13 @@ class Client(ClientV0):
 
         return mts
 
-    def get_machine_type_names(self, *args, **kwargs):
+    def get_machine_type_names(self, clean_strings_out=True):
         """
         Get a list of machine type names.  This is a simplified version of get_machine_types().
 
         :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
         :return: list
         """
-        clean_strings_out = kwargs.pop("clean_strings_out", None)
-        if clean_strings_out is None and args:
-            clean_strings_out = args[0]
-            args = args[1:]
-        elif clean_strings_out is None:
-            clean_strings_out = True
-
         query_params = {
             "_only": ["source_type", "source_type_clean"],
             "_order_by": "source_type_clean",
@@ -871,40 +710,16 @@ class Client(ClientV0):
         else:
             return machine_types["source_type"].unique().tolist()
 
-    def get_raw_data(self, *args, **kwargs):
-        raw_data_table = kwargs.pop("raw_data_table", None)
-        if raw_data_table is None and args:
-            raw_data_table = args[0]
-            args = args[1:]
-
-        fields = kwargs.pop("fields", None)
-        if fields is None and args:
-            fields = args[0]
-            args = args[1:]
-        elif fields is None:
-            fields = []
-
-        time_selection = kwargs.pop("time_selection", None)
-        if time_selection is None and args:
-            time_selection = args[0]
-            args = args[1:]
-        elif time_selection is None:
-            time_selection = ONE_DAY_RELATIVE
-
-        limit = kwargs.pop("limit", None)
-        if limit is None and args:
-            limit = args[0]
-            args = args[1:]
-        elif limit is None:
-            limit = 400
-
-        offset = kwargs.pop("offset", None)
-        if offset is None and args:
-            offset = args[0]
-            args = args[1:]
-        elif offset is None:
-            offset = 0
-
+    def get_raw_data(
+        self,
+        raw_data_table=None,
+        fields=[],
+        time_selection=ONE_DAY_RELATIVE,
+        limit=400,
+        offset=0,
+        *args,
+        **kwargs,
+    ):
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]

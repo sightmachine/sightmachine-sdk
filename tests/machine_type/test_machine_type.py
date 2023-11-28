@@ -10,7 +10,7 @@ MACHINE_TYPE_NAMES_UI_BASED_EXPECT = ["Lasercut", "Pick & Place", "Diecast", "Fu
 MACHINE_TYPE_NAMES_INTERNAL_EXPECT = ["Lasercut", "PickAndPlace", "Diecast", "Fusion"]
 
 
-def test_get_machine_types(monkeypatch):
+def test_get_machine_types_mock(monkeypatch):
     # Setup
     def mockapi(self, session, endpoint):
         if endpoint == "/api/machinetype":
@@ -102,6 +102,19 @@ This test is against the demo-sdk-test environment and if the environment is cha
 """
 
 
+def test_get_machines_types(get_client):
+    machine_types = get_client.get_machine_types()
+    unique_machine_types = machine_types["source_type"].dropna().unique()
+    assert unique_machine_types.tolist() == MACHINE_TYPE_NAMES_INTERNAL_EXPECT
+
+    query = {
+        "source_type": "Lasercut",
+    }
+
+    machine_types = get_client.get_machine_types(**query)
+    assert machine_types.shape == (29, 25)
+
+
 def test_get_machines_types_v1(get_client):
     machine_types = get_client.get_machine_types()
     assert machine_types.shape == (114, 25)
@@ -111,7 +124,11 @@ def test_get_machines_type_names_v1(get_client):
     machine_types_ui_based = get_client.get_machine_type_names()
     assert machine_types_ui_based == MACHINE_TYPE_NAMES_UI_BASED_EXPECT
 
-    machine_types_internal = get_client.get_machine_type_names(clean_strings_out=False)
+    query = {
+        "clean_strings_out": False,
+    }
+
+    machine_types_internal = get_client.get_machine_type_names(**query)
     assert machine_types_internal == MACHINE_TYPE_NAMES_INTERNAL_EXPECT
 
 

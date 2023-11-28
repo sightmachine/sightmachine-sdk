@@ -12,14 +12,14 @@ cli.get_cookbooks()
 This will return a list of [cookbooks](/docs/commonly_used_data_types/cookbook.md), see link for more details on what that response looks like.
 
 ### Get Top Results
-This function will get you the top runs of the recipe group you input. This function can be called using either of the two API calling styles:
+This function will get you the top runs of the recipe group you input. This function can be called using either of the two methods of calling:
 
-#### Old Style API Call:
+#### Using Positional Arguments
 ```
 cli.get_cookbook_top_results(recipe_group_id, limit)
 ```
 
-#### New Style API Call:
+#### Using Keyword Arguments
 ```
 cli.get_cookbook_top_results(recipe_group_id=recipe_group_id, limit=limit)
 ```
@@ -32,7 +32,7 @@ The resulting output will something like:
 }]
 ```
 
-The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 For more info on the runs returned in each key see [runs](/docs/commonly_used_data_types/run.md).  The two parameter inputs do the following:
 
@@ -44,7 +44,7 @@ This is an int and is optional, if not entered it will default to 10.  This is t
 
 #### Example:
 
-##### Old Style API Call:
+##### Using Positional Arguments
 ```
 runs = cli.get_cookbook_top_results("recipe_group_id", 1)
 print(len(runs["runs"]))
@@ -53,7 +53,7 @@ print(len(runs["runs"]))
 # 1
 ```
 
-##### New Style API Call:
+##### Using Keyword Arguments
 ```
 query = {
     "recipe_group_id" : "recipe_group_id",
@@ -68,14 +68,14 @@ print(len(runs["runs"]))
 ```
 
 ### Get Current Value
-This function gets the current values of the fields passed into it. This function can be called using either of the two API calling styles:
+This function gets the current values of the fields passed into it. This function can be called using either of the two methods of calling:
 
-#### Old Style API Call:
+#### Using Positional Arguments
 ```
 cli.get_cookbook_current_value(variables, minutes)
 ```
 
-#### New Style API Call:
+#### Using Keyword Arguments
 ```
 cli.get_cookbook_current_value(variables=variables, minutes=minutes)
 ```
@@ -85,7 +85,7 @@ The resulting output will something like:
 [{'asset': 'JB_HM_Diecast_1', 'name': 'stats__InjectionPressureMin__val', 'values': {'latest': 35.1775016539}}]
 ```
 
-The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 The two parameter inputs do the following:
 
@@ -106,7 +106,7 @@ This is an optional parameter and is passed in as integer.  This is the number o
 
 #### Example:
 
-##### Old Style API Call:
+##### Using Positional Arguments
 ```
 value = cli.get_cookbook_current_value([{"asset": "test", "name": "test_field"}])
 print(value)
@@ -115,7 +115,7 @@ print(value)
 # [{'asset': 'test', 'name': 'test_field', 'values': {'latest': 42.42}}]
 ```
 
-##### New Style API Call:
+##### Using Keyword Arguments
 ```
 query = {
     "variables" : [{"asset": "test", "name": "test_field"}],

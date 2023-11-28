@@ -15,14 +15,14 @@ And will return something like the following:
 ```
 
 ### get_machine_schema
-The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two API calling styles:
+The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two methods of calling:
 
-#### Old Style API Call:
+#### Using Positional Arguments
 ```
 cli.get_machine_schema(machine_source, types, show_hidden, return_mtype)
 ```
 
-#### New Style API Call:
+#### Using Keyword Arguments
 ```
 cli.get_machine_schema(machine_source=machine_source, types=types, show_hidden=show_hidden, return_mtype=return_mtype)
 ```
@@ -36,7 +36,7 @@ The only required field in this case is the machine_source, we will go over each
 3     stats__DefectCategory__val               Defect Category       string
 ```
 
-The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 #### machine_source
 This is the name of the machine that you are trying to grab the schema of.  This will also work with it's display name or source_clean.  This is the only required parameter for this function.
@@ -63,7 +63,7 @@ This is an optional parameter and is a boolean. If set to True this will instead
 
 #### Example:
 
-##### Old Style API Call:
+##### Using Positional Arguments
 ```
 fields = get_client.get_machine_schema(machine)
 print(fields.shape)
@@ -78,7 +78,7 @@ print(fields[1].shape)
 # (16, 13)
 ```
 
-##### New Style API Call:
+##### Using Keyword Arguments
 ```
 query = {
     "machine_source" : machine,

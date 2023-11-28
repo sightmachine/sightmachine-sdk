@@ -16,14 +16,14 @@ This will return a list of lines and will like the following:
 ```
 
 ### Get Line Data
-This function allows you to pull data from our line model.  This function can be called using either of the two API calling styles:
+This function allows you to pull data from our line model.  This function can be called using either of the two methods of calling:
 
-#### Old Style API Call:
+#### Using Positional Arguments
 ```
 cli.get_line_data(assets, fields,  time_selection, asset_time_offset, filters, limit, offset)
 ```
 
-#### New Style API Call:
+#### Using Keyword Arguments
 ```
 cli.get_line_data(assets=assets, fields=fields,  time_selection=time_selection, asset_time_offset=asset_time_offset, filters=filters, limit=limit, offset=offset)
 ```
@@ -33,7 +33,7 @@ It will return something like:
 [{'F2_010_BodyMaker_1:starttime': '2023-04-05 16:57:00.000000', 'F2_010_BodyMaker_2:starttime': '2023-04-05 16:57:00.000000', 'F2_010_BodyMaker_3:starttime': '2023-04-05 16:57:00.000000', 'F1_010_Coolant_1:starttime': None, 'SHARED:offset_endtime': '2023-04-05 16:58:00.000000', 'F2_010_BodyMaker_1:stats__0_BM 008: Cans Out__val': 20920.0, '_id': 'dwLUrptRdQBdjzoBbtgEqh1KvcsIHHc1GefojYTNWXA='}...]
 ```
 
-The two APIs exhibit fundamental similarities. While the old API exclusively supports positional arguments, the new API builds upon this foundation by allowing the use of both positional and keyword arguments. In the new API, all positional arguments from the old API can be employed as keyword arguments. If both positional and keyword arguments are provided, the keyword arguments take precedence.
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 #### assets
 A required field, this is a list of strings where the strings used are all machine_names.  You can use machines from different lines.
@@ -103,7 +103,7 @@ The number of records at the begining you wish to skip.
 
 #### Example:
 
-##### Old Style API Call:
+##### Using Positional Arguments
 ```
 assets = [MACHINE]
 fields = [
@@ -136,7 +136,7 @@ print(len(df))
 # 14
 ```
 
-##### New Style API Call:
+##### Using Keyword Arguments
 ```
 assets = [MACHINE]
 fields = [

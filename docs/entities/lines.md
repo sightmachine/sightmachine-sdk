@@ -16,15 +16,24 @@ This will return a list of lines and will like the following:
 ```
 
 ### Get Line Data
-This function allows you to pull data from our line model and is call in the following way:
+This function allows you to pull data from our line model.  This function can be called using either of the two methods of calling:
+
+#### Using Positional Arguments
 ```
 cli.get_line_data(assets, fields,  time_selection, asset_time_offset, filters, limit, offset)
+```
+
+#### Using Keyword Arguments
+```
+cli.get_line_data(assets=assets, fields=fields,  time_selection=time_selection, asset_time_offset=asset_time_offset, filters=filters, limit=limit, offset=offset)
 ```
 
 It will return something like:
 ```
 [{'F2_010_BodyMaker_1:starttime': '2023-04-05 16:57:00.000000', 'F2_010_BodyMaker_2:starttime': '2023-04-05 16:57:00.000000', 'F2_010_BodyMaker_3:starttime': '2023-04-05 16:57:00.000000', 'F1_010_Coolant_1:starttime': None, 'SHARED:offset_endtime': '2023-04-05 16:58:00.000000', 'F2_010_BodyMaker_1:stats__0_BM 008: Cans Out__val': 20920.0, '_id': 'dwLUrptRdQBdjzoBbtgEqh1KvcsIHHc1GefojYTNWXA='}...]
 ```
+
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 #### assets
 A required field, this is a list of strings where the strings used are all machine_names.  You can use machines from different lines.
@@ -91,3 +100,78 @@ The max number of records you wish to get.
 
 #### offset
 The number of records at the begining you wish to skip.
+
+#### Example:
+
+##### Using Positional Arguments
+```
+assets = [MACHINE]
+fields = [
+    {"asset": MACHINE, "name": FIELD_NAME1},
+    {"asset": MACHINE, "name": FIELD_NAME2},
+]
+
+time_selection = {
+    "time_type": "absolute",
+    "start_time": START_DATETIME,
+    "end_time": END_DATETIME,
+    "time_zone": TIME_ZONE,
+}
+
+filters = [
+    {
+        "asset": MACHINE,
+        "name": FIELD_NAME2,
+        "op": "gte",
+        "value": MIN_PRESSURE,
+    }
+]
+
+df = get_client.get_line_data(
+    assets, fields, time_selection, filters=filters, limit=MAX_ROWS
+)
+print(len(df))
+
+# Output:
+# 14
+```
+
+##### Using Keyword Arguments
+```
+assets = [MACHINE]
+fields = [
+    {"asset": MACHINE, "name": FIELD_NAME1},
+    {"asset": MACHINE, "name": FIELD_NAME2},
+]
+
+time_selection = {
+    "time_type": "absolute",
+    "start_time": START_DATETIME,
+    "end_time": END_DATETIME,
+    "time_zone": TIME_ZONE,
+}
+
+filters = [
+    {
+        "asset": MACHINE,
+        "name": FIELD_NAME2,
+        "op": "gte",
+        "value": MIN_PRESSURE,
+    }
+]
+
+query = {
+    "assets": assets,
+    "fields": fields,
+    "time_selection": time_selection,
+    "filters": filters,
+    "limit": MAX_ROWS,
+}
+
+df = get_client.get_line_data(**query)
+print(len(df))
+
+# Output:
+# 14
+```
+

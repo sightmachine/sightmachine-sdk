@@ -67,12 +67,24 @@ def test_get_line_data(get_client):
         }
     ]
 
-    df = get_client.get_line_data(
+    df1 = get_client.get_line_data(
         assets, fields, time_selection, filters=filters, limit=MAX_ROWS
     )
 
-    assert len(df) == EXP_NUM_ROWS
+    assert len(df1) == EXP_NUM_ROWS
 
     # Check each element in the df for the pneumatic pressure
-    for i, expected_value in enumerate(df):
-        assert df[i][f"{MACHINE4}:{FIELD_NAME2}"] >= MIN_PRESSURE
+    for i, expected_value in enumerate(df1):
+        assert df1[i][f"{MACHINE4}:{FIELD_NAME2}"] >= MIN_PRESSURE
+
+    query = {
+        "assets": assets,
+        "fields": fields,
+        "time_selection": time_selection,
+        "filters": filters,
+        "limit": MAX_ROWS,
+    }
+
+    df2 = get_client.get_line_data(**query)
+
+    assert df1 == df2

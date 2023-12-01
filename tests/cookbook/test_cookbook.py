@@ -6,6 +6,10 @@ from smsdk.smsdk_entities.kpi.kpi import KPI
 from mock import mock_open, MagicMock, patch
 
 
+# Define all the constants used in the test
+VALUE_EXPC = [{"asset": "test", "name": "test_field", "values": {"latest": 42.42}}]
+
+
 @patch("smsdk.ma_session.Session")
 def test_get_cookbooks(mocked):
     class ResponseGet:
@@ -51,6 +55,16 @@ def test_get_top_results(mocked):
     # Verify
     assert len(runs["runs"]) == 1
 
+    query = {
+        "recipe_group_id": "recipe_group_id",
+        "limit": 1,
+    }
+
+    runs = dt.get_cookbook_top_results(**query)
+
+    # Verify
+    assert len(runs["runs"]) == 1
+
 
 @patch("smsdk.ma_session.Session")
 def test_get_current_value(mocked):
@@ -72,3 +86,14 @@ def test_get_current_value(mocked):
 
     # Verify
     assert value[0]["values"]["latest"] == 42.42
+
+    query = {
+        "variables": [{"asset": "test", "name": "test_field"}],
+        "minutes": 1440,
+    }
+
+    # Run
+    value = dt.get_cookbook_current_value(**query)
+
+    # Verify
+    assert VALUE_EXPC == value

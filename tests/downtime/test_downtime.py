@@ -10,7 +10,7 @@ MACHINE_TYPE = "Lasercut"
 MACHINE_INDEX = 0
 START_DATETIME = datetime(2023, 4, 1)
 END_DATETIME = datetime(2023, 4, 2)
-EXPECTED_ROWS = 15
+EXPECTED_ROWS = 18
 EXPECTED_COL = 8
 URL_V1 = "/v1/datatab/downtime"
 

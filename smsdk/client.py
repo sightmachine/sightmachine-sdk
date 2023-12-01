@@ -654,8 +654,6 @@ class Client(ClientV0):
             query_params["source_type"] = source_type
 
         machines = self.get_data_v1("machine_v1", "get_machines", True, **query_params)
-        # machine api endpoint doesn't seem to accept query params
-        machines = machines[machines["source_type"] == source_type]
 
         if clean_strings_out:
             return machines["source_clean"].to_list()

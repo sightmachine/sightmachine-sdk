@@ -136,3 +136,19 @@ This test is against the demo-sdk-test environment and if the environment is cha
 def test_get_machines_v1(get_client):
     machines = get_client.get_machines()
     assert machines.shape == (49, 10)
+
+
+def test_get_machines_with_query_params(get_client):
+    limit = 20
+    query_params = {
+        "_only": ["source", "source_clean", "source_type"],
+        "source_type": "Lasercut",
+        "_order_by": "source_clean",
+        "_limit": limit,
+    }
+    machines = get_client.get_machines(**query_params)
+
+    assert len(machines) == limit
+
+    # Checking that we should only get these three columns that we have provided on query params.
+    assert machines.columns.tolist() == ["source", "source_clean", "source_type"]

@@ -34,15 +34,25 @@ For more info on [asset_selection](/docs/commonly_used_data_types/asset_selectio
 In order to make use of the data viz function you'll need the name of the KPI you wish to get.
 
 ### Get KPI Data Viz
-Once you have the name of the KPI you wish to access and a logged in client you can make a call to the data viz api with the following SDK function call:
+Once you have the name of the KPI you wish to access and a logged-in client, you can make a call to the data viz API with the following SDK function using either of the two methods of calling:
+
+#### Using Positional Arguments
 ```
 cli.get_kpi_data_viz(machine_source, kpis, i_vars, time_selection, **optional_data_viz_query)
 ```
 
-After some time the SDK should return a list that looks something like this:
+#### Using Keyword Arguments
+```
+cli.get_kpi_data_viz(machine_sources=machine_source, kpis=kpis, i_vars=i_vars, time_selection=time_selection, **optional_data_viz_query)
+```
+
+After some time, the SDK should return a list that looks something like this:
+
 ```
 [{'i_vals': {'endtime': {'i_pos': 0, 'bin_no': 0, 'bin_min': '2022-10-20T00:00:00-07:00', 'bin_max': '2022-10-20T00:00:00-07:00', 'bin_avg': '2022-10-20T00:00:00-07:00'}}, 'd_vals': {'quality': {'avg': 95.18072289156626}}, '_count': 418, 'kpi_dependencies': {'quality': {'Output': 395.0, 'ScrapQuantity': 20.0}}},...]
 ```
+
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 There's two ways to call this function you can use a data_viz_query,For more information on [data_viz_queries](/docs/commonly_used_data_types/data_viz_query.md) click on the previous link, or have the function fill out the query for you by passing in a few variable we will now go over one at a time.
 
@@ -74,4 +84,76 @@ This is an object, this is the same as the [time_selection](/docs/commonly_used_
     "relative_unit": "day",
     "ctime_tz": "America/Los_Angeles"
 }
+```
+
+#### Example:
+
+##### Using Positional Arguments
+```
+machine_sources = ["Nagoya - Pick and Place 6"]
+kpis = ["quality"]
+i_vars = [
+    {
+        "name": "endtime",
+        "time_resolution": "day",
+        "query_tz": "America/Los_Angeles",
+        "output_tz": "America/Los_Angeles",
+        "bin_strategy": "user_defined2",
+        "bin_count": 50,
+    }
+]
+time_selection = {
+    "time_type": "relative",
+    "relative_start": 7,
+    "relative_unit": "year",
+    "ctime_tz": "America/Los_Angeles",
+}
+optional_data_viz_query = {"where": [], "db_mode": "sql"}
+
+df = cli.get_kpi_data_viz(
+    machine_sources, kpis, i_vars, time_selection, **optional_data_viz_query
+)
+
+print(len(df))
+
+# Output:
+# 372
+```
+
+##### Using Keyword Arguments
+```
+machine_sources = ["Nagoya - Pick and Place 6"]
+kpis = ["quality"]
+i_vars = [
+    {
+        "name": "endtime",
+        "time_resolution": "day",
+        "query_tz": "America/Los_Angeles",
+        "output_tz": "America/Los_Angeles",
+        "bin_strategy": "user_defined2",
+        "bin_count": 50,
+    }
+]
+time_selection = {
+    "time_type": "relative",
+    "relative_start": 7,
+    "relative_unit": "year",
+    "ctime_tz": "America/Los_Angeles",
+}
+
+query = {
+    "machine_sources": machine_sources,
+    "kpis": kpis,
+    "i_vars": i_vars,
+    "time_selection": time_selection,
+    "where": [],
+    "db_mode": "sql",
+}
+
+df = get_client.get_kpi_data_viz(**query)
+
+print(len(df))
+
+# Output:
+# 372
 ```

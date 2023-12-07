@@ -85,15 +85,28 @@ class Machine(SmsdkEntities, MaSession):
                 orderby_query["order"] = "desc" if value.startswith("-") else "asc"
                 order_by.append(orderby_query)
 
+        """
+        Other keys we are ignoring from above loop.
+        _only and _limit are handled in below implementatioin
+        """
+
+        # Using eval as kwargs.get("_only") gives list in string format
         select = [{"name": i} for i in eval(kwargs.get("_only", "[]"))]
+        limit = kwargs.get("_limit", None)
+        if len(where) > 0:
+            where = json.dumps(where, ensure_ascii=False)
+            params["where"] = where
+        if len(order_by) > 0:
+            order_by = json.dumps(order_by, ensure_ascii=False)
+            params["order_by"] = order_by
+        if len(select) > 0:
+            select = json.dumps(select, ensure_ascii=False)
+            params["select"] = select
+        if limit:
+            params["limit"] = limit
 
-        where = json.dumps(where, ensure_ascii=False)
-        order_by = json.dumps(order_by, ensure_ascii=False)
-        select = json.dumps(select, ensure_ascii=False)
+        if params:
+            encoded_params = urlencode(params)
+            url = urlunparse(("", "", url, "", encoded_params, ""))
 
-        params = {"where": where, "order_by": order_by, "select": select}
-
-        encoded_params = urlencode(params)
-        final_url = urlunparse(("", "", url, "", encoded_params, ""))
-
-        return final_url
+        return url

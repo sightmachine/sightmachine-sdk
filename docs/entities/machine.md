@@ -15,9 +15,16 @@ And will return something like the following:
 ```
 
 ### get_machine_schema
-The get_machine_schema functions returns the fields of the machine schema for a given machine source and is called this way:
+The get_machine_schema function retrieves the fields of the machine schema for a specified machine source. This function can be called using either of the two methods of calling:
+
+#### Using Positional Arguments
 ```
 cli.get_machine_schema(machine_source, types, show_hidden, return_mtype)
+```
+
+#### Using Keyword Arguments
+```
+cli.get_machine_schema(machine_source=machine_source, types=types, show_hidden=show_hidden, return_mtype=return_mtype)
 ```
 
 The only required field in this case is the machine_source, we will go over each variable in a second.  The function will return a pandas data frame that looks like the following:
@@ -28,6 +35,8 @@ The only required field in this case is the machine_source, we will go over each
 2               stats__DOWN__val                          DOWN        float
 3     stats__DefectCategory__val               Defect Category       string
 ```
+
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 #### machine_source
 This is the name of the machine that you are trying to grab the schema of.  This will also work with it's display name or source_clean.  This is the only required parameter for this function.
@@ -50,4 +59,39 @@ This is an optional parameter and is a boolean. If set to True this will instead
 0             stats__Alarms__val                        Alarms        float
 1            stats__BLOCKED__val                       BLOCKED        float
 ...)
+```
+
+#### Example:
+
+##### Using Positional Arguments
+```
+fields = get_client.get_machine_schema(machine)
+print(fields.shape)
+
+fields = get_client.get_machine_schema(machine, ["string", "int"], False, True)
+print(fields[0])
+print(fields[1].shape)
+
+# Output:
+# (35, 13)
+# Lasercut
+# (16, 13)
+```
+
+##### Using Keyword Arguments
+```
+query = {
+    "machine_source" : machine,
+    "types" : ["string", "int"],
+    "show_hidden" : False,
+    "return_mtype" : True
+}
+
+fields = get_client.get_machine_schema(**query)
+print(fields[0])
+print(fields[1].shape)
+
+# Output:
+# Lasercut
+# (16, 13)
 ```

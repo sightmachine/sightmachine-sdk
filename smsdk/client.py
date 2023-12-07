@@ -22,6 +22,32 @@ import logging
 log = logging.getLogger(__name__)
 
 
+ONE_DAY_RELATIVE = {
+    "time_type": "relative",
+    "relative_start": 1,
+    "relative_unit": "day",
+    "ctime_tz": "America/Los_Angeles",
+}
+
+X_AXIS_TIME = {
+    "unit": "",
+    "type": "datetime",
+    "data_type": "datetime",
+    "stream_types": [],
+    "raw_data_field": "",
+    "id": "endtime",
+    "title": "Time",
+    "isEnabled": True,
+}
+
+ONE_WEEK_RELATIVE = {
+    "time_type": "relative",
+    "relative_start": 1,
+    "relative_unit": "week",
+    "ctime_tz": "America/Los_Angeles",
+}
+
+
 def time_string_to_epoch(time_string):
     try:
         dt = pd.to_datetime(time_string)
@@ -331,35 +357,32 @@ class Client(ClientV0):
                 "machine_source": machine_sources,
                 "machine_type": list(set(machine_types)),
             }
-
         if kpis:
             d_vars = []
             for kpi in kpis:
                 d_vars.append({"name": kpi, "aggregate": ["avg"]})
             kwargs["d_vars"] = d_vars
-
         if i_vars:
             kwargs["i_vars"] = i_vars
-
         if time_selection:
             kwargs["time_selection"] = time_selection
-
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
 
-        if "machine_type" in kwargs["asset_selection"]:
+        if "asset_selection" in kwargs and "machine_type" in kwargs["asset_selection"]:
             # updating kwargs with machine_type's system name in case of user provides display name.
             kwargs["asset_selection"][
                 "machine_type"
             ] = self.get_machine_type_from_clean_name(kwargs)
-
-        if "machine_source" in kwargs["asset_selection"]:
+        if (
+            "asset_selection" in kwargs
+            and "machine_source" in kwargs["asset_selection"]
+        ):
             # updating kwargs with machine_source's system name in case of user provides display name.
             kwargs["asset_selection"][
                 "machine_source"
             ] = self.get_machine_source_from_clean_name(kwargs)
-
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
     def get_type_from_machine(self, machine_source=None, **kwargs):
@@ -372,7 +395,12 @@ class Client(ClientV0):
         )
 
     def get_machine_schema(
-        self, machine_source, types=[], show_hidden=False, return_mtype=False, **kwargs
+        self,
+        machine_source=None,
+        types=[],
+        show_hidden=False,
+        return_mtype=False,
+        **kwargs,
     ):
         machineType = smsdkentities.get("machine_type")
         machine_type = self.get_type_from_machine(machine_source)
@@ -404,7 +432,11 @@ class Client(ClientV0):
         return frame
 
     def get_fields_of_machine_type(
-        self, machine_type, types=[], show_hidden=False, **kwargs
+        self,
+        machine_type=None,
+        types=[],
+        show_hidden=False,
+        **kwargs,
     ):
         machineType = smsdkentities.get("machine_type")
         base_url = get_url(
@@ -415,7 +447,11 @@ class Client(ClientV0):
             field for field in fields if not field.get("ui_hidden") or show_hidden
         ]
         if len(types) > 0:
-            fields = [field for field in fields if field.get("type") in types]
+            fields = [
+                field
+                for field in fields
+                if field.get("type") in types or field.get("data_type") in types
+            ]
 
         return fields
 
@@ -430,7 +466,7 @@ class Client(ClientV0):
         )
         return cookbook(self.session, base_url).get_cookbooks(**kwargs)
 
-    def get_cookbook_top_results(self, recipe_group_id, limit=10, **kwargs):
+    def get_cookbook_top_results(self, recipe_group_id=None, limit=10, **kwargs):
         """
         Gets the top runs for a recipe group.
         :param recipe_group_id: The id of the recipe group to get runs for.
@@ -493,18 +529,11 @@ class Client(ClientV0):
         )
         return lines(self.session, base_url).get_lines(**kwargs)
 
-    one_day_relative = {
-        "time_type": "relative",
-        "relative_start": 1,
-        "relative_unit": "day",
-        "ctime_tz": "America/Los_Angeles",
-    }
-
     def get_line_data(
         self,
-        assets,
+        assets=None,
         fields=[],
-        time_selection=one_day_relative,
+        time_selection=ONE_DAY_RELATIVE,
         asset_time_offset={},
         filters=[],
         limit=400,
@@ -549,31 +578,14 @@ class Client(ClientV0):
             limit=limit, offset=offset, **kwargs
         )
 
-    xAxisTime = {
-        "unit": "",
-        "type": "datetime",
-        "data_type": "datetime",
-        "stream_types": [],
-        "raw_data_field": "",
-        "id": "endtime",
-        "title": "Time",
-        "isEnabled": True,
-    }
-    one_week_relative = {
-        "time_type": "relative",
-        "relative_start": 1,
-        "relative_unit": "week",
-        "ctime_tz": "America/Los_Angeles",
-    }
-
     def create_share_link(
         self,
-        assets,
-        chartType,
-        yAxis,
-        xAxis=xAxisTime,
+        assets=None,
+        chartType=None,
+        yAxis=None,
+        xAxis=X_AXIS_TIME,
         model="cycle",
-        time_selection=one_week_relative,
+        time_selection=ONE_WEEK_RELATIVE,
         *args,
         **kwargs,
     ):
@@ -631,7 +643,6 @@ class Client(ClientV0):
         :param clean_strings_out: If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine names.
         :return: list
         """
-
         query_params = {
             "_only": ["source", "source_clean", "source_type"],
             "_order_by": "source_clean",
@@ -667,7 +678,6 @@ class Client(ClientV0):
 
         :return: pandas dataframe
         """
-
         mts = self.get_data_v1("machine_type_v1", "get_machine_types", *args, **kwargs)
 
         if source_type is not None:
@@ -702,10 +712,9 @@ class Client(ClientV0):
 
     def get_raw_data(
         self,
-        raw_data_table,
-        normalize=True,
+        raw_data_table=None,
         fields=[],
-        time_selection=one_day_relative,
+        time_selection=ONE_DAY_RELATIVE,
         limit=400,
         offset=0,
         *args,
@@ -720,5 +729,7 @@ class Client(ClientV0):
         kwargs["select"] = select
         kwargs["time_selection"] = time_selection
         kwargs["db_mode"] = "sql"
+        kwargs["limit"] = limit
+        kwargs["offset"] = offset
 
-        return self.get_data_v1("raw_data", "get_raw_data", normalize, *args, **kwargs)
+        return self.get_data_v1("raw_data", "get_raw_data", True, *args, **kwargs)

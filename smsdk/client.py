@@ -288,6 +288,9 @@ class Client(ClientV0):
         # Get machine_types dataframe to check display name
         machine_types_df = self.get_machine_types()
 
+        machine_types_df["source_type_clean"] = machine_types_df[
+            "source_type_clean"
+        ].map(str.strip)
         # Creating lookup table against display_name:system_name from machine type dataframe.
         alias_tbl = (
             machine_types_df.loc[:, ["source_type", "source_type_clean"]]
@@ -305,6 +308,9 @@ class Client(ClientV0):
     def get_machine_source_from_clean_name(self, kwargs):
         # Get machines dataframe to check display/clean name
         machine_sources_df = self.get_machines()
+        machine_sources_df["source_clean"] = machine_sources_df["source_clean"].map(
+            str.strip
+        )
         alias_tbl = (
             machine_sources_df.loc[:, ["source", "source_clean"]]
             .set_index("source_clean")

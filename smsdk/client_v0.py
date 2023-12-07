@@ -307,24 +307,32 @@ class ClientV0(object):
                 # Possible that it is a machine__in.  If so, base on first machine
                 machine = kwargs.get("machine__source__in", kwargs.get("Machine__in"))
             kwargs["machine__source"] = machine
-            machine_type, schema = self.get_machine_schema(machine, return_mtype=True)
+            if isinstance(machine, str):
+                machine_type, schema = self.get_machine_schema(
+                    machine, return_mtype=True
+                )
+            else:  # it is a list of machines, work with first name in list
+                machine_type, schema = self.get_machine_schema(
+                    machine[0], return_mtype=True
+                )
 
             if not "_limit" in kwargs:
-                "_limit not specified.  Maximum of 5000 rows will be returned."
+                print("_limit not specified.  Maximum of 5000 rows will be returned.")
 
             if not "_only" in kwargs:
                 print("_only not specified.  Selecting first 50 fields.")
                 only_names = schema["name"].tolist()[:50]
                 kwargs["_only"] = only_names
             else:
-                if ("End Time" not in kwargs["_only"]) and (
-                    "endtime" not in kwargs["_only"]
+                if all(
+                    i not in {"End Time", "endtime", "Cycle End Time"}
+                    for i in kwargs["_only"]
                 ):
                     print("Adding End Time to _only")
                     kwargs["_only"].insert(0, "End Time")
 
-                if ("Machine" not in kwargs["_only"]) and (
-                    "machine__source" not in kwargs["_only"]
+                if all(
+                    i not in {"Machine", "machine__source"} for i in kwargs["_only"]
                 ):
                     print("Adding Machine to _only")
                     kwargs["_only"].insert(0, "Machine")
@@ -348,7 +356,7 @@ class ClientV0(object):
                     + [
                         "Cycle Time (Gross)",
                         "End Time",
-                        "Cycle Time(Net)",
+                        "Cycle Time (Net)",
                         "Machine",
                         "Start Time",
                         "Output",
@@ -1069,12 +1077,13 @@ class ClientV0(object):
                     return table
 
         # Handle EF type machine names
-        if len(machine) <= 6 and machine[:3].isnumeric():
-            machine = f"'{machine}'"
+        # Commenting these out because we already are getting machine_names as string even if they are in numerics.
+        # if len(machine) <= 6 and machine[:3].isnumeric():
+        #     machine = f"'{machine}'"
 
         # Handle EF type machine names
-        if len(machine) == 5 and machine[:3].isnumeric():
-            machine = f"'{machine}'"
+        # if len(machine) == 5 and machine[:3].isnumeric():
+        #     machine = f"'{machine}'"
 
         schema = self.get_machine_schema(machine)
 
@@ -1175,7 +1184,7 @@ class ClientV0(object):
 
         # First need to find the machine name
         machine = query.get("machine__source", query.get("Machine"))
-        if not machine:
+        if isinstance(machine, list):
             # Possible that it is a machine__in.  If so, base on first machine
             machine = query.get("machine__source__in", query.get("Machine__in"))
             machine = machine[0]

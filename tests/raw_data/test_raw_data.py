@@ -3,7 +3,7 @@ from tests.conftest import TENANT
 from smsdk.smsdk_entities.raw_data.raw_data import RawData
 
 RAW_DATA_TABLE = "cycle_raw_data"
-NUM_ROWS = 400
+NUM_COLUMNS_EXPC = 33
 URL_V1 = "/v1/datatab/raw_data"
 
 
@@ -20,7 +20,20 @@ def test_get_utilities(get_session):
 
 
 def test_get_raw_data(get_client):
-    raw_data = get_client.get_raw_data(RAW_DATA_TABLE)
+    raw_data_table = RAW_DATA_TABLE
+    select = []
+    timeselection = {
+        "time_type": "absolute",
+        "start_time": "2023-10-18T18:30:00.000Z",
+        "end_time": "2023-10-19T18:29:59.999Z",
+        "time_zone": "America/Los_Angeles",
+    }
+    limit = 100
+    offset = 0
+
+    raw_data = get_client.get_raw_data(
+        raw_data_table, select, timeselection, limit, offset
+    )
 
     # check index
     assert raw_data.index.name == "_id"
@@ -28,5 +41,17 @@ def test_get_raw_data(get_client):
     # check timestamp column
     assert "timestamp" in raw_data.columns.to_list()
 
-    assert len(raw_data) == NUM_ROWS
-    assert raw_data.shape == (400, 33)
+    # check the shape of the data frame
+    assert raw_data.shape == (limit, NUM_COLUMNS_EXPC)
+
+    query = {
+        "time_selection": timeselection,
+        "raw_data_table": raw_data_table,
+        "fields": select,
+        "limit": limit,
+        "offset": offset,
+    }
+
+    raw_data2 = get_client.get_raw_data(**query)
+
+    assert raw_data.equals(raw_data2)

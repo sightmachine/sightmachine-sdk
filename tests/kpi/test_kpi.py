@@ -19,7 +19,7 @@ def test_get_kpi(mocked):
 
     mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     kpis = dt.get_kpis()
@@ -39,7 +39,7 @@ def test_get_kpi_for_asset(monkeypatch):
 
     monkeypatch.setattr(KPI, "get_kpis_for_asset", mockapi)
 
-    dt = KPI(Session(), "demo")
+    dt = KPI(Session(), "demo-sdk-test")
 
     # Run
     df = dt.get_kpis_for_asset(Session(), "/v1/selector/datavis/kpi/y_axis")
@@ -53,7 +53,7 @@ def test_get_kpi_for_asset(monkeypatch):
 
 
 @patch("smsdk.ma_session.Session")
-def test_get_kpi_data_viz(mocked):
+def test_get_kpi_data_viz_mock(mocked):
     class ResponsePost:
         ok = True
         text = "Success"
@@ -79,7 +79,7 @@ def test_get_kpi_data_viz(mocked):
         get=MagicMock(return_value=ResponseGet()),
     )
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
     data = dt.get_kpi_data_viz()
     assert len(data) == 3
     assert data[0]["d_vals"]["quality"]["avg"] == 95.18072289156626
@@ -113,33 +113,33 @@ def test_kpi_for_asset_display_name(get_client):
 
 
 def test_get_kpi_data_viz(get_client):
+    machine_sources = ["Nagoya - Pick and Place 6"]
+    kpis = ["quality"]
+    i_vars = [
+        {
+            "name": "endtime",
+            "time_resolution": "day",
+            "query_tz": "America/Los_Angeles",
+            "output_tz": "America/Los_Angeles",
+            "bin_strategy": "user_defined2",
+            "bin_count": 50,
+        }
+    ]
+    time_selection = {
+        "time_type": "relative",
+        "relative_start": 7,
+        "relative_unit": "year",
+        "ctime_tz": "America/Los_Angeles",
+    }
+
     data_viz_query = {
-        "asset_selection": {
-            "machine_source": ["JB_NG_PickAndPlace_1_Stage6"],
-            "machine_type": ["PickAndPlace"],
-        },
-        "d_vars": [{"name": "quality", "aggregate": ["avg"]}],
-        "i_vars": [
-            {
-                "name": "endtime",
-                "time_resolution": "day",
-                "query_tz": "America/Los_Angeles",
-                "output_tz": "America/Los_Angeles",
-                "bin_strategy": "user_defined2",
-                "bin_count": 50,
-            }
-        ],
-        "time_selection": {
-            "time_type": "relative",
-            "relative_start": 7,
-            "relative_unit": "year",
-            "ctime_tz": "America/Los_Angeles",
-        },
         "where": [],
         "db_mode": "sql",
     }
 
-    df1 = get_client.get_kpi_data_viz(**data_viz_query)
+    df1 = get_client.get_kpi_data_viz(
+        machine_sources, kpis, i_vars, time_selection, **data_viz_query
+    )
 
     data_viz_query = {
         "asset_selection": {
@@ -170,3 +170,15 @@ def test_get_kpi_data_viz(get_client):
     df2 = get_client.get_kpi_data_viz(**data_viz_query)
 
     assert len(df1) == len(df2)
+
+    query = {
+        "machine_sources": machine_sources,
+        "kpis": kpis,
+        "i_vars": i_vars,
+        "time_selection": time_selection,
+        "where": [],
+        "db_mode": "sql",
+    }
+
+    df3 = get_client.get_kpi_data_viz(**query)
+    assert len(df2) == len(df3)

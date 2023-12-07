@@ -4,15 +4,23 @@ Data Visualization or Data Viz is an application within the Sight Machine System
 ## Functions
 
 ### Create Share Link
-This function allows you to give it the "state" of a data viz and it will then return a link to the webapp allowing you to see this visualization in app.  It is called like this:
+This function allows you to give it the "state" of a data viz and it will then return a link to the webapp allowing you to see this visualization in app.  It is called using either of the two methods of calling:
+#### Using Positional Arguments
 ```
 cli.create_share_link(assets, chartType, yAxis, xAxis, model, time_selection)
+```
+
+#### Using Keyword Arguments
+```
+cli.create_share_link(assets=assets, chartType=chartType, yAxis=yAxis, xAxis=xAxis, model=model, time_selection=time_selection)
 ```
 
 And will return something like this:
 ```
 https://demo-discrete.sightmachine.io/#/analysis/datavis/s/t952360g
 ```
+
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
 
 #### assets
 This is a list of Machines_Names you are trying to get data from.  No matter the dataModel you choose you will always be able to simply give it a list however there are additional options when using the 'line' dataModel.  The simple list version looks like:

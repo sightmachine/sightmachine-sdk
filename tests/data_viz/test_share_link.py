@@ -17,13 +17,15 @@ def test_cycle_share_link(mock_type, mocked):
     mocked.return_value = ResponsePost()
     mock_type.return_value = "test_machine"
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     sharelink = dt.create_share_link(["test"], "line", {"id": "cans"})
 
     # Verify
-    assert sharelink == "https://demo.sightmachine.io/#/analysis/datavis/s/test"
+    assert (
+        sharelink == "https://demo-sdk-test.sightmachine.io/#/analysis/datavis/s/test"
+    )
     assert mocked.call_args[1]["json"]["state"]["asset"] == {
         "machine_source": ["test"],
         "machine_type": ["test_machine"],
@@ -45,13 +47,15 @@ def test_kpi_share_link(mock_type, mocked):
     mocked.return_value = ResponsePost()
     mock_type.return_value = "test_machine"
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     sharelink = dt.create_share_link(["test"], "line", {"id": "cans"}, model="kpi")
 
     # Verify
-    assert sharelink == "https://demo.sightmachine.io/#/analysis/datavis/s/test"
+    assert (
+        sharelink == "https://demo-sdk-test.sightmachine.io/#/analysis/datavis/s/test"
+    )
     assert mocked.call_args[1]["json"]["state"]["asset"] == {
         "machine_source": ["test"],
         "machine_type": ["test_machine"],
@@ -74,7 +78,7 @@ def test_line_share_link(mock_type, mocked):
     mocked.return_value = ResponsePost()
     mock_type.return_value = "test_machine"
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     sharelink = dt.create_share_link(
@@ -82,7 +86,9 @@ def test_line_share_link(mock_type, mocked):
     )
 
     # Verify
-    assert sharelink == "https://demo.sightmachine.io/#/analysis/datavis/s/test"
+    assert (
+        sharelink == "https://demo-sdk-test.sightmachine.io/#/analysis/datavis/s/test"
+    )
     assert mocked.call_args[1]["json"]["state"]["lineProcess"] == {
         "selectedMachines": [{"machineName": "test"}]
     }
@@ -109,7 +115,7 @@ def test_line_offset_share_link(mock_type, mocked):
     mocked.return_value = ResponsePost()
     mock_type.return_value = "test_machine"
 
-    dt = Client("demo")
+    dt = Client("demo-sdk-test")
 
     # Run
     sharelink = dt.create_share_link(
@@ -123,7 +129,9 @@ def test_line_offset_share_link(mock_type, mocked):
     )
 
     # Verify
-    assert sharelink == "https://demo.sightmachine.io/#/analysis/datavis/s/test"
+    assert (
+        sharelink == "https://demo-sdk-test.sightmachine.io/#/analysis/datavis/s/test"
+    )
     assert mocked.call_args[1]["json"]["state"]["lineProcess"] == {
         "assetOffsets": {"test": {"interval": "minutes", "period": 1}},
         "selectedMachines": [{"machineName": "test"}],

@@ -25,8 +25,15 @@ timeselection (dict) = {"time_type":"relative","relative_start":1,"relative_unit
 
 select (list) = ['stats__ConveyorInput__val','stats__ConveyorOutput__val']
 ```
+
+#### Using Positional Arguments
 ```
-cli.get_raw_data(raw_data_table, fields=select, time_selection=timeselection)
+cli.get_raw_data(raw_data_table, select, timeselection)
+```
+
+#### Using Keyword Arguments
+```
+cli.get_raw_data(raw_data_table=raw_data_table, fields=select, time_selection=timeselection)
 ```
 
 And will return something like the following:
@@ -36,5 +43,58 @@ stats__Alarms__val  stats__BLOCKED__val  stats__ConveyorInput__val
 None                  0.0                        0.0
 
 None                  0.0                        0.0
+```
+
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
+
+
+#### Example:
+
+##### Using Positional Arguments
+```
+raw_data_table = RAW_DATA_TABLE
+select = []
+timeselection = {
+    "time_type": "absolute",
+    "start_time": "2023-10-18T18:30:00.000Z",
+    "end_time": "2023-10-19T18:29:59.999Z",
+    "time_zone": "America/Los_Angeles",
+}
+
+raw_data = get_client.get_raw_data(raw_data_table, select, timeselection)
+
+print(raw_data.index.name)
+print(raw_data.shape)
+
+# Output:
+# _id
+# (400, 33)
+```
+
+##### Using Keyword Arguments
+```
+raw_data_table = RAW_DATA_TABLE
+select = []
+timeselection = {
+    "time_type": "absolute",
+    "start_time": "2023-10-18T18:30:00.000Z",
+    "end_time": "2023-10-19T18:29:59.999Z",
+    "time_zone": "America/Los_Angeles",
+}
+
+query = {
+    "time_selection": timeselection,
+    "raw_data_table": raw_data_table,
+    "fields": select,
+}
+
+raw_data = get_client.get_raw_data(**query)
+
+print(raw_data.index.name)
+print(raw_data.shape)
+
+# Output:
+# _id
+# (400, 33)
 ```
 

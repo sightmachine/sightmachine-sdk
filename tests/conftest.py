@@ -1,14 +1,15 @@
 from smsdk import client
 from requests.sessions import Session
 import pytest
-
+from smsdk import const
 
 # Define all the constants used in the test
 # These values may change for each run.
-API_KEY = "5a73aa5a-1962-4df9-b56e-4a59462f0f00"
-API_SECRETE = "sma_FajgH3VbPu68gwy0PzccvhyGRyy1a8CCHhhvy6ooeg1O_"
 
-TENANT = "demo"
+API_KEY = const.API_KEY
+API_SECRETE = const.API_SECRETE
+
+TENANT = const.TENANT
 
 
 @pytest.fixture(scope="session")

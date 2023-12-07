@@ -54,8 +54,218 @@ def test_get_cycles(get_client):
         "End Time__lte": END_DATETIME,
         "_order_by": "-End Time",
         "_limit": NUM_ROWS,
+        "_only": columns,
     }
 
     df = get_client.get_cycles(**query)
 
     assert df.shape == (NUM_ROWS, len(columns))
+
+
+def test_get_cycles_machine_tag(get_client):
+    machines = get_client.get_machine_names(source_type=MACHINE_TYPE)
+    machine = machines[MACHINE_INDEX]
+    columns = get_client.get_machine_schema(machine)["display"].to_list()
+
+    select_columns = [
+        # "Machine",
+        "Cycle Start Time",
+        "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns) + 1)
+
+    select_columns = [
+        "machine__source",
+        "Cycle Start Time",
+        "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns))
+
+
+def test_get_cycles_starttime_tag(get_client):
+    machines = get_client.get_machine_names(source_type=MACHINE_TYPE)
+    machine = machines[MACHINE_INDEX]
+    columns = get_client.get_machine_schema(machine)["display"].to_list()
+
+    select_columns = [
+        "Machine",
+        "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns))
+
+    select_columns = [
+        "Machine",
+        "starttime",
+        "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns))
+
+    select_columns = [
+        "Machine",
+        "Start Time",
+        "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns))
+
+
+def test_get_cycles_endtime_tag(get_client):
+    machines = get_client.get_machine_names(source_type=MACHINE_TYPE)
+    machine = machines[MACHINE_INDEX]
+    columns = get_client.get_machine_schema(machine)["display"].to_list()
+
+    select_columns = [
+        "Machine",
+        "Cycle Start Time",
+        # "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns) + 1)
+
+    select_columns = [
+        "Machine",
+        "Cycle Start Time",
+        "endtime",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns))
+
+    select_columns = [
+        "Machine",
+        "Cycle Start Time",
+        "End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+    ]
+
+    col = select_columns.copy()
+
+    query = {
+        "Machine": machine,
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": col,
+    }
+
+    df = get_client.get_cycles(**query)
+
+    assert df.shape == (NUM_ROWS, len(select_columns))

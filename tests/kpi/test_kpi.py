@@ -4,6 +4,7 @@ from smsdk.client import Client
 from tests.kpi.kpi_data import AVALIBLE_KPI_JSON, KPI_DATA_VIZ_JSON
 from smsdk.smsdk_entities.kpi.kpi import KPI
 from mock import mock_open, MagicMock, patch
+import unittest
 
 
 @patch("smsdk.ma_session.Session")
@@ -110,6 +111,20 @@ def test_kpi_for_asset_display_name(get_client):
     assert df2[0]["name"] in kpis
 
     assert df1 == df2
+
+
+def test_kpi_for_asset_incorrect_machine(get_client):
+    kpis = ["performance", "oee", "quality", "availability"]
+    # Query against machine that does not exist in the system.
+    query = {
+        "asset_selection": {
+            "machine_type": ["PickAndPlace"],
+            "machine_source": ["incorrect"],
+        }
+    }
+    # Expecting a value error while tring to get KPIs for incorrect machine.
+    with unittest.TestCase().assertRaises(ValueError) as context:
+        df1 = get_client.get_kpis_for_asset(**query)
 
 
 def test_get_kpi_data_viz(get_client):

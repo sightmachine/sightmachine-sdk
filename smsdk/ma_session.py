@@ -102,6 +102,9 @@ class MaSession:
                     return records
                 _offset += this_loop_limit
 
+            except ValueError as e:
+                raise e
+
             except Exception as e:
                 # No need to raise an error as this will still continue execution.
                 print(f"Error getting data, but continuing. {e}")

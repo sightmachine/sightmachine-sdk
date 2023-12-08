@@ -181,7 +181,7 @@ class MaSession:
                     url_params["db_mode"] = db_mode
 
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
-
+                response = None
                 try:
                     response = getattr(self.session, method.lower())(
                         endpoint, json=url_params
@@ -191,7 +191,7 @@ class MaSession:
                         f"Error connecting to {endpoint}.  Check your tenant name"
                     )
 
-                if response and response.text:
+                if response is not None and response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError(format(response.text))
                     try:

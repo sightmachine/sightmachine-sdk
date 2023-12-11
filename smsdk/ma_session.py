@@ -23,6 +23,7 @@ except ImportError:
     RESOURCE_CONFIG = json.loads(
         importlib_resources.read_text(config, "message_config.json")
     )
+from smsdk.custom_exception.errors import NotFound
 
 SM_AUTH_HEADER_SECRET_ID = RESOURCE_CONFIG["auth_header-api-secret"]
 SM_AUTH_HEADER_SECRET_ID_OLD = RESOURCE_CONFIG["auth_header-api-secret_old"]
@@ -81,7 +82,9 @@ class MaSession:
                 )
 
                 if response.text:
-                    if response.status_code not in [200, 201]:
+                    if response.status_code == 404:
+                        raise NotFound(response.text)
+                    elif response.status_code not in [200, 201]:
                         raise ValueError("Error - {}".format(response.text))
                     try:
                         data = response.json()
@@ -102,7 +105,7 @@ class MaSession:
                     return records
                 _offset += this_loop_limit
 
-            except ValueError as e:
+            except NotFound as e:
                 raise e
 
             except Exception as e:

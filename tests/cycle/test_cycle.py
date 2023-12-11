@@ -4,6 +4,7 @@ from tests.conftest import TENANT
 from smsdk.smsdk_entities.cycle.cycleV1 import Cycle
 from tests.cycle.cycle_data import JSON_MACHINE_CYCLE_50
 import unittest
+from smsdk.custom_exception.errors import NotFound
 
 # Define all the constants used in the test
 MACHINE_TYPE = "Lasercut"
@@ -75,8 +76,8 @@ def test_get_cycles_with_fake_source(get_client):
         "_limit": NUM_ROWS,
         "_only": columns,
     }
-    # ValueError is expected because of machine that does not exist.
-    with unittest.TestCase().assertRaises(ValueError) as context:
+    # NotFound is expected because of machine that does not exist.
+    with unittest.TestCase().assertRaises(NotFound) as context:
         df = get_client.get_cycles(**query)
 
 

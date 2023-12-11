@@ -3,7 +3,8 @@ from datetime import datetime
 from tests.conftest import TENANT
 from smsdk.smsdk_entities.cycle.cycleV1 import Cycle
 from tests.cycle.cycle_data import JSON_MACHINE_CYCLE_50
-
+import unittest
+from smsdk.custom_exception.errors import NotFound
 
 # Define all the constants used in the test
 MACHINE_TYPE = "Lasercut"
@@ -60,6 +61,24 @@ def test_get_cycles(get_client):
     df = get_client.get_cycles(**query)
 
     assert df.shape == (NUM_ROWS, len(columns))
+
+
+def test_get_cycles_with_fake_source(get_client):
+    machines = get_client.get_machine_names(source_type=MACHINE_TYPE)
+    machine = machines[MACHINE_INDEX]
+    columns = get_client.get_machine_schema(machine)["display"].to_list()
+
+    query = {
+        "Machine": "fake_machine",
+        "End Time__gte": START_DATETIME,
+        "End Time__lte": END_DATETIME,
+        "_order_by": "-End Time",
+        "_limit": NUM_ROWS,
+        "_only": columns,
+    }
+    # NotFound is expected because of machine that does not exist.
+    with unittest.TestCase().assertRaises(NotFound) as context:
+        df = get_client.get_cycles(**query)
 
 
 def test_get_cycles_machine_tag(get_client):

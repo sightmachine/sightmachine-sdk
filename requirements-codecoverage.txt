@@ -2,3 +2,7 @@
 
 codecov==2.1.13
 coverage==7.3.2
+ipywidgets==8.1.1
+nbmake==1.4.6
+plotly==5.18.0
+pytest-xdist==3.5.0

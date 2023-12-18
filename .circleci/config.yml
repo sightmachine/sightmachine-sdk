@@ -61,8 +61,9 @@ jobs:
           command: |
             set -x
             pip install -r requirements-codecoverage.txt
+            pip install .
             mkdir test-results
-            coverage run -m pytest --junitxml=test-results/junit.xml tests
+            coverage run -m pytest --nbmake --nbmake-timeout=300 -n=auto --junitxml=test-results/junit.xml tests examples
       - run:
           name: Compile Coverage Report
           command: |

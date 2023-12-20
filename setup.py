@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from _version import version
+from smsdk._version import version
 
 with open("README.md", "r") as fh:
     long_description = fh.read()

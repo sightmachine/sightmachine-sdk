@@ -2,7 +2,7 @@
 # coding: utf-8
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
-from smsdk._version import version_check_decorator
+from smsdk._version import VersionCheckDecorator
 
 import pandas as pd
 import numpy as np
@@ -21,6 +21,7 @@ from smsdk.client_v0 import ClientV0
 import logging
 
 log = logging.getLogger(__name__)
+version_check_decorator = VersionCheckDecorator.version_check_decorator
 
 
 ONE_DAY_RELATIVE = {

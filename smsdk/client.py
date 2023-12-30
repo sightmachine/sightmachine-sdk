@@ -2,7 +2,7 @@
 # coding: utf-8
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
-from smsdk._version import VersionCheckDecorator
+from smsdk._version import version_check_decorator
 
 import pandas as pd
 import numpy as np
@@ -21,7 +21,6 @@ from smsdk.client_v0 import ClientV0
 import logging
 
 log = logging.getLogger(__name__)
-version_check_decorator = VersionCheckDecorator.version_check_decorator
 
 
 ONE_DAY_RELATIVE = {
@@ -556,13 +555,6 @@ class Client(ClientV0):
         )
         return lines(self.session, base_url).get_lines(**kwargs)
 
-    one_day_relative = {
-        "time_type": "relative",
-        "relative_start": 1,
-        "relative_unit": "day",
-        "ctime_tz": "America/Los_Angeles",
-    }
-
     @version_check_decorator
     def get_line_data(
         self,
@@ -612,23 +604,6 @@ class Client(ClientV0):
         return lines(self.session, base_url).get_line_data(
             limit=limit, offset=offset, **kwargs
         )
-
-    xAxisTime = {
-        "unit": "",
-        "type": "datetime",
-        "data_type": "datetime",
-        "stream_types": [],
-        "raw_data_field": "",
-        "id": "endtime",
-        "title": "Time",
-        "isEnabled": True,
-    }
-    one_week_relative = {
-        "time_type": "relative",
-        "relative_start": 1,
-        "relative_unit": "week",
-        "ctime_tz": "America/Los_Angeles",
-    }
 
     @version_check_decorator
     def create_share_link(

@@ -2,7 +2,8 @@
 """
 Track version information for sightmachine-sdk module here.
 """
-import typing
+import datetime
+import typing as t_
 import itertools
 import requests
 import warnings
@@ -10,12 +11,12 @@ import functools
 import re
 
 
-class VersionInfo(typing.NamedTuple):
-    major: typing.Any
-    minor: typing.Any
-    patchlevel: typing.Any
-    releaselevel: typing.Any
-    serial: typing.Any
+class VersionInfo(t_.NamedTuple):
+    major: int
+    minor: int
+    patchlevel: int
+    releaselevel: t_.Optional[str]
+    serial: t_.Optional[int]
 
     def __str__(self) -> str:
         result = "".join(
@@ -32,19 +33,14 @@ version = str(f"v{version_info}")
 
 
 def sort_releases_descending(
-    releases: typing.List[typing.Dict[str, typing.Any]]
-) -> typing.List[typing.Dict[str, typing.Any]]:
-    def version_key(
-        release: typing.Dict[str, typing.Any]
-    ) -> typing.Union[typing.Tuple[int, int, int, str], typing.Tuple[()]]:
-        version = release["tag_name"]
-        # Use regular expression to extract numerical and string parts
-        match = re.match(r"(?i)v(\d+)\.(\d+)\.(\d+)(\D*)", version)
-        if match:
-            major, minor, patch, suffix = map(match.group, (1, 2, 3, 4))
-            return int(major), int(minor), int(patch), suffix
-        else:
-            return ()
+    releases: t_.List[t_.Dict[str, t_.Any]]
+) -> t_.List[t_.Dict[str, t_.Any]]:
+    def version_key(release: t_.Dict[str, t_.Any]) -> t_.List[t_.Union[int, str]]:
+        return [
+            (int(i) if i.isdigit() else i)
+            for i in re.split(r"(\d+|\W+)", release["tag_name"].lower())
+            if i
+        ]
 
     return (
         sorted(releases, key=version_key, reverse=True)
@@ -54,15 +50,15 @@ def sort_releases_descending(
 
 
 def get_latest_release_version(
-    releases: typing.List[typing.Dict[str, typing.Any]]
-) -> typing.Optional[typing.Any]:
+    releases: t_.List[t_.Dict[str, t_.Any]]
+) -> t_.Optional[t_.Any]:
     if releases:
         sorted_releases = sort_releases_descending(releases)
         return sorted_releases[0]["tag_name"]
     return None
 
 
-def get_latest_sdk_release() -> typing.Optional[typing.Any]:
+def get_latest_sdk_release() -> t_.Optional[t_.Any]:
     api_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
 
     try:
@@ -80,11 +76,21 @@ def get_latest_sdk_release() -> typing.Optional[typing.Any]:
 
 class VersionCheckDecorator:
     api_version_printed = False
+    last_version_check_time = None
 
     @classmethod
-    def version_check_decorator(cls, func: typing.Any) -> typing.Any:
+    def version_check_decorator(cls, func: t_.Any) -> t_.Any:
         @functools.wraps(func)
-        def wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+        def wrapper(*args: t_.Any, **kwargs: t_.Any) -> t_.Any:
+            current_time = datetime.datetime.now()
+
+            # Check if a week has passed since the last version check
+            if cls.last_version_check_time is None or (
+                current_time - cls.last_version_check_time > datetime.timedelta(days=7)
+            ):
+                cls.api_version_printed = False
+                cls.last_version_check_time = current_time
+
             if not cls.api_version_printed:
                 latest_sdk_release = get_latest_sdk_release()
                 installed_sdk_release = version
@@ -111,3 +117,6 @@ api_version_printed = False
 
 owner = "sightmachine"
 repo = "sightmachine-sdk"
+
+# Define version_check_decorator here
+version_check_decorator = VersionCheckDecorator.version_check_decorator

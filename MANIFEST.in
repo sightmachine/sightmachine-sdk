@@ -2,3 +2,5 @@ include README.md LICENSE
 include smsdk/config/*
 
 recursive-include tests *
+include requirements.txt
+include CHANGELOG.md

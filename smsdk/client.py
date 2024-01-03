@@ -2,6 +2,7 @@
 # coding: utf-8
 """ Sight Machine SDK Client """
 from __future__ import unicode_literals, absolute_import
+from smsdk._version import version_check_decorator
 
 import pandas as pd
 import numpy as np
@@ -151,17 +152,20 @@ class Client(ClientV0):
         self.auth = Authenticator(self)
         self.session = self.auth.session
 
+    @version_check_decorator
     def select_db_schema(self, schema_name):
         # remove X_SM_WRKSPACE_ID from self.session.headers
         self.session.headers.update({X_SM_DB_SCHEMA: schema_name})
         if X_SM_WORKSPACE_ID in self.session.headers:
             del self.session.headers[X_SM_WORKSPACE_ID]
 
+    @version_check_decorator
     def select_workspace_id(self, workspace_id):
         self.session.headers.update({X_SM_WORKSPACE_ID: str(workspace_id)})
         if X_SM_DB_SCHEMA in self.session.headers:
             del self.session.headers[X_SM_DB_SCHEMA]
 
+    @version_check_decorator
     def get_data_v1(self, ename, util_name, normalize=True, *args, **kwargs):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
@@ -234,6 +238,7 @@ class Client(ClientV0):
 
         return data
 
+    @version_check_decorator
     @ClientV0.validate_input
     @ClientV0.cycle_decorator
     def get_cycles(
@@ -248,6 +253,7 @@ class Client(ClientV0):
 
         return df
 
+    @version_check_decorator
     @ClientV0.validate_input
     @ClientV0.downtime_decorator
     def get_downtimes(
@@ -262,6 +268,7 @@ class Client(ClientV0):
 
         return df
 
+    @version_check_decorator
     @ClientV0.validate_input
     @ClientV0.part_decorator
     def get_parts(
@@ -277,6 +284,7 @@ class Client(ClientV0):
 
         return df
 
+    @version_check_decorator
     def get_kpis(self, **kwargs):
         kpis = smsdkentities.get("kpi")
         base_url = get_url(
@@ -284,6 +292,7 @@ class Client(ClientV0):
         )
         return kpis(self.session, base_url).get_kpis(**kwargs)
 
+    @version_check_decorator
     def get_machine_type_from_clean_name(self, kwargs):
         # Get machine_types dataframe to check display name
         machine_types_df = self.get_machine_types()
@@ -304,6 +313,7 @@ class Client(ClientV0):
 
         return machine_types
 
+    @version_check_decorator
     def get_machine_source_from_clean_name(self, kwargs):
         # Get machines dataframe to check display/clean name
         machine_sources_df = self.get_machines()
@@ -324,6 +334,7 @@ class Client(ClientV0):
 
         return machine_sources
 
+    @version_check_decorator
     def get_kpis_for_asset(self, **kwargs):
         kpis = smsdkentities.get("kpi")
         base_url = get_url(
@@ -343,6 +354,7 @@ class Client(ClientV0):
 
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
 
+    @version_check_decorator
     def get_kpi_data_viz(
         self,
         machine_sources=None,
@@ -390,6 +402,7 @@ class Client(ClientV0):
             ] = self.get_machine_source_from_clean_name(kwargs)
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
+    @version_check_decorator
     def get_type_from_machine(self, machine_source=None, **kwargs):
         machine = smsdkentities.get("machine")
         base_url = get_url(
@@ -399,6 +412,7 @@ class Client(ClientV0):
             machine_source, **kwargs
         )
 
+    @version_check_decorator
     def get_machine_schema(
         self,
         machine_source=None,
@@ -436,6 +450,7 @@ class Client(ClientV0):
 
         return frame
 
+    @version_check_decorator
     def get_fields_of_machine_type(
         self,
         machine_type=None,
@@ -460,6 +475,7 @@ class Client(ClientV0):
 
         return fields
 
+    @version_check_decorator
     def get_cookbooks(self, **kwargs):
         """
         Gets all of the cookbooks accessable to the logged in user.
@@ -471,6 +487,7 @@ class Client(ClientV0):
         )
         return cookbook(self.session, base_url).get_cookbooks(**kwargs)
 
+    @version_check_decorator
     def get_cookbook_top_results(self, recipe_group_id=None, limit=10, **kwargs):
         """
         Gets the top runs for a recipe group.
@@ -486,6 +503,7 @@ class Client(ClientV0):
             recipe_group_id, limit, **kwargs
         )
 
+    @version_check_decorator
     def get_cookbook_current_value(self, variables=[], minutes=1440, **kwargs):
         """
         Gets the current value of a field.
@@ -501,6 +519,7 @@ class Client(ClientV0):
             variables, minutes, **kwargs
         )
 
+    @version_check_decorator
     def normalize_constraint(self, constraint):
         """
         Takes a constraint and returns a string version of it's to and from fields.
@@ -513,6 +532,7 @@ class Client(ClientV0):
         from_symbol = "]" if constraint.get("from_is_inclusive") else ")"
         return "{}{},{}{}".format(to_symbol, to_val, from_val, from_symbol)
 
+    @version_check_decorator
     def normalize_constraints(self, constraints):
         """
         Takes a list of constraint and returns string versions of their to and from fields.
@@ -524,6 +544,7 @@ class Client(ClientV0):
             constraints_normal.append(self.normalize_constraint(constraint))
         return constraints_normal
 
+    @version_check_decorator
     def get_lines(self, **kwargs):
         """
         Returns all the lines for the facility
@@ -534,6 +555,7 @@ class Client(ClientV0):
         )
         return lines(self.session, base_url).get_lines(**kwargs)
 
+    @version_check_decorator
     def get_line_data(
         self,
         assets=None,
@@ -583,6 +605,7 @@ class Client(ClientV0):
             limit=limit, offset=offset, **kwargs
         )
 
+    @version_check_decorator
     def create_share_link(
         self,
         assets=None,
@@ -626,6 +649,7 @@ class Client(ClientV0):
             *args, assets, chartType, yAxis, xAxis, model, time_selection, **kwargs
         )
 
+    @version_check_decorator
     def get_machines(self, normalize=True, *args, **kwargs):
         """
         Get list of machines and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine names
@@ -639,6 +663,7 @@ class Client(ClientV0):
             "machine_v1", "get_machines", normalize, *args, **kwargs
         )
 
+    @version_check_decorator
     def get_machine_names(self, source_type=None, clean_strings_out=True):
         """
         Get a list of machine names.  This is a simplified version of get_machines().
@@ -676,6 +701,7 @@ class Client(ClientV0):
         else:
             return machines["source"].to_list()
 
+    @version_check_decorator
     def get_machine_types(self, source_type=None, *args, **kwargs):
         """
         Get list of machine types and associated metadata.  Note this includes extensive internal metadata.  If you only want to get a list of machine type names
@@ -695,6 +721,7 @@ class Client(ClientV0):
 
         return mts
 
+    @version_check_decorator
     def get_machine_type_names(self, clean_strings_out=True):
         """
         Get a list of machine type names.  This is a simplified version of get_machine_types().
@@ -715,6 +742,7 @@ class Client(ClientV0):
         else:
             return machine_types["source_type"].unique().tolist()
 
+    @version_check_decorator
     def get_raw_data(
         self,
         raw_data_table=None,

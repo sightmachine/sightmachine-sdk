@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from smsdk._version import version
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -12,7 +13,7 @@ with open("requirements.txt", "r") as fh:
 
 setup(
     name="smsdk",
-    version="1.0.26",
+    version=version,
     packages=find_packages(exclude=["test*"]),
     include_package_data=True,
     install_requires=install_requires,

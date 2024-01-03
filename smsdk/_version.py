@@ -28,7 +28,7 @@ class VersionInfo(t_.NamedTuple):
         return result
 
 
-version_info = VersionInfo(1, 26, 0, "", None)
+version_info = VersionInfo(1, 26, 0, "+dev", None)
 version = str(f"v{version_info}")
 
 

@@ -7,7 +7,7 @@ from smsdk import const
 # These values may change for each run.
 
 API_KEY = const.API_KEY
-API_SECRETE = const.API_SECRETE
+API_SECRET = const.API_SECRET
 
 TENANT = const.TENANT
 
@@ -21,6 +21,6 @@ def get_session():
 @pytest.fixture(scope="session")
 def get_client():
     cli = client.Client(TENANT)
-    cli.login("apikey", key_id=API_KEY, secret_id=API_SECRETE)
+    cli.login("apikey", key_id=API_KEY, secret_id=API_SECRET)
 
     return cli

@@ -1,3 +1,9 @@
-API_KEY = "5a73aa5a-1962-4df9-b56e-4a59462f0f00"
-API_SECRETE = "sma_FajgH3VbPu68gwy0PzccvhyGRyy1a8CCHhhvy6ooeg1O_"
-TENANT = "demo-sdk-test"
+import os
+
+API_KEY = os.environ.get("ENV_VAR_API_KEY")
+API_SECRET = os.environ.get("ENV_VAR_API_SECRET")
+TENANT = os.environ.get("ENV_VAR_TENANT")
+
+# Check if any of the required environment variables are not set
+if API_KEY is None or API_SECRET is None or TENANT is None:
+    raise EnvironmentError("One or more required environment variables are not set.")

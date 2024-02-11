@@ -6,33 +6,44 @@ import pandas as pd
 import sys
 import pyodbc
 
+import typing as t_
 from datetime import datetime, timedelta
 import logging
 from smsdk import client
+from smsdk import const
+from sqlalchemy import create_engine, MetaData, Table, Column, String, select, and_
 
 log = logging.getLogger(__name__)
 
 
-MACHINE_TYPE_TO_TABLE_VIEW_NAME = {
-    "Lasercut": "cycle_lasercut",
-    "PickAndPlace": "cycle_lasercut",
-    "Pick & Place": "cycle_lasercut",
-    "Diecast": "cycle_diecast",
-    "Fusion": "cycle_fusion",
-}
+def log_or_print(msg, log=None, type: str = None):
+    """Log a message if log is provided, otherwise print it."""
+    if log is None:
+        print(msg)
+    else:
+        if type is None or type == "info":
+            log.info(msg)
+        elif type == "warning":
+            log.warning(msg)
+        elif type == "error":
+            log.error(msg)
+        else:
+            raise Exception(
+                f"Unknown log type: {type} - must be 'info', 'warning', 'error', or None."
+            )
 
 
-def get_cursor():
+def connect_to_db():
     conn = None
     cursor = None
 
     db_params = {
         "driver": "{PostgreSQL Unicode}",
-        "server": "demo-sdk-test.sightmachine.io",
+        "server": f"{const.TENANT}.sightmachine.io",
         "port": "5432",
         "database": "tenant_storage",
-        "uid": "5a73aa5a-1962-4df9-b56e-4a59462f0f00",
-        "pwd": "sma_FajgH3VbPu68gwy0PzccvhyGRyy1a8CCHhhvy6ooeg1O_",
+        "uid": const.API_KEY,
+        "pwd": const.API_SECRETE,
     }
 
     # Create a connection string for pyodbc
@@ -60,47 +71,40 @@ def get_cursor():
     return (conn, cursor)
 
 
-def close_connection(conn, cursor):
+def disconnect(conn, cursor):
     if cursor:
         cursor.close()
     if conn:
         conn.close()
 
 
-def validate_input(func):
+def validate_input(func: t_.Callable[..., t_.Any]) -> t_.Callable[..., t_.Any]:
     """This decorator can be used to validate input schema with some conditions,
     or can implement jsonschema validator in later versions if required"""
 
     @functools.wraps(func)
-    def validate(*args, **kwargs):
+    def validate(*args: t_.Any, **kwargs: t_.Any) -> t_.Any:
         exceptional_keys = ["_only"]
         for key in kwargs:
             if key in exceptional_keys:
                 continue
             if isinstance(kwargs[key], list):
                 if not (key.endswith("__in") or key.endswith("__nin")):
-                    msg = f"Key <{key}> should have '__in' or '__nin' in it if datatype is list"
+                    msg = f"Key <{key}> should end with '__in' or '__nin' if the datatype is list"
                     raise ValueError(msg)
         return func(*args, **kwargs)
 
     return validate
 
 
-def display_query_machine_titles(machine_schema, query):
+def display_query_machine_titles(
+    machine_schema: pd.DataFrame, query: t_.Dict[str, t_.Any]
+) -> t_.Dict[str, t_.Any]:
     """
     Given a query for cycles that uses internal Sight Machine names, convert the machines into UI friendly tag/field names
-
     :param query: Dict kwargs passed as part of a query to the API
-
     :return: dict
     """
-
-    # First need to find the machine name
-    machine = query.get("machine__source", query.get("Machine"))
-    if isinstance(machine, list):
-        # Possible that it is a machine__in.  If so, base on the first machine
-        machine = query.get("machine__source__in", query.get("Machine__in"))
-        machine = machine[0]
 
     colmap = {row[1]["name"]: row[1]["display"] for row in machine_schema.iterrows()}
     toplevel = {
@@ -125,13 +129,13 @@ def display_query_machine_titles(machine_schema, query):
             val = colmap.get(val, val)
 
             if val == "End Time":
-                val = "endtime"
+                val = "Cycle End Time"
             if val == "Start Time":
-                val = "starttime"
+                val = "Cycle Start Time"
             val = colmap.get(val, val)
 
             # For performance, currently only support order by time, machine
-            if not val in ["endtime_epoch", "starttime_epoch", "Machine"]:
+            if not val in ["Cycle End Time", "Cycle Start Time", "Machine"]:
                 log.warn(
                     "Only ordering by 'Start Time', 'End Time' and 'Machine' source currently supported."
                 )
@@ -182,12 +186,12 @@ def display_query_machine_titles(machine_schema, query):
     return translated_query
 
 
-def clean_query_machine_names(client, query):
+def clean_query_machine_names(
+    client: client.Client, query: t_.Dict[str, t_.Union[str, t_.List]]
+) -> t_.Dict[str, t_.Union[str, t_.List]]:
     """
     Given a query using the UI friendly machine names, convert them into the Sight Machine expected internal names
-
     :param query: Dict kwargs passed as part of a query to the API
-
     :return: dict
     """
     query = query.copy()
@@ -213,7 +217,7 @@ def clean_query_machine_names(client, query):
     return query
 
 
-def get_starttime_endtime_keys(**kwargs):
+def get_starttime_endtime_keys(**kwargs: t_.Any) -> t_.Tuple[str, str]:
     """
     This function takes kwargs as input and tried to identify starttime and endtime key provided by user and returns
     :param kwargs:
@@ -239,48 +243,39 @@ def get_starttime_endtime_keys(**kwargs):
     return starttime_key, endtime_key
 
 
-def prepare_query(**kwargs):
-    # Special handling for EF type names
-    machine = kwargs.get("Machine", "")
-
-    if machine[0] == "'":
-        machine = machine[1:-1]
-
+def prepare_query(**kwargs: t_.Any) -> t_.Dict[str, t_.Any]:
     machine_type = kwargs.get("Machine Type", "")
-    if machine_type[0] == "'":
+    if machine_type.startswith("'") and machine_type.endswith("'"):
         machine_type = machine_type[1:-1]
 
     new_kwargs = {}
     etime = datetime.now()
     stime = etime - timedelta(days=1)
     new_kwargs["asset_selection"] = {
-        "Machine": machine,
+        "Machine": kwargs.get("Machine", ""),
         "Machine Type": machine_type,
     }
 
     start_key, end_key = get_starttime_endtime_keys(**kwargs)
 
-    # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
     where = []
-    if start_key:
-        starttime = kwargs.get(start_key, "") if start_key else stime
-        where.append(
-            {
-                "name": start_key.split("__")[0],
-                "op": start_key.split("__")[-1],
-                "value": starttime.isoformat(),
-            }
-        )
+    starttime = kwargs.get(start_key, "") if start_key else stime
+    where.append(
+        {
+            "name": start_key.split("__")[0],
+            "op": start_key.split("__")[-1],
+            "value": starttime.isoformat(),
+        }
+    )
 
-    if end_key:
-        endtime = kwargs.get(end_key, "") if end_key else stime
-        where.append(
-            {
-                "name": end_key.split("__")[0],
-                "op": end_key.split("__")[-1],
-                "value": endtime.isoformat(),
-            }
-        )
+    endtime = kwargs.get(end_key, "") if end_key else etime
+    where.append(
+        {
+            "name": end_key.split("__")[0],
+            "op": end_key.split("__")[-1],
+            "value": endtime.isoformat(),
+        }
+    )
 
     for kw in kwargs:
         if (
@@ -315,7 +310,7 @@ def prepare_query(**kwargs):
     new_kwargs["limit"] = kwargs.get("_limit", np.Inf)
     new_kwargs["where"] = where
 
-    if kwargs.get("_order_by", ""):
+    if "_order_by" in kwargs:
         order_key = kwargs["_order_by"].replace("_epoch", "")
         if order_key.startswith("-"):
             order_type = "desc"
@@ -323,11 +318,96 @@ def prepare_query(**kwargs):
         else:
             order_type = "asc"
         new_kwargs["order_by"] = [{"name": order_key, "order": order_type}]
+    else:
+        new_kwargs["order_by"] = [
+            {"name": "Cycle End Time", "order": "desc"},
+            {"name": "_id", "order": "desc"},
+        ]
 
     return new_kwargs
 
 
-def generate_sql_query(machine_schema, **query_dict):
+# Define a dictionary to map comparison operators
+OPERATOR_MAPPING = {
+    "gt": ">",
+    "lt": "<",
+    "gte": ">=",
+    "lte": "<=",
+    "ne": "<>",
+    "eq": "=",
+}
+
+
+def generate_sqlalchemy_query_string(get_type, machine_schema, **query_dict):
+    asset_selection = query_dict["asset_selection"]
+    select_columns = [item["name"] for item in query_dict["select"]]
+    where_conditions = query_dict.get("where", [])
+    order_by_conditions = query_dict.get("order_by", [])
+    limit_value = query_dict.get("limit", 10)
+    offset_value = query_dict.get("offset", 0)
+
+    # Create a SQLite in-memory database
+    engine = create_engine("sqlite:///:memory:", echo=True)
+    metadata = MetaData()
+
+    # Define a table dynamically based on the columns present in the asset selection
+    columns = []
+    for column_name in select_columns:
+        columns.append(Column(column_name, String))
+
+    # Define the table
+    machine_table = Table("machine_table", metadata, *columns)
+
+    # Create the table
+    metadata.create_all(engine)
+
+    # Populate the table with data (in this case, no data is inserted)
+
+    # Build the query
+    stmt = select([machine_table.columns[column] for column in select_columns])
+
+    # Add WHERE conditions
+    where_filters = []
+    for condition in where_conditions:
+        name = condition["name"]
+        op = condition["op"]
+        value = condition["value"]
+        if op == "in":
+            where_filters.append(machine_table.columns[name].in_(value))
+        else:
+            where_filters.append(getattr(machine_table.columns[name], op)(value))
+
+    if where_filters:
+        stmt = stmt.where(and_(*where_filters))
+
+    # Add ORDER BY conditions
+    order_by_filters = []
+    for order_by in order_by_conditions:
+        name = order_by["name"]
+        order = order_by["order"]
+        if order == "desc":
+            order_by_filters.append(machine_table.columns[name].desc())
+        else:
+            order_by_filters.append(machine_table.columns[name])
+
+    if order_by_filters:
+        stmt = stmt.order_by(*order_by_filters)
+
+    # Add LIMIT and OFFSET clauses
+    stmt = stmt.limit(limit_value).offset(offset_value)
+
+    # Print the generated SQL
+    print(f"\n\n\nDebugInfo:: stmt - {stmt}")
+
+
+def generate_sql_query_string(get_type, machine_schema, **query_dict):
+    select_clause_str = ""
+    from_clause_str = ""
+    where_clause_str = ""
+    order_by_clause_str = ""
+    limit_clause_str = ""
+    offset_clause_str = ""
+
     # Extract the 'select' part of the query
     select_columns = [item["name"] for item in query_dict.get("select", [])]
 
@@ -337,9 +417,7 @@ def generate_sql_query(machine_schema, **query_dict):
     machine_type = asset_selection.get("Machine Type", None)
 
     # Generate the SELECT clause based on the 'display' names in the query
-    select_clause = ",\n  ".join(
-        [f'"{column}"' for column in select_columns]
-    )
+    select_clause = ",\n\t".join([f'"{column}"' for column in select_columns])
 
     # Generate the WHERE clause based on the 'where' conditions in the query
     where_conditions = []
@@ -351,71 +429,76 @@ def generate_sql_query(machine_schema, **query_dict):
 
             if op and value is not None:
                 # Replace operation with the corresponding symbol
-                if op == "gt":
-                    op = ">"
-                elif op == "lt":
-                    op = "<"
-                elif op == "gte":
-                    op = ">="
-                elif op == "lte":
-                    op = "<="
-                elif op == "ne":
-                    op = "<>"
-                elif op == "eq":
-                    op = "="
+                op = OPERATOR_MAPPING.get(op, op)
+
                 # Add the condition to the list
                 where_conditions.append(f""""{name}" {op} '{value}'""")
 
     # Include machine source and machine type in the WHERE clause
     if machine_source:
-        where_conditions.append(f""""Machine" IN ('{machine_source}')""")
+        if isinstance(machine_source, list):
+            source_as_string = str(tuple(machine_source))
+        else:
+            source_as_string = f"('{machine_source}')"
+        where_conditions.append(f""""Machine" IN {source_as_string}""")
     if machine_type:
         where_conditions.append(f""""Machine Type" IN ('{machine_type}')""")
 
-    where_clause = "WHERE " + " AND ".join(where_conditions) if where_conditions else ""
+    where_clause = "\n\tAND ".join([f"{condition}" for condition in where_conditions])
 
     # Generate the ORDER BY clause based on the 'order_by' conditions in the query
-    order_by_clause = ""
+    order_by_conditions = []
     if "order_by" in query_dict:
-        order_by_conditions = []
         for order_by in query_dict["order_by"]:
             name = order_by["name"]
             order_by_conditions.append(f'"{name}" {order_by["order"]}')
-        order_by_clause = "ORDER BY " + ", ".join(order_by_conditions)
 
-    # Determine the table name based on the machine type
-    from_clause = "sightmachine."
-    from_clause += MACHINE_TYPE_TO_TABLE_VIEW_NAME.get(
-        machine_type, "default_table_name"
-    )  # Replace with a default table name
+    from_clause = f"sightmachine.{get_type}_{machine_type}"
 
     # Combine all the clauses to form the final SQL query
-    sql_query = f"""
-    SELECT
-    {select_clause}
-    FROM
-    {from_clause}
-    {where_clause}
-    {order_by_clause}
-    LIMIT {query_dict["limit"]} OFFSET {query_dict["offset"]};
-    """
+    select_clause_str = f"SELECT \n\t{select_clause}"
+    from_clause_str = f"\nFROM \n\t{from_clause}"
+    where_clause_str = f"\nWHERE \n\t{where_clause}"
+
+    if "offset" in query_dict:
+        offset_clause_str = f"""\nOFFSET {query_dict["offset"]}"""
+
+    if "limit" in query_dict:
+        limit_value = query_dict["limit"]
+        if not isinstance(limit_value, int):
+            # Assign a default value of 5000 if the limit value is not an integer
+            # limit_value = 87000,  # number of seconds in a day is 86400
+            limit_value = sys.maxsize
+        limit_clause_str = f"""\nLIMIT {limit_value}"""
+
+    if len(order_by_conditions) > 0:
+        order_by_clause = ",\n\t ".join(
+            [f"{condition}" for condition in order_by_conditions]
+        )
+        order_by_clause_str = f"\nORDER BY \n\t{order_by_clause}"
+
+    sql_query = f"{select_clause_str}{from_clause_str}{where_clause_str}{order_by_clause_str}{limit_clause_str}{offset_clause_str};"
 
     return sql_query
 
 
 @validate_input
 def get_cycles(
-    cursor,
-    client,
-    normalize=True,
-    clean_strings_in=True,
-    clean_strings_out=True,
-    *args,
-    **kwargs,
-):
+    cursor: t_.Any,
+    client: t_.Any,
+    normalize: bool = True,
+    clean_strings_in: bool = True,
+    clean_strings_out: bool = True,
+    *args: t_.Any,
+    **kwargs: t_.Any,
+) -> pd.DataFrame:
     # When processing in batch
     if args and (not kwargs):
         kwargs = args[0]
+
+    rename_end_time_col = False
+
+    # print(f"\n\nDebugInfo:: marke1 - args: '{kwargs}'\n\n")
 
     machine = kwargs.get("machine__source", kwargs.get("Machine"))
     if not machine:
@@ -432,29 +515,44 @@ def get_cycles(
             machine[0], return_mtype=True
         )
 
-    if not "_limit" in kwargs:
-        print("_limit not specified.  Maximum of 5000 rows will be returned.")
-
     if not "_only" in kwargs:
-        print("_only not specified.  Selecting first 50 fields.")
+        log_or_print("_only not specified. Selecting first 50 fields.", log, "info")
         only_names = machine_schema["display"].tolist()[:50]
         kwargs["_only"] = only_names
     else:
         if all(
             i not in {"End Time", "endtime", "Cycle End Time"} for i in kwargs["_only"]
         ):
-            print("Adding 'Cycle End Time' to _only")
+            log_or_print("Adding 'Cycle End Time' to _only", log, "info")
             kwargs["_only"].insert(0, "Cycle End Time")
 
         if all(i not in {"Machine", "machine__source"} for i in kwargs["_only"]):
-            print("Adding 'Machine' to _only")
+            log_or_print("Adding 'Machine' to _only", log, "info")
             kwargs["_only"].insert(0, "Machine")
+
+        # # Add '_id' to query columns if not present.
+        # if "_id" not in [i for i in kwargs["_only"]]:
+        #     kwargs["_only"].append("_id")
+
+    # Replace  'End Time' &  'endtime' with 'Cycle End Time' if they are present in '_only' value list
+    if "_only" in kwargs:
+        if "End Time" in kwargs["_only"]:
+            kwargs["_only"] = [
+                col.replace("End Time", "Cycle End Time") for col in kwargs["_only"]
+            ]
+            rename_end_time_col = True
+        elif "endtime" in kwargs["_only"]:
+            kwargs["_only"] = [
+                col.replace("endtime", "Cycle End Time") for col in kwargs["_only"]
+            ]
+            rename_end_time_col = True
 
     # Replace 'End Time' with 'Cycle End Time' in the keys of the query dictionary
     for key in list(kwargs.keys()):
         if "End Time" in key:
             new_key = key.replace("End Time", "Cycle End Time")
             kwargs[new_key] = kwargs.pop(key)
+            rename_end_time_col = True
         if "Start Time" in key:
             new_key = key.replace("Start Time", "Cycle Start Timee")
             kwargs[new_key] = kwargs.pop(key)
@@ -489,22 +587,37 @@ def get_cycles(
         different_names = used_names.difference(available_names)
 
         if len(different_names) > 0:
-            print(f'Dropping invalid column names: {", ".join(different_names)}.')
+            log_or_print(
+                f'Dropping invalid column names: {", ".join(different_names)}.',
+                log,
+                "info",
+            )
             kwargs["_only"] = used_names.intersection(available_names)
 
     kwargs.update({"Machine Type": machine_type})
 
-    if clean_strings_in:
-        kwargs = display_query_machine_titles(machine_schema, kwargs)
-        kwargs = clean_query_machine_names(client, kwargs)
+    # Add '_id' to query columns if not present.
+    if "_id" not in [i for i in kwargs["_only"]]:
+        kwargs["_only"].append("_id")
 
+    if clean_strings_in:
+        # print(f"\n\nDebugInfo:: marke2 - args: '{kwargs}'\n\n")
+        kwargs = display_query_machine_titles(machine_schema, kwargs)
+        # print(f"\n\nDebugInfo:: marke3 - args: '{kwargs}'\n\n")
+        kwargs = clean_query_machine_names(client, kwargs)
+        # print(f"\n\nDebugInfo:: marke4 - args: '{kwargs}'\n\n")
 
     kwargs = prepare_query(**kwargs)
 
-    sql_query = generate_sql_query(machine_schema, **kwargs)
+    print(f"\n\nDebugInfo:: marke5 - args: '{kwargs}'\n\n")
+
+    sql_query_str = generate_sql_query_string("cycle", machine_schema, **kwargs)
+    generate_sqlalchemy_query_string("cycle", machine_schema, **kwargs)
+
+    print(f"\n\nDebugInfo: sql string - '''\n{sql_query_str}\n'''\n\n")
 
     # Execute the SQL query
-    cursor.execute(sql_query)
+    cursor.execute(sql_query_str)
 
     # Create a DataFrame using the list of rows
     df = pd.DataFrame(
@@ -513,5 +626,12 @@ def get_cycles(
             for row in cursor.fetchall()
         ]
     )
+
+    # Set the index of the DataFrame to the '_id' column
+    if "_id" in df.columns:
+        df.set_index("_id", inplace=True)
+
+    if rename_end_time_col and "Cycle End Time" in df.columns:
+        df = df.rename(columns={"Cycle End Time": "End Time"})
 
     return df

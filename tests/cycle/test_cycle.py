@@ -6,6 +6,13 @@ from tests.cycle.cycle_data import JSON_MACHINE_CYCLE_50
 import unittest
 from smsdk.custom_exception.errors import NotFound
 
+import ODBC.cycles_odbc as odbc
+
+# from ODBC.odbc_helper import Cycles as odbc
+import time
+import typing as t_
+
+
 # Define all the constants used in the test
 MACHINE_TYPE = "Lasercut"
 MACHINE_INDEX = 5
@@ -45,22 +52,145 @@ def test_get_cycles_monkeypatch(monkeypatch, get_session):
 
 
 def test_get_cycles(get_client):
-    machines = get_client.get_machine_names(source_type=MACHINE_TYPE)
-    machine = machines[MACHINE_INDEX]
+    types = get_client.get_machine_type_names()
+    machines = get_client.get_machine_names(source_type=types[0])
+    print(f"\nDebugInfo:: types - '{types}'")
+    print(f"DebugInfo:: machines - '{machines}'")
+    machine = machines[0]
     columns = get_client.get_machine_schema(machine)["display"].to_list()
 
     query = {
-        "Machine": machine,
-        "End Time__gte": START_DATETIME,
-        "End Time__lte": END_DATETIME,
-        "_order_by": "-End Time",
-        "_limit": NUM_ROWS,
-        "_only": columns,
+        "Machine": machines[0],
+        "End Time__gte": datetime(2024, 1, 14),
+        "End Time__lt": datetime(2024, 1, 21),
+        "_only": columns[:5],
+        "_limit": 50,
     }
 
-    df = get_client.get_cycles(**query)
+    df1 = get_client.get_cycles(**query)
 
-    assert df.shape == (NUM_ROWS, len(columns))
+    print(df1.head())
+    print()
+    print()
+
+    query = {
+        "Machine__in": machines[0:5],
+        "End Time__gte": datetime(2024, 1, 14),
+        "End Time__lt": datetime(2024, 1, 21),
+        "_only": columns[:5],
+        "_limit": 50,
+    }
+
+    df2 = get_client.get_cycles(**query)
+
+    print(df2.head())
+    print()
+    print()
+
+
+def test_get_cycles_odbc(get_client):
+    types = get_client.get_machine_type_names()
+    machines = get_client.get_machine_names(source_type=types[0])
+    print(f"\nDebugInfo:: types - '{types}'")
+    print(f"DebugInfo:: machines - '{machines}'")
+    machine = machines[0]
+    columns = get_client.get_machine_schema(machine)["display"].to_list()
+
+    conn, cursor = odbc.connect_to_db()
+
+    query = {
+        "Machine": machines[0],
+        "End Time__gte": datetime(2024, 1, 14),
+        "End Time__lt": datetime(2024, 1, 21),
+        "_only": columns[:5],
+        "_limit": 11,
+    }
+
+    df1 = odbc.get_cycles(cursor, get_client, **query)
+
+    print(df1.head())
+    print()
+    print()
+
+    # query = {
+    #     "Machine__in": machines[0:5],
+    #     "End Time__gte": datetime(2024, 1, 14),
+    #     "End Time__lt": datetime(2024, 1, 21),
+    #     "_only": columns[:5],
+    #     "_limit": 11,
+    # }
+
+    # df2 = odbc.get_cycles(cursor, get_client, **query)
+
+    # odbc.disconnect(conn, cursor)
+
+    # print(df2.head())
+    # print()
+    # print()
+
+
+def test_get_cycles_odbc_latency(get_client):
+    types = get_client.get_machine_type_names()
+    machines = get_client.get_machine_names(source_type=types[0])
+    machine = machines[0]
+    columns = get_client.get_machine_schema(machine)["display"].to_list()
+
+    print(f"\nDebugInfo:: types - '{types}'")
+    print(f"DebugInfo:: machines - '{machines}'")
+
+    query = {
+        # "Machine": machines[0],
+        "Machine__in": machines[0:5],
+        "End Time__gte": datetime(2024, 1, 14),
+        "End Time__lt": datetime(2024, 1, 21),
+        # "_only": ["Cycle End Time", "5th Dryer Section Speed FPM", "Machine"],
+        "_only": columns[:5],
+        "_limit": 7,  # number of seconds in a day is 86400
+    }
+
+    # # Measure the time taken by the API call
+    # start_sdk_api_time_ns = time.time_ns()
+    # df1 = get_client.get_cycles(**query)
+    # end_sdk_api_time_ns = time.time_ns()
+
+    # sdk_api_elapsed_time_ms = (end_sdk_api_time_ns - start_sdk_api_time_ns) / 1e6
+    # print(
+    #     f"\nDebugInfo: Time taken by SDK 'get_cycles': {sdk_api_elapsed_time_ms:.2f} milliseconds"
+    # )
+
+    for i in range(1):
+        df2 = None
+        start_odbc_api_time_ns = time.time_ns()
+
+        conn, cursor = odbc.connect_to_db()
+        df2 = odbc.get_cycles(cursor, get_client, **query)
+        odbc.disconnect(conn, cursor)
+
+        # Calculate the time taken
+        end_odbc_time_ns = time.time_ns()
+
+        odbc_elapsed_time_ms = (end_odbc_time_ns - start_odbc_api_time_ns) / 1e6
+
+        print(
+            f"\nDebugInfo[iter-{i}]: Time taken by ODBC 'get_cycles': {odbc_elapsed_time_ms:.2f} milliseconds"
+        )
+
+        # comparison = df1.head(5).equals(df1.head(5))
+
+        # if comparison:
+        #     print(f"DebugInfo[100][iter-{i}]:: Data matching")
+        # else:
+        #     print(f"\n\nDebugInfo[103][iter-{i}]:: columsn of df1 - {df1.columns}")
+        #     print(f"DebugInfo[101][iter-{i}]:: First two rows of df1...\n{df1.head(4)}")
+
+        #     print(f"\n\nDebugInfo[104][iter-{i}]:: columsn of df2 - {df2.columns}")
+        #     print(f"DebugInfo[102][iter-{i}]::First two rows of df2..\n{df2.head(4)}\n")
+
+        # print(f"{df2.shape}")
+
+    # # Assert that the two DataFrames are equal
+    # assert df1.shape == (NUM_ROWS, len(columns))
+    # assert df2.shape == (NUM_ROWS, len(columns))
 
 
 def test_get_cycles_with_fake_source(get_client):

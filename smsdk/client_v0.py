@@ -302,6 +302,8 @@ class ClientV0(object):
             if args and (not kwargs):
                 kwargs = args[0]
 
+            print(f"\n\nDebugInfo[SDK]:: marke1 - args: '{kwargs}'\n\n")
+
             machine = kwargs.get("machine__source", kwargs.get("Machine"))
             if not machine:
                 # Possible that it is a machine__in.  If so, base on first machine
@@ -373,8 +375,11 @@ class ClientV0(object):
                     kwargs["_only"] = used_names.intersection(available_names)
 
             if clean_strings_in:
+                print(f"\n\nDebugInfo[SDK]:: marke2 - args: '{kwargs}'\n\n")
                 kwargs = self.clean_query_machine_titles(kwargs)
+                print(f"\n\nDebugInfo[SDK]:: marke3 - args: '{kwargs}'\n\n")
                 kwargs = self.clean_query_machine_names(kwargs)
+                print(f"\n\nDebugInfo[SDK]:: marke4 - args: '{kwargs}'\n\n")
 
             kwargs.update({"machine_type": machine_type})
             df = func(

@@ -318,6 +318,7 @@ class ClientV0(object):
 
             if not "_limit" in kwargs:
                 print("_limit not specified.  Maximum of 5000 rows will be returned.")
+                kwargs["_limit"] = 5000
 
             if not "_only" in kwargs:
                 print("_only not specified.  Selecting first 50 fields.")

@@ -1,15 +1,15 @@
+import os
 from smsdk import client
 from requests.sessions import Session
 import pytest
-from smsdk import const
 
-# Define all the constants used in the test
-# These values may change for each run.
+API_KEY = os.environ.get("ENV_VAR_API_KEY")
+API_SECRET = os.environ.get("ENV_VAR_API_SECRET")
+TENANT = os.environ.get("ENV_VAR_TENANT")
 
-API_KEY = const.API_KEY
-API_SECRETE = const.API_SECRETE
-
-TENANT = const.TENANT
+# Check if any of the required environment variables are not set
+if API_KEY is None or API_SECRET is None or TENANT is None:
+    raise EnvironmentError("One or more required environment variables are not set.")
 
 
 @pytest.fixture(scope="session")
@@ -21,6 +21,6 @@ def get_session():
 @pytest.fixture(scope="session")
 def get_client():
     cli = client.Client(TENANT)
-    cli.login("apikey", key_id=API_KEY, secret_id=API_SECRETE)
+    cli.login("apikey", key_id=API_KEY, secret_id=API_SECRET)
 
     return cli

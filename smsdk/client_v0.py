@@ -316,9 +316,13 @@ class ClientV0(object):
                     machine[0], return_mtype=True
                 )
 
-            if not "_limit" in kwargs:
-                print("_limit not specified.  Maximum of 5000 rows will be returned.")
+            if "_limit" not in kwargs:
+                print("_limit not specified. Maximum of 5000 rows will be returned.")
                 kwargs["_limit"] = 5000
+            elif kwargs["_limit"] > 5000:
+                print(
+                    "Warning: _limit over 5000 specified. Setting excessively large limits may lead to timeouts."
+                )
 
             if not "_only" in kwargs:
                 print("_only not specified.  Selecting first 50 fields.")
@@ -403,6 +407,14 @@ class ClientV0(object):
             if args and (not kwargs):
                 kwargs = args[0]
 
+            if "_limit" not in kwargs:
+                print("_limit not specified. Maximum of 5000 rows will be returned.")
+                kwargs["_limit"] = 5000
+            elif kwargs["_limit"] > 5000:
+                print(
+                    "Warning: _limit over 5000 specified. Setting excessively large limits may lead to timeouts."
+                )
+
             if not "_only" in kwargs:
                 kwargs["_only"] = downmap.keys()
 
@@ -464,6 +476,14 @@ class ClientV0(object):
 
             kwargs["type__part_type"] = part
             part_schema = self.get_part_schema(part)
+
+            if "_limit" not in kwargs:
+                print("_limit not specified. Maximum of 5000 rows will be returned.")
+                kwargs["_limit"] = 5000
+            elif kwargs["_limit"] > 5000:
+                print(
+                    "Warning: _limit over 5000 specified. Setting excessively large limits may lead to timeouts."
+                )
 
             if "_only" not in kwargs:
                 print("_only not specified.  Selecting first 50 fields.")

@@ -1,17 +1,24 @@
-import functools
-
-import numpy as np
-import pandas as pd
-
+import os
 import sys
 import pyodbc
-
-import typing as t_
-from datetime import datetime, timedelta
 import logging
+import functools
+import pandas as pd
+import typing as t_
+import time
 from smsdk import client
-from smsdk import const
-from sqlalchemy import create_engine, MetaData, Table, Column, String, select, and_
+from datetime import datetime, timedelta
+from sqlalchemy import (
+    create_engine,
+    MetaData,
+    Table,
+    Column,
+    String,
+    select,
+    and_,
+    text,
+)
+
 
 log = logging.getLogger(__name__)
 
@@ -33,45 +40,77 @@ def log_or_print(msg, log=None, type: str = None):
             )
 
 
-def connect_to_db():
+def connect_with_retries(
+    conn_str: str, max_retries: int = 3, delay_seconds: int = 5
+) -> t_.Optional[pyodbc.Connection]:
+    """Attempts to establish a database connection with configurable retries.
+
+    Args:
+        conn_str: The connection string for the database.
+        max_retries: The maximum number of retries to attempt. Defaults to 3.
+        delay_seconds: The number of seconds to wait between retries. Defaults to 5.
+
+    Returns:
+        The database connection object if successful, otherwise None.
+    """
+
+    for attempt in range(0, max_retries):
+        try:
+            conn = pyodbc.connect(conn_str)
+            return conn  # Connection successful, return the connection object
+
+        except Exception as ex:
+            log_or_print(
+                f"Error:: {str(ex)} :: Connection to the DB failed on attempt {attempt + 1}/{max_retries}. Retrying in {delay_seconds} seconds.",
+                log,
+                "error",
+            )
+            time.sleep(delay_seconds)  # Wait before retrying
+
+    # All retries failed, log a final error message
+    log_or_print(
+        f"Error:: Connection to the DB failed after {max_retries} retries.",
+        log,
+        "error",
+    )
+    return None
+
+
+def connect_to_db() -> (
+    t_.Tuple[t_.Optional[pyodbc.Connection], t_.Optional[pyodbc.Cursor]]
+):
     conn = None
     cursor = None
 
-    db_params = {
-        "driver": "{PostgreSQL Unicode}",
-        "server": f"{const.TENANT}.sightmachine.io",
-        "port": "5432",
-        "database": "tenant_storage",
-        "uid": const.API_KEY,
-        "pwd": const.API_SECRETE,
-    }
+    driver = "{PostgreSQL Unicode}"
+    port = 5432
+    sdk_tenant = os.environ.get("ENV_VAR_TENANT")
+    key_id = os.environ.get("ENV_VAR_API_KEY")
+    secret_id = os.environ.get("ENV_VAR_API_SECRET")
 
     # Create a connection string for pyodbc
     conn_str = (
-        f"DRIVER={db_params['driver']};"
-        f"SERVER={db_params['server']};"
-        f"PORT={db_params['port']};"
-        f"DATABASE={db_params['database']};"
-        f"UID={db_params['uid']};"
-        f"PWD={db_params['pwd']};"
+        f"DRIVER={driver};"
+        f"PORT={port};"
+        f"SERVER={sdk_tenant}.sightmachine.io;"
+        f"DATABASE=tenant_storage;"
+        f"UID={key_id};"
+        f"PWD={secret_id};"
         f"SSLmode=require;"
     )
 
-    try:
-        # Establish a connection
-        conn = pyodbc.connect(conn_str)
+    conn = connect_with_retries(conn_str)
 
-        # Create a cursor from the connection
+    # Create a cursor from the connection
+    if conn:
         cursor = conn.cursor()
-
-    except Exception as ex:
-        print(f"Error:: {str(ex)} :: Connection to the DB failed")
-        sys.exit(1)
 
     return (conn, cursor)
 
 
-def disconnect(conn, cursor):
+def disconnect(
+    conn: t_.Optional[pyodbc.Connection], cursor: t_.Optional[pyodbc.Cursor]
+) -> None:
     if cursor:
         cursor.close()
     if conn:
@@ -105,7 +144,6 @@ def display_query_machine_titles(
     :param query: Dict kwargs passed as part of a query to the API
     :return: dict
     """
-
     colmap = {row[1]["name"]: row[1]["display"] for row in machine_schema.iterrows()}
     toplevel = {
         "endtime": "End Time",
@@ -244,6 +282,7 @@ def get_starttime_endtime_keys(**kwargs: t_.Any) -> t_.Tuple[str, str]:
 
 
 def prepare_query(**kwargs: t_.Any) -> t_.Dict[str, t_.Any]:
+    # Special handling for EF type names
     machine_type = kwargs.get("Machine Type", "")
     if machine_type.startswith("'") and machine_type.endswith("'"):
         machine_type = machine_type[1:-1]
@@ -307,7 +346,7 @@ def prepare_query(**kwargs: t_.Any) -> t_.Dict[str, t_.Any]:
 
     new_kwargs["select"] = [{"name": i} for i in kwargs["_only"]]
     new_kwargs["offset"] = kwargs.get("_offset", 0)
-    new_kwargs["limit"] = kwargs.get("_limit", np.Inf)
+    new_kwargs["limit"] = kwargs.get("_limit", 5000)
     new_kwargs["where"] = where
 
     if "_order_by" in kwargs:
@@ -321,10 +360,136 @@ def prepare_query(**kwargs: t_.Any) -> t_.Dict[str, t_.Any]:
     else:
         new_kwargs["order_by"] = [
             {"name": "Cycle End Time", "order": "desc"},
-            {"name": "_id", "order": "desc"},
+            # {"name": "_id", "order": "desc"},
         ]
 
     return new_kwargs
+
+
+# Define a dictionary to map comparison operators
+SQLALCHEMY_OPERATOR_MAPPING = {
+    "eq": "__eq__",
+    "ne": "__ne__",
+    "lt": "__lt__",
+    "lte": "__le__",
+    "gt": "__gt__",
+    "gte": "__ge__",
+}
+
+
+def generate_sqlalchemy_query_string(get_type, machine_schema, **query_dict):
+    sql_query_string = ""
+    try:
+        stmt = None
+        asset_selection = query_dict.get("asset_selection")
+        machine_source = asset_selection.get("Machine", None)
+        machine_type = asset_selection.get("Machine Type", None)
+
+        select_columns = [item["name"] for item in query_dict.get("select", [])]
+        where_conditions = query_dict.get("where", [])
+        order_by_conditions = query_dict.get("order_by", [])
+        limit_value = query_dict.get("limit", 10)
+        offset_value = query_dict.get("offset", 0)
+
+        # Create a SQLite in-memory database
+        engine = create_engine("sqlite:///:memory:", echo=True)
+        metadata = MetaData()
+
+        # Define a table dynamically based on the columns present in the asset selection
+        machine_table_name = f"sightmachine.{get_type}_{machine_type}"
+        columns = [Column(column_name, String) for column_name in select_columns]
+        machine_table = Table(machine_table_name, metadata, *columns)
+
+        # Create the table
+        metadata.create_all(engine)
+
+        # Build the query
+        stmt = select(*(machine_table.columns[column] for column in select_columns))
+
+        # Add WHERE conditions
+        where_filters = []
+        for condition in where_conditions:
+            name = condition["name"]
+            op = condition["op"]
+            value = condition["value"]
+
+            if op in SQLALCHEMY_OPERATOR_MAPPING:
+                filter_condition = getattr(
+                    machine_table.columns[name], SQLALCHEMY_OPERATOR_MAPPING[op]
+                )(value)
+                where_filters.append(filter_condition)
+            else:
+                # Handle unsupported operators
+                print(f"Error: Unsupported operator '{op}' in where condition.")
+
+        # Include machine source and machine type in the WHERE clause
+        if machine_source:
+            if isinstance(machine_source, list):
+                source_as_string = str(tuple(machine_source))
+            else:
+                source_as_string = f"""('{machine_source}')"""
+            where_filters.append(
+                text(f'"{machine_table_name}"."Machine" IN :machine_source').bindparams(
+                    machine_source=source_as_string
+                )
+            )
+
+        if machine_type:
+            machine_type = f"""('{machine_type}')"""
+            where_filters.append(
+                text(
+                    f'"{machine_table_name}"."Machine Type" IN :machine_type'
+                ).bindparams(machine_type=machine_type)
+            )
+
+        if where_filters:
+            stmt = stmt.where(and_(*where_filters))
+
+        # Add ORDER BY conditions
+        order_by_filters = []
+        for order_by in order_by_conditions:
+            name = order_by["name"]
+            order = order_by["order"]
+            if order == "desc":
+                order_by_filters.append(machine_table.columns[name].desc())
+            else:
+                order_by_filters.append(machine_table.columns[name])
+
+        if order_by_filters:
+            stmt = stmt.order_by(*order_by_filters)
+
+        # Add LIMIT and OFFSET clauses
+        stmt = stmt.limit(limit_value).offset(offset_value)
+
+        compiled_stmt = stmt.compile()
+
+        # Access the SQL string with bindings
+        sql_query_string = compiled_stmt.string
+
+        # Access the binding parameters mapping
+        binding_mapping = compiled_stmt.params
+
+        # Replace bindings with actual values in the SQL string
+        for key, value in binding_mapping.items():
+            # Check if the value is a string and not enclosed in parentheses
+            if isinstance(value, str) and not (
+                value.startswith("(") and value.endswith(")")
+            ):
+                # Enclose the string value in single quotes
+                value = f"'{value}'"
+
+            # Replace each occurrence of the binding with its actual value in the SQL string
+            sql_query_string = sql_query_string.replace(f":{key}", str(value))
+
+            # Remove double quotes around the table name
+            sql_query_string = sql_query_string.replace(
+                f'"{machine_table_name}"', machine_table_name
+            )
+
+    except Exception as e:
+        print(f"Error: Failed to generate the SQL query. {str(e)}")
+
+    return sql_query_string
 
 
 # Define a dictionary to map comparison operators
@@ -336,68 +501,6 @@ OPERATOR_MAPPING = {
     "ne": "<>",
     "eq": "=",
 }
-
-
-def generate_sqlalchemy_query_string(get_type, machine_schema, **query_dict):
-    asset_selection = query_dict["asset_selection"]
-    select_columns = [item["name"] for item in query_dict["select"]]
-    where_conditions = query_dict.get("where", [])
-    order_by_conditions = query_dict.get("order_by", [])
-    limit_value = query_dict.get("limit", 10)
-    offset_value = query_dict.get("offset", 0)
-
-    # Create a SQLite in-memory database
-    engine = create_engine("sqlite:///:memory:", echo=True)
-    metadata = MetaData()
-
-    # Define a table dynamically based on the columns present in the asset selection
-    columns = []
-    for column_name in select_columns:
-        columns.append(Column(column_name, String))
-
-    # Define the table
-    machine_table = Table("machine_table", metadata, *columns)
-
-    # Create the table
-    metadata.create_all(engine)
-
-    # Populate the table with data (in this case, no data is inserted)
-
-    # Build the query
-    stmt = select([machine_table.columns[column] for column in select_columns])
-
-    # Add WHERE conditions
-    where_filters = []
-    for condition in where_conditions:
-        name = condition["name"]
-        op = condition["op"]
-        value = condition["value"]
-        if op == "in":
-            where_filters.append(machine_table.columns[name].in_(value))
-        else:
-            where_filters.append(getattr(machine_table.columns[name], op)(value))
-
-    if where_filters:
-        stmt = stmt.where(and_(*where_filters))
-
-    # Add ORDER BY conditions
-    order_by_filters = []
-    for order_by in order_by_conditions:
-        name = order_by["name"]
-        order = order_by["order"]
-        if order == "desc":
-            order_by_filters.append(machine_table.columns[name].desc())
-        else:
-            order_by_filters.append(machine_table.columns[name])
-
-    if order_by_filters:
-        stmt = stmt.order_by(*order_by_filters)
-
-    # Add LIMIT and OFFSET clauses
-    stmt = stmt.limit(limit_value).offset(offset_value)
-
-    # Print the generated SQL
-    print(f"\n\n\nDebugInfo:: stmt - {stmt}")
 
 
 def generate_sql_query_string(get_type, machine_schema, **query_dict):
@@ -477,7 +580,7 @@ def generate_sql_query_string(get_type, machine_schema, **query_dict):
         )
         order_by_clause_str = f"\nORDER BY \n\t{order_by_clause}"
 
-    sql_query = f"{select_clause_str}{from_clause_str}{where_clause_str}{order_by_clause_str}{limit_clause_str}{offset_clause_str};"
+    sql_query = f"{select_clause_str}{from_clause_str}{where_clause_str}{order_by_clause_str}{limit_clause_str}{offset_clause_str}"
 
     return sql_query
 
@@ -502,9 +605,18 @@ def get_cycles(
 
     machine = kwargs.get("machine__source", kwargs.get("Machine"))
     if not machine:
-        # Possible that it is a machine__in.  If so, base on first machine
+        # Get the value associated with "machine__source__in" or "Machine__in"
         machine = kwargs.get("machine__source__in", kwargs.get("Machine__in"))
+
+        # Replace the keys "machine__source__in" or "Machine__in" with "Machine"
+        if "machine__source__in" in kwargs:
+            del kwargs["machine__source__in"]
+        if "Machine__in" in kwargs:
+            del kwargs["Machine__in"]
+
+        # Update the value associated with the "Machine" key
         kwargs["Machine"] = machine
+
 
     if isinstance(machine, str):
         machine_type, machine_schema = client.get_machine_schema(
@@ -530,20 +642,12 @@ def get_cycles(
             log_or_print("Adding 'Machine' to _only", log, "info")
             kwargs["_only"].insert(0, "Machine")
 
-        # # Add '_id' to query columns if not present.
-        # if "_id" not in [i for i in kwargs["_only"]]:
-        #     kwargs["_only"].append("_id")
-
-    # Replace  'End Time' &  'endtime' with 'Cycle End Time' if they are present in '_only' value list
+    # Replace  'End Time' & 'endtime' with 'Cycle End Time' if they are present in '_only' value list
     if "_only" in kwargs:
-        if "End Time" in kwargs["_only"]:
+        if "End Time" in kwargs["_only"] or "endtime" in kwargs["_only"]:
             kwargs["_only"] = [
-                col.replace("End Time", "Cycle End Time") for col in kwargs["_only"]
-            ]
-            rename_end_time_col = True
-        elif "endtime" in kwargs["_only"]:
-            kwargs["_only"] = [
-                col.replace("endtime", "Cycle End Time") for col in kwargs["_only"]
+                col.replace("End Time", "Cycle End Time").replace("endtime", "Cycle End Time") 
+                for col in kwargs["_only"]
             ]
             rename_end_time_col = True
 
@@ -597,8 +701,8 @@ def get_cycles(
     kwargs.update({"Machine Type": machine_type})
 
     # Add '_id' to query columns if not present.
-    if "_id" not in [i for i in kwargs["_only"]]:
-        kwargs["_only"].append("_id")
+    # if "_id" not in [i for i in kwargs["_only"]]:
+    #     kwargs["_only"].append("_id")
 
     if clean_strings_in:
         # print(f"\n\nDebugInfo:: marke2 - args: '{kwargs}'\n\n")
@@ -609,10 +713,10 @@ def get_cycles(
 
     kwargs = prepare_query(**kwargs)
 
-    print(f"\n\nDebugInfo:: marke5 - args: '{kwargs}'\n\n")
+    # print(f"\n\nDebugInfo:: marke5 - args: '{kwargs}'\n\n")
 
-    sql_query_str = generate_sql_query_string("cycle", machine_schema, **kwargs)
-    generate_sqlalchemy_query_string("cycle", machine_schema, **kwargs)
+    # sql_query_str = generate_sql_query_string("cycle", machine_schema, **kwargs)
+    sql_query_str = generate_sqlalchemy_query_string("cycle", machine_schema, **kwargs)
 
     print(f"\n\nDebugInfo: sql string - '''\n{sql_query_str}\n'''\n\n")
 
@@ -628,8 +732,8 @@ def get_cycles(
     )
 
     # Set the index of the DataFrame to the '_id' column
-    if "_id" in df.columns:
-        df.set_index("_id", inplace=True)
+    # if "_id" in df.columns:
+    #     df.set_index("_id", inplace=True)
 
     if rename_end_time_col and "Cycle End Time" in df.columns:
         df = df.rename(columns={"Cycle End Time": "End Time"})

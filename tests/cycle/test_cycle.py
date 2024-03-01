@@ -91,8 +91,10 @@ def test_get_cycles(get_client):
 def test_get_cycles_odbc(get_client):
     types = get_client.get_machine_type_names()
     machines = get_client.get_machine_names(source_type=types[0])
-    print(f"\nDebugInfo:: types - '{types}'")
-    print(f"DebugInfo:: machines - '{machines}'")
+
+    # print(f"\nDebugInfo:: types - '{types}'")
+    # print(f"\nDebugInfo:: machines - '{machines}'")
+
     machine = machines[0]
     columns = get_client.get_machine_schema(machine)["display"].to_list()
 
@@ -100,9 +102,10 @@ def test_get_cycles_odbc(get_client):
 
     query = {
         "Machine": machines[0],
+        # "Machine__in": machines[0:5],
         "End Time__gte": datetime(2024, 1, 14),
         "End Time__lt": datetime(2024, 1, 21),
-        "_only": columns[:5],
+        "_only": columns[:15],
         "_limit": 11,
     }
 
@@ -112,21 +115,21 @@ def test_get_cycles_odbc(get_client):
     print()
     print()
 
-    # query = {
-    #     "Machine__in": machines[0:5],
-    #     "End Time__gte": datetime(2024, 1, 14),
-    #     "End Time__lt": datetime(2024, 1, 21),
-    #     "_only": columns[:5],
-    #     "_limit": 11,
-    # }
+    query = {
+        "Machine__in": machines[0:5],
+        "End Time__gte": datetime(2024, 1, 14),
+        "End Time__lt": datetime(2024, 1, 21),
+        "_only": columns[:5],
+        "_limit": 11,
+    }
 
-    # df2 = odbc.get_cycles(cursor, get_client, **query)
+    df2 = odbc.get_cycles(cursor, get_client, **query)
 
-    # odbc.disconnect(conn, cursor)
+    odbc.disconnect(conn, cursor)
 
-    # print(df2.head())
-    # print()
-    # print()
+    print(df2.head())
+    print()
+    print()
 
 
 def test_get_cycles_odbc_latency(get_client):
@@ -151,7 +154,7 @@ def test_get_cycles_odbc_latency(get_client):
     # # Measure the time taken by the API call
     # start_sdk_api_time_ns = time.time_ns()
     # df1 = get_client.get_cycles(**query)
-    # end_sdk_api_time_ns = time.time_ns()
+    # time.time_ns()
 
     # sdk_api_elapsed_time_ms = (end_sdk_api_time_ns - start_sdk_api_time_ns) / 1e6
     # print(

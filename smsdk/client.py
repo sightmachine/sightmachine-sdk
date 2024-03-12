@@ -245,7 +245,6 @@ class Client(ClientV0):
             data["starttime"] = pd.to_datetime(data["starttime"])
 
         print("6767676767777777777")
-        print(data)
         return data
 
     @version_check_decorator

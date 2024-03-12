@@ -48,7 +48,6 @@ class Cycle(SmsdkEntities, MaSession):
         """
         print("gdeydgyewgdeywgdewydgyewgdyuwgdywegdgwe")
         url = "{}{}".format(self.base_url, ENDPOINTS["Cycle"]["url_v1"])
-        print(url)
 
         # if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:
         #     log.warn('Machine source not specified.')

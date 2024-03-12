@@ -218,6 +218,7 @@ class Client(ClientV0):
             if len(sub_kwargs) == 1:
                 print("####################...")
                 print("util_name", util_name)
+                print(cls, args, sub_kwargs[0])
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )

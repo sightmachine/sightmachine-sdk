@@ -174,7 +174,7 @@ class Client(ClientV0):
         :param normalize: Flatten nested data structures
         :return: pandas dataframe
         """
-        print("in get_data_v1() of client.py...")
+        print("in get_data_v1() of client.py helloooooooooooooo...")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )

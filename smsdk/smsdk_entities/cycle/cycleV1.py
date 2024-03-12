@@ -82,10 +82,10 @@ class Cycle(SmsdkEntities, MaSession):
             "machine_type": machine_type,
         }
 
-        default_time_selection = {
-            'time_zone': 'UTC'
+        time_selection = {
+            'time_zone': kwargs.get('output_tz', 'UTC')
         }
-        new_kwargs['time_selection'] = kwargs.get("time_selection", default_time_selection)
+        new_kwargs['time_selection'] = time_selection
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
 

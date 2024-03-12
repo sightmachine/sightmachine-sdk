@@ -220,6 +220,7 @@ class Client(ClientV0):
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )
                 for sub in sub_kwargs[1:]:
+                    print(sub, "---------")
                     sub_data = dict_to_df(
                         getattr(cls, util_name)(*args, **sub), normalize
                     )

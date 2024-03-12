@@ -207,24 +207,27 @@ class Client(ClientV0):
             print("&&&&&&&&&&&&&&&&&&&&&&")
             print(kwargs)
             if util_name in ["get_cycles", "get_downtime", "get_parts"]:
-                print("util_name in...")
+                print("util_name in...", util_name)
                 sub_kwargs = [kwargs]
             else:
                 print("*******************")
                 sub_kwargs = self.fix_only(kwargs)
 
+            print("len(sub_kwargs)", len(sub_kwargs))
+
             if len(sub_kwargs) == 1:
-                print("len(sub_kwargs) == 1...")
+                print("####################...")
+                print("util_name", util_name)
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )
             else:
-                print("else of len(sub_kwargs) == 1...")
+                print("@@@@@@@@@@@@@@@@@@@@@@@@@..")
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )
                 for sub in sub_kwargs[1:]:
-                    print(sub, "---------")
+                    print(sub, "------------------")
                     sub_data = dict_to_df(
                         getattr(cls, util_name)(*args, **sub), normalize
                     )

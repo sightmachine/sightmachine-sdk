@@ -174,7 +174,6 @@ class Client(ClientV0):
         :param normalize: Flatten nested data structures
         :return: pandas dataframe
         """
-        print("in get_data_v1() of client.py helloooooooooooooo...")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
@@ -204,31 +203,24 @@ class Client(ClientV0):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
-            print("&&&&&&&&&&&&&&&&&&&&&&")
-            print(kwargs)
             if util_name in ["get_cycles", "get_downtime", "get_parts"]:
                 print("util_name in...", util_name)
                 sub_kwargs = [kwargs]
             else:
-                print("*******************")
                 sub_kwargs = self.fix_only(kwargs)
 
             print("len(sub_kwargs)", len(sub_kwargs))
 
             if len(sub_kwargs) == 1:
-                print("####################...")
-                print("util_name", util_name)
                 print(cls, args, sub_kwargs[0])
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )
             else:
-                print("@@@@@@@@@@@@@@@@@@@@@@@@@..")
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )
                 for sub in sub_kwargs[1:]:
-                    print(sub, "------------------")
                     sub_data = dict_to_df(
                         getattr(cls, util_name)(*args, **sub), normalize
                     )
@@ -248,7 +240,6 @@ class Client(ClientV0):
         if "starttime" in data.columns:
             data["starttime"] = pd.to_datetime(data["starttime"])
 
-        print("6767676767777777777")
         return data
 
     @version_check_decorator

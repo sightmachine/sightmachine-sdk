@@ -46,7 +46,6 @@ class Cycle(SmsdkEntities, MaSession):
         from MA API
         Recommend to use 'enable_pagination':True for larger datasets
         """
-        print("gdeydgyewgdeywgdewydgyewgdyuwgdywegdgwe")
         url = "{}{}".format(self.base_url, ENDPOINTS["Cycle"]["url_v1"])
 
         # if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:

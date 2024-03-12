@@ -286,7 +286,7 @@ class MaSession:
         starttime_key = ""
         endtime_key = ""
 
-        times = {i: kwargs[i] for i in kwargs if "time" in i.lower() and i.lower()!='time_zone'}
+        times = {i: kwargs[i] for i in kwargs if "time" in i.lower()}
 
         if times:
             starttime = min(times.values())

@@ -82,6 +82,11 @@ class Cycle(SmsdkEntities, MaSession):
             "machine_type": machine_type,
         }
 
+        default_time_selection = {
+            'time_zone': 'UTC'
+        }
+        new_kwargs['time_selection'] = kwargs.get("time_selection", default_time_selection)
+
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle

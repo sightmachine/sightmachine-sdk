@@ -174,6 +174,7 @@ class Client(ClientV0):
         :param normalize: Flatten nested data structures
         :return: pandas dataframe
         """
+        print("in get_data_v1() of client.py...")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
@@ -203,6 +204,8 @@ class Client(ClientV0):
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
+            print("kwargs")
+            print(kwargs)
             if util_name in ["get_cycles", "get_downtime", "get_parts"]:
                 sub_kwargs = [kwargs]
             else:
@@ -249,6 +252,7 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
+        print("in get_cycles() of client.py...")
         df = self.get_data_v1("cycle_v1", "get_cycles", normalize, *args, **kwargs)
 
         return df

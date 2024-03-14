@@ -84,13 +84,13 @@ class Cycle(SmsdkEntities, MaSession):
         }
 
         time_selection = {
-            'time_zone': kwargs.get('output_tz', 'UTC'),
-            'time_type': 'absolute'
+            "time_zone": kwargs.get("output_tz", "UTC"),
+            "time_type": "absolute",
         }
-        new_kwargs['time_selection'] = time_selection
+        new_kwargs["time_selection"] = time_selection
         try:
-            del kwargs['output_tz']
-            del kwargs['relative_timedelta_days']
+            del kwargs["output_tz"]
+            del kwargs["relative_timedelta_days"]
         except:
             pass
 
@@ -99,7 +99,7 @@ class Cycle(SmsdkEntities, MaSession):
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []
 
-        timezone = pytz.timezone(time_selection['time_zone'])
+        timezone = pytz.timezone(time_selection["time_zone"])
 
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
@@ -111,12 +111,19 @@ class Cycle(SmsdkEntities, MaSession):
             #     }
             # )
         else:
-            print("No start_key found, using relative_timedelta_days as: ", relative_timedelta_days, " and starttime is: ", stime)
+            print(
+                "No start_key found, using relative_timedelta_days as: ",
+                relative_timedelta_days,
+                " and starttime is: ",
+                stime,
+            )
             starttime = stime
 
         starttime = timezone.localize(starttime)
         starttime = starttime.astimezone(pytz.utc)
-        new_kwargs['time_selection']['start_time'] = starttime.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
+        new_kwargs["time_selection"]["start_time"] = (
+            starttime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+        )
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else etime
@@ -128,14 +135,21 @@ class Cycle(SmsdkEntities, MaSession):
             #     }
             # )
         else:
-            print("No end_key found, using relative_timedelta_days as: ", relative_timedelta_days, " and end_time is: ", etime)
+            print(
+                "No end_key found, using relative_timedelta_days as: ",
+                relative_timedelta_days,
+                " and end_time is: ",
+                etime,
+            )
             endtime = etime
 
         end_time = timezone.localize(endtime)
         end_time = end_time.astimezone(pytz.utc)
-        new_kwargs['time_selection']['end_time'] = end_time.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
+        new_kwargs["time_selection"]["end_time"] = (
+            end_time.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+        )
 
-        print("time_selection: ", new_kwargs['time_selection'])
+        print("time_selection: ", new_kwargs["time_selection"])
 
         for kw in kwargs:
             if (

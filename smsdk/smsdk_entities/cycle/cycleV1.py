@@ -56,7 +56,6 @@ class Cycle(SmsdkEntities, MaSession):
             records = self._get_records(url, **kwargs)
         else:
             kwargs = self.modify_input_params(**kwargs)
-            print("kwargs sent..", kwargs)
             records = self._get_records_v1(url, **kwargs)
 
         if not isinstance(records, List):
@@ -120,7 +119,6 @@ class Cycle(SmsdkEntities, MaSession):
             new_kwargs['time_selection']['end_time'] = endtime.isoformat()
 
         for kw in kwargs:
-            print("111111111111111",kw)
             if (
                 kw[0] != "_"
                 and "machine_type" not in kw

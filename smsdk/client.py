@@ -204,15 +204,11 @@ class Client(ClientV0):
 
             # sub_kwargs = kwargs
             if util_name in ["get_cycles", "get_downtime", "get_parts"]:
-                print("util_name in...", util_name)
                 sub_kwargs = [kwargs]
             else:
                 sub_kwargs = self.fix_only(kwargs)
 
-            print("len(sub_kwargs)", len(sub_kwargs))
-
             if len(sub_kwargs) == 1:
-                print(cls, args, sub_kwargs[0])
                 data = dict_to_df(
                     getattr(cls, util_name)(*args, **sub_kwargs[0]), normalize
                 )
@@ -253,7 +249,6 @@ class Client(ClientV0):
         *args,
         **kwargs,
     ):
-        print("in get_cycles() of client.py...")
         df = self.get_data_v1("cycle_v1", "get_cycles", normalize, *args, **kwargs)
 
         return df

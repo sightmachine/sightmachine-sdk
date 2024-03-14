@@ -74,8 +74,8 @@ class Cycle(SmsdkEntities, MaSession):
             machine_type = machine_type[1:-1]
 
         new_kwargs = {}
-        etime = datetime.now()
-        stime = etime - timedelta(days=1)
+        # etime = datetime.now()
+        # stime = etime - timedelta(days=1)
         new_kwargs["asset_selection"] = {
             "machine_source": machine,
             "machine_type": machine_type,
@@ -104,7 +104,7 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": starttime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['start_time'] = starttime.isoformat()
+            new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")
 
 
         if end_key:
@@ -116,7 +116,7 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": endtime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['end_time'] = endtime.isoformat()
+            new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")
 
         for kw in kwargs:
             if (

@@ -135,7 +135,7 @@ class Cycle(SmsdkEntities, MaSession):
         end_time = end_time.astimezone(pytz.utc)
         new_kwargs['time_selection']['end_time'] = end_time.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
 
-        print("new_kwargs['time_selection']", new_kwargs['time_selection'])
+        print("time_selection: ", new_kwargs['time_selection'])
 
         for kw in kwargs:
             if (

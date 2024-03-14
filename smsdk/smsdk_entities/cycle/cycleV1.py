@@ -75,7 +75,7 @@ class Cycle(SmsdkEntities, MaSession):
             machine_type = machine_type[1:-1]
 
         new_kwargs = {}
-        relative_timedelta_days = kwargs.get("relative_start", 7)
+        relative_timedelta_days = kwargs.get("relative_timedelta_days", 7)
         etime = datetime.now()
         stime = etime - timedelta(days=relative_timedelta_days)
         new_kwargs["asset_selection"] = {
@@ -90,7 +90,7 @@ class Cycle(SmsdkEntities, MaSession):
         new_kwargs['time_selection'] = time_selection
         try:
             del kwargs['output_tz']
-            del kwargs['relative_start']
+            del kwargs['relative_timedelta_days']
         except:
             pass
 

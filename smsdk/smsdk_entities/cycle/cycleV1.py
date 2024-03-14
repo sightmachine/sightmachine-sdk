@@ -96,6 +96,9 @@ class Cycle(SmsdkEntities, MaSession):
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []
+
+        timezone = pytz.timezone(time_selection['time_zone'])
+
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
             # where.append(
@@ -105,7 +108,8 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": starttime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['start_time'] = starttime.astimezone(pytz.timezone(time_selection['time_zone'])).isoformat("T", "milliseconds")+'Z'
+            starttime = timezone.localize(starttime)
+            new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")+'Z'
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else stime
@@ -116,7 +120,8 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": endtime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['end_time'] = endtime.astimezone(pytz.timezone(time_selection['time_zone'])).isoformat("T", "milliseconds")+'Z'
+            endtime = timezone.localize(endtime)
+            new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")+'Z'
 
         for kw in kwargs:
             if (

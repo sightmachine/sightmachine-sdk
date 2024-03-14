@@ -12,6 +12,7 @@ from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
 from datetime import datetime, timedelta
+import pytz
 import numpy as np
 
 import logging
@@ -74,8 +75,8 @@ class Cycle(SmsdkEntities, MaSession):
             machine_type = machine_type[1:-1]
 
         new_kwargs = {}
-        # etime = datetime.now()
-        # stime = etime - timedelta(days=1)
+        etime = datetime.now()
+        stime = etime - timedelta(days=1)
         new_kwargs["asset_selection"] = {
             "machine_source": machine,
             "machine_type": machine_type,
@@ -104,8 +105,7 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": starttime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")+'Z'
-
+            new_kwargs['time_selection']['start_time'] = starttime.astimezone(pytz.timezone(time_selection['time_zone'])).isoformat("T", "milliseconds")+'Z'
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else stime
@@ -116,7 +116,7 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": endtime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")+'Z'
+            new_kwargs['time_selection']['end_time'] = endtime.astimezone(pytz.timezone(time_selection['time_zone'])).isoformat("T", "milliseconds")+'Z'
 
         for kw in kwargs:
             if (

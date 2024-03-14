@@ -75,8 +75,9 @@ class Cycle(SmsdkEntities, MaSession):
             machine_type = machine_type[1:-1]
 
         new_kwargs = {}
+        relative_timedelta_days = kwargs.get("relative_start", 7)
         etime = datetime.now()
-        stime = etime - timedelta(days=1)
+        stime = etime - timedelta(days=relative_timedelta_days)
         new_kwargs["asset_selection"] = {
             "machine_source": machine,
             "machine_type": machine_type,
@@ -109,12 +110,16 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": starttime.isoformat(),
             #     }
             # )
-            starttime = timezone.localize(starttime)
-            starttime = starttime.astimezone(pytz.utc)
-            new_kwargs['time_selection']['start_time'] = starttime.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
+        else:
+            print("No start_key found, using relative_timedelta_days as: ", relative_timedelta_days, " and starttime is: ", stime)
+            starttime = stime
+
+        starttime = timezone.localize(starttime)
+        starttime = starttime.astimezone(pytz.utc)
+        new_kwargs['time_selection']['start_time'] = starttime.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
 
         if end_key:
-            endtime = kwargs.get(end_key, "") if end_key else stime
+            endtime = kwargs.get(end_key, "") if end_key else etime
             # where.append(
             #     {
             #         "name": end_key.split("__")[0],
@@ -122,9 +127,13 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": endtime.isoformat(),
             #     }
             # )
-            end_time = timezone.localize(endtime)
-            end_time = end_time.astimezone(pytz.utc)
-            new_kwargs['time_selection']['end_time'] = end_time.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
+        else:
+            print("No end_key found, using relative_timedelta_days as: ", relative_timedelta_days, " and end_time is: ", etime)
+            endtime = etime
+
+        end_time = timezone.localize(endtime)
+        end_time = end_time.astimezone(pytz.utc)
+        new_kwargs['time_selection']['end_time'] = end_time.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
 
         print("new_kwargs['time_selection']", new_kwargs['time_selection'])
 

@@ -87,6 +87,10 @@ class Cycle(SmsdkEntities, MaSession):
             'time_type': 'absolute'
         }
         new_kwargs['time_selection'] = time_selection
+        try:
+            del kwargs['output_tz']
+        except:
+            pass
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
 
@@ -113,6 +117,7 @@ class Cycle(SmsdkEntities, MaSession):
             )
 
         for kw in kwargs:
+            print("111111111111111",kw)
             if (
                 kw[0] != "_"
                 and "machine_type" not in kw

@@ -109,6 +109,7 @@ class Cycle(SmsdkEntities, MaSession):
             #     }
             # )
             starttime = timezone.localize(starttime)
+            print("startime", starttime)
             new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")+'Z'
 
         if end_key:
@@ -121,6 +122,7 @@ class Cycle(SmsdkEntities, MaSession):
             #     }
             # )
             endtime = timezone.localize(endtime)
+            print("endtime", endtime)
             new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")+'Z'
 
         for kw in kwargs:

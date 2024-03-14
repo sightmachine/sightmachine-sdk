@@ -93,6 +93,7 @@ class Cycle(SmsdkEntities, MaSession):
             pass
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
+        print(start_key, end_key)
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []
@@ -124,6 +125,8 @@ class Cycle(SmsdkEntities, MaSession):
             end_time = timezone.localize(endtime)
             end_time = end_time.astimezone(pytz.utc)
             new_kwargs['time_selection']['end_time'] = end_time.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
+
+        print("new_kwargs['time_selection']", new_kwargs['time_selection'])
 
         for kw in kwargs:
             if (

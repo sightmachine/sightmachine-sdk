@@ -188,9 +188,6 @@ class MaSession:
 
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = None
-                print("\n","dbehjdywegewyugfyeuwgfyegewgf", "\n------------\n")
-                print(url_params)
-                print("90909090 ---> ", endpoint)
                 try:
                     response = getattr(self.session, method.lower())(
                         endpoint, json=url_params

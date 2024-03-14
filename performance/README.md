@@ -9,7 +9,7 @@ Before using the script, ensure the following prerequisites are met:
 - Python 3.8.18 and above installed on your system.
 - Necessary Python packages installed. You can install the required packages using pip:
   ```
-  pip install pandas smsdk
+  pip install pandas
   ```
 
 ## Usage
@@ -41,6 +41,15 @@ Replace `<path_to_xml_file>` with the desired path where you want to save the pe
 
 ### 5. Output
 Once the script execution completes, it will display the performance metrics on the console. If the `--perfxml` argument is provided, the metrics will also be saved to the specified XML file.
+
+The XML contains performance metrics for each API tested during the load test:
+
+- `<num_response>`: Number of responses received for the respective API during the load test.
+- `<avg_response_time>`: Average response time for the API in seconds.
+- `<min_response_time>`: Minimum response time observed for the API in seconds.
+- `<max_response_time>`: Maximum response time observed for the API in seconds.
+- `<throughput>`: Throughput of the API in requests per second.
+- `<error_rate>`: Error rate observed during the load test for the API, expressed as a percentage (0.0 for no errors).
 
 ## Conclusion
 This document provides a quick guide on how to use the `load_test_performance_analysis.py` script for conducting load testing and analyzing performance metrics of SMSDK APIs. It is easy to extend to support other APIs in the future based on the requirement.

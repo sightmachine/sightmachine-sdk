@@ -3,7 +3,6 @@ import sys
 import json
 import pandas as pd
 from datetime import datetime
-from smsdk import client
 import time
 import random
 import logging
@@ -11,6 +10,9 @@ from concurrent.futures import ThreadPoolExecutor
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
 import argparse
+import typing as t_
+
+from smsdk.client import Client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 # Function to read configuration from config.json
-def read_config():
+def read_config() -> t_.Dict[str, t_.Any]:
+    config = {}
     try:
         with open("config.json", "r") as f:
             config = json.load(f)
@@ -45,7 +48,9 @@ def read_config():
     return config
 
 
-def dump_to_xml(metrics_dict, xml_file):
+def dump_to_xml(
+    metrics_dict: t_.Dict[str, t_.Dict[str, t_.Any]], xml_file: str
+) -> None:
     root = ET.Element("performance_metrics")
     for api_name, api_metrics in metrics_dict.items():
         api_element = ET.SubElement(root, api_name)
@@ -62,8 +67,15 @@ def dump_to_xml(metrics_dict, xml_file):
         f.write(prettified_xml)
 
 
-def load_testing_decorator(func):
-    def wrapper(cli, response_times, errors, min_wait_time, max_wait_time, **query):
+def load_testing_decorator(func: t_.Callable[..., t_.Any]) -> t_.Callable[..., t_.Any]:
+    def wrapper(
+        cli: t_.Any,
+        response_times: t_.List[float],
+        errors: t_.List[Exception],
+        min_wait_time: float,
+        max_wait_time: float,
+        **query: t_.Any,
+    ) -> None:
         start_time = time.time()
         try:
             df = func(cli, **query)
@@ -80,31 +92,36 @@ def load_testing_decorator(func):
     return wrapper
 
 
-# # Function to perform load testingon 'get_cycles'
+# Function to perform load testing on 'get_cycles'
 @load_testing_decorator
-def get_cycles(cli, **query):
+def get_cycles(cli: t_.Any, **query: t_.Any) -> t_.Any:
     return cli.get_cycles(**query)
 
 
-# # Function to perform load testing on 'get_line_data'
+# Function to perform load testing on 'get_line_data'
 @load_testing_decorator
-def get_line_data(cli, **query):
+def get_line_data(cli: t_.Any, **query: t_.Any) -> t_.Any:
     return cli.get_line_data(**query)
 
 
-# # Function to perform load testing on 'get_kpi_data_viz'
+# Function to perform load testing on 'get_kpi_data_viz'
 @load_testing_decorator
-def get_kpi_data_viz(cli, **query):
+def get_kpi_data_viz(cli: t_.Any, **query: t_.Any) -> t_.Any:
     return cli.get_kpi_data_viz(**query)
 
 
-def perform_test(func, config, cli, **payload):
+def perform_test(
+    func: t_.Callable[..., t_.Any],
+    config: t_.Dict[str, t_.Any],
+    cli: Client,
+    **payload: t_.Any,
+) -> t_.Dict[str, t_.Union[int, float]]:
     # Number of concurrent requests to simulate load
-    response_times = []
-    errors = []
+    response_times: t_.List[float] = []
+    errors: t_.List[Exception] = []
 
     start_time = time.time()
-    elapsed_time = 0
+    elapsed_time = 0.0
 
     # User ramp-up
     num_users = 0
@@ -163,7 +180,9 @@ def perform_test(func, config, cli, **payload):
     }
 
 
-def perform_get_cycles_load_test(config, cli):
+def perform_get_cycles_load_test(
+    config: t_.Dict[str, t_.Any], cli: Client
+) -> t_.Dict[str, t_.Any]:
     # Fetch machine information
     machine_type = cli.get_machine_type_names()[0]
     machines = cli.get_machine_names(source_type=machine_type)
@@ -182,7 +201,9 @@ def perform_get_cycles_load_test(config, cli):
     return perform_test(get_cycles, config, cli, **query)
 
 
-def perform_get_line_data_load_test(cli, config):
+def perform_get_line_data_load_test(
+    config: t_.Dict[str, t_.Any], cli: Client
+) -> t_.Dict[str, t_.Any]:
     START_DATETIME = "2023-04-01T08:00:00.000Z"
     END_DATETIME = "2023-04-02T23:00:00.000Z"
     TIME_ZONE = "America/Los_Angeles"
@@ -225,7 +246,9 @@ def perform_get_line_data_load_test(cli, config):
     return perform_test(get_line_data, config, cli, **query)
 
 
-def perform_get_kpi_data_viz_load_test(cli, config):
+def perform_get_kpi_data_viz_load_test(
+    config: t_.Dict[str, t_.Any], cli: Client
+) -> t_.Dict[str, t_.Any]:
     machine_sources = ["Nagoya - Pick and Place 6"]
     kpis = ["quality"]
     i_vars = [
@@ -263,7 +286,7 @@ def perform_get_kpi_data_viz_load_test(cli, config):
 
 
 # Main function
-def main(xml_file):
+def main(xml_file: str) -> None:
     # Read configuration from config.json
     config = read_config()
 
@@ -273,14 +296,14 @@ def main(xml_file):
     api_secret = os.environ.get("ENV_VAR_API_SECRET", "")
 
     # Initialize SDK client
-    cli = client.Client(tenant)
+    cli: Client = Client(tenant)
     cli.login("apikey", key_id=api_key, secret_id=api_secret)
 
     metrics = {}
 
     metrics["get_cycles"] = perform_get_cycles_load_test(config, cli)
-    metrics["get_line_data"] = perform_get_line_data_load_test(cli, config)
-    metrics["get_kpi_data_viz"] = perform_get_kpi_data_viz_load_test(cli, config)
+    metrics["get_line_data"] = perform_get_line_data_load_test(config, cli)
+    metrics["get_kpi_data_viz"] = perform_get_kpi_data_viz_load_test(config, cli)
 
     if xml_file:
         dump_to_xml(metrics, xml_file)

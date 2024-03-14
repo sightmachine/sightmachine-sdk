@@ -8,6 +8,7 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 import pathos
+import typing as t_
 
 try:
     # for newer pandas versions >1.X
@@ -127,7 +128,7 @@ class ClientV0(object):
         self.auth = Authenticator(self)
         self.session = self.auth.session
 
-    def login(self, method, **kwargs):
+    def login(self, method: str, **kwargs: t_.Any) -> None:
         """
         Authenticate with the configured tenant and user credentials.
 

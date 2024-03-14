@@ -83,7 +83,8 @@ class Cycle(SmsdkEntities, MaSession):
         }
 
         time_selection = {
-            'time_zone': kwargs.get('output_tz', 'UTC')
+            'time_zone': kwargs.get('output_tz', 'UTC'),
+            'time_type': 'absolute'
         }
         new_kwargs['time_selection'] = time_selection
 

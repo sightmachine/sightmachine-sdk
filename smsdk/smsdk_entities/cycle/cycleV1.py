@@ -56,6 +56,7 @@ class Cycle(SmsdkEntities, MaSession):
             records = self._get_records(url, **kwargs)
         else:
             kwargs = self.modify_input_params(**kwargs)
+            print("kwargs sent..", kwargs)
             records = self._get_records_v1(url, **kwargs)
 
         if not isinstance(records, List):

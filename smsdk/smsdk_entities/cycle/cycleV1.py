@@ -104,7 +104,7 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": starttime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")
+            new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")+'Z'
 
 
         if end_key:
@@ -116,7 +116,7 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": endtime.isoformat(),
             #     }
             # )
-            new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")
+            new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")+'Z'
 
         for kw in kwargs:
             if (

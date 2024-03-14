@@ -98,23 +98,26 @@ class Cycle(SmsdkEntities, MaSession):
         where = []
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
-            where.append(
-                {
-                    "name": start_key.split("__")[0],
-                    "op": start_key.split("__")[-1],
-                    "value": starttime.isoformat(),
-                }
-            )
+            # where.append(
+            #     {
+            #         "name": start_key.split("__")[0],
+            #         "op": start_key.split("__")[-1],
+            #         "value": starttime.isoformat(),
+            #     }
+            # )
+            new_kwargs['time_selection']['start_time'] = starttime.isoformat()
+
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else stime
-            where.append(
-                {
-                    "name": end_key.split("__")[0],
-                    "op": end_key.split("__")[-1],
-                    "value": endtime.isoformat(),
-                }
-            )
+            # where.append(
+            #     {
+            #         "name": end_key.split("__")[0],
+            #         "op": end_key.split("__")[-1],
+            #         "value": endtime.isoformat(),
+            #     }
+            # )
+            new_kwargs['time_selection']['end_time'] = endtime.isoformat()
 
         for kw in kwargs:
             print("111111111111111",kw)

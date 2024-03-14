@@ -90,11 +90,11 @@ class Cycle(SmsdkEntities, MaSession):
         new_kwargs['time_selection'] = time_selection
         try:
             del kwargs['output_tz']
+            del kwargs['relative_start']
         except:
             pass
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
-        print("start_key, end_key",start_key, end_key)
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []

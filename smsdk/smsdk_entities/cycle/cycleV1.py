@@ -109,8 +109,8 @@ class Cycle(SmsdkEntities, MaSession):
             #     }
             # )
             starttime = timezone.localize(starttime)
-            print("startime", starttime)
-            new_kwargs['time_selection']['start_time'] = starttime.isoformat("T", "milliseconds")+'Z'
+            starttime = starttime.astimezone(pytz.utc)
+            new_kwargs['time_selection']['start_time'] = starttime.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else stime
@@ -121,9 +121,9 @@ class Cycle(SmsdkEntities, MaSession):
             #         "value": endtime.isoformat(),
             #     }
             # )
-            endtime = timezone.localize(endtime)
-            print("endtime", endtime)
-            new_kwargs['time_selection']['end_time'] = endtime.isoformat("T", "milliseconds")+'Z'
+            end_time = timezone.localize(endtime)
+            end_time = end_time.astimezone(pytz.utc)
+            new_kwargs['time_selection']['end_time'] = end_time.replace(tzinfo=None).isoformat("T", "milliseconds")+'Z'
 
         for kw in kwargs:
             if (

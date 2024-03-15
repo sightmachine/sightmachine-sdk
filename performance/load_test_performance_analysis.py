@@ -298,7 +298,6 @@ def perform_get_kpi_data_viz_load_test(
 
 # Main function
 def main(config_file: t_.Optional[str], xml_file: t_.Optional[str]) -> None:
-
     # Read configurations
     config = read_config(config_file)
 

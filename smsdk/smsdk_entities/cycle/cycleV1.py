@@ -75,26 +75,24 @@ class Cycle(SmsdkEntities, MaSession):
             machine_type = machine_type[1:-1]
 
         new_kwargs = {}
-        relative_timedelta_days = kwargs.get("relative_timedelta_days", 7)
         etime = datetime.now()
-        stime = etime - timedelta(days=relative_timedelta_days)
+        stime = etime - timedelta(days=1)
         new_kwargs["asset_selection"] = {
             "machine_source": machine,
             "machine_type": machine_type,
         }
 
         time_selection = {
-            "time_zone": kwargs.get("output_tz", "UTC"),
+            "time_zone": kwargs.get("timezone", "UTC"),
             "time_type": "absolute",
         }
         new_kwargs["time_selection"] = time_selection
-        try:
-            del kwargs["output_tz"]
-            del kwargs["relative_timedelta_days"]
-        except:
-            pass
 
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
+        try:
+            del kwargs["timezone"]
+        except:
+            pass
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []
@@ -103,50 +101,32 @@ class Cycle(SmsdkEntities, MaSession):
 
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
-            # where.append(
-            #     {
-            #         "name": start_key.split("__")[0],
-            #         "op": start_key.split("__")[-1],
-            #         "value": starttime.isoformat(),
-            #     }
-            # )
         else:
-            print(
-                "No start_key found, using relative_timedelta_days as: ",
-                relative_timedelta_days,
-                " and starttime is: ",
-                stime,
-            )
             starttime = stime
 
         starttime = timezone.localize(starttime)
         starttime = starttime.astimezone(pytz.utc)
-        new_kwargs["time_selection"]["start_time"] = (
-            starttime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+        where.append(
+            {
+                "name": start_key.split("__")[0],
+                "op": start_key.split("__")[-1],
+                "value": starttime.isoformat(),
+            }
         )
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else etime
-            # where.append(
-            #     {
-            #         "name": end_key.split("__")[0],
-            #         "op": end_key.split("__")[-1],
-            #         "value": endtime.isoformat(),
-            #     }
-            # )
         else:
-            print(
-                "No end_key found, using relative_timedelta_days as: ",
-                relative_timedelta_days,
-                " and end_time is: ",
-                etime,
-            )
             endtime = etime
 
         end_time = timezone.localize(endtime)
         end_time = end_time.astimezone(pytz.utc)
-        new_kwargs["time_selection"]["end_time"] = (
-            end_time.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+        where.append(
+            {
+                "name": end_key.split("__")[0],
+                "op": end_key.split("__")[-1],
+                "value": endtime.isoformat(),
+            }
         )
 
         print("time_selection: ", new_kwargs["time_selection"])

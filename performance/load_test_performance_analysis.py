@@ -20,30 +20,41 @@ logger = logging.getLogger(__name__)
 
 
 # Function to read configuration from config.json
-def read_config() -> t_.Dict[str, t_.Any]:
+def read_config(config_file: t_.Optional[str]) -> t_.Dict[str, t_.Any]:
+    default_config = {
+        "num_peak_users": 10,
+        "ramp_up_rate": 2,
+        "total_run_time": 50,
+        "min_wait_time": 1,
+        "max_wait_time": 5,
+    }
+
+    if config_file is None:
+        logger.warning("No config file specified. Using default configurations:")
+        logger.warning(default_config)
+        return default_config
+
     config = {}
     try:
-        with open("config.json", "r") as f:
+        with open(config_file, "r") as f:
             config = json.load(f)
     except FileNotFoundError:
-        logger.error("config.json file not found.")
-        sys.exit(1)
+        logger.warning(
+            f"Config file '{config_file}' not found. Using default configuration."
+        )
+        return default_config
     except json.JSONDecodeError:
-        logger.error("config.json file is not a valid JSON.")
-        sys.exit(1)
+        logger.error(
+            f"Failed to read the configurations from the file '{config_file}'. Using default configuration."
+        )
+        return default_config
 
-    required_keys = [
-        "num_peak_users",
-        "ramp_up_rate",
-        "total_run_time",
-        "min_wait_time",
-        "max_wait_time",
-    ]
-    missing_keys = [key for key in required_keys if key not in config]
-
+    missing_keys = [key for key in default_config if key not in config]
     if missing_keys:
-        logger.error(f"Missing keys in config.json: {', '.join(missing_keys)}")
-        sys.exit(1)
+        logger.warning(f"Missing keys in '{config_file}'. Using default values for:")
+        for key in missing_keys:
+            logger.warning(f"\t{key}: {default_config[key]}")
+            config[key] = default_config[key]
 
     return config
 
@@ -286,9 +297,10 @@ def perform_get_kpi_data_viz_load_test(
 
 
 # Main function
-def main(xml_file: str) -> None:
-    # Read configuration from config.json
-    config = read_config()
+def main(config_file: t_.Optional[str], xml_file: t_.Optional[str]) -> None:
+
+    # Read configurations
+    config = read_config(config_file)
 
     # Get environment variables
     tenant = os.environ.get("ENV_VAR_TENANT", "")
@@ -301,8 +313,11 @@ def main(xml_file: str) -> None:
 
     metrics = {}
 
+    # Perform load test on 'get_cycles' API and store the metrics
     metrics["get_cycles"] = perform_get_cycles_load_test(config, cli)
+    # Perform load test on 'get_line_data' API and store the metrics
     metrics["get_line_data"] = perform_get_line_data_load_test(config, cli)
+    # Perform load test on 'get_kpi_data_viz' API and store the metrics
     metrics["get_kpi_data_viz"] = perform_get_kpi_data_viz_load_test(config, cli)
 
     if xml_file:
@@ -315,9 +330,14 @@ if __name__ == "__main__":
         description="Load testing script with optional performance metrics dump to XML"
     )
     parser.add_argument(
-        "--perfxml",
+        "--config-file",
+        help="Path to the configuration file",
+        default=None,
+    )
+    parser.add_argument(
+        "--metrics-xml",
         help="Path to the XML file to dump performance metrics",
         default=None,
     )
     args = parser.parse_args()
-    main(args.perfxml)
+    main(args.config_file, args.metrics_xml)

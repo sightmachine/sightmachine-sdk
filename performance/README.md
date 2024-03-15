@@ -15,16 +15,20 @@ Before using the script, ensure the following prerequisites are met:
 ## Usage
 
 ### 1. Configuration
-Ensure that the `config.json` file is present in the same directory as the script. This file should contain the following configuration parameters:
+If a custom configuration file is provided as a command-line argument, the script will use the parameters specified in that file. Otherwise, it will use hardcoded default values for configuration parameters. The configuration file should include the following parameters:
 - `num_peak_users`: Number of peak users to simulate load.
 - `ramp_up_rate`: Rate at which users are ramped up.
 - `total_run_time`: Total duration for which the load test should run.
 - `min_wait_time`: Minimum wait time between API requests.
-- `max_wait_time`: Maximum wait time between API requests.
+- `max_wait_time`: Maximum wait time between API requests. 
+
+If any of these parameters are missing in the configuration file, the script will use hardcoded default values for them.
 
 ### 2. Command Line Arguments
-The script accepts one optional command-line argument:
-- `--perfxml`: Path to the XML file where performance metrics will be dumped. If not provided, metrics will not be saved to any file.
+The script accepts two optional command-line arguments:
+- `--config-file`: Path to the custom configuration file (default: None). If provided, the script will use the parameters specified in this file. If not provided, the script will use hardcoded default values for configuration parameters.
+- `--metrics-xml`: Path to the XML file where performance metrics will be dumped (default: None). If provided, performance metrics will be saved to this file.
+
 
 ### 3. Environment Variables
 Ensure the following environment variables are set:
@@ -35,12 +39,12 @@ Ensure the following environment variables are set:
 ### 4. Running the Script
 To run the script, execute the following command in your terminal:
 ```
-python load_test_performance_analysis.py --perfxml <path_to_xml_file>
+python load_test_performance_analysis.py --config-file <path_to_config_file> --metrics-xml <path_to_xml_file>
 ```
-Replace `<path_to_xml_file>` with the desired path where you want to save the performance metrics XML file. If you don't want to save the metrics, you can omit the `--perfxml` argument.
+Replace `<path_to_xml_file>` with the desired path where you want to save the performance metrics XML file. If you don't want to save the metrics, you can omit the `--metrics-xml` argument.
 
 ### 5. Output
-Once the script execution completes, it will display the performance metrics on the console. If the `--perfxml` argument is provided, the metrics will also be saved to the specified XML file.
+Once the script execution completes, it will display the performance metrics on the console. If the `--metrics-xml` argument is provided, the metrics will also be saved to the specified XML file.
 
 The XML contains performance metrics for each API tested during the load test:
 

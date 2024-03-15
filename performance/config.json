@@ -1,8 +1,0 @@
-{
-    "num_peak_users": 10,
-    "ramp_up_rate": 2,
-    "total_run_time": 50,
-    "min_wait_time": 1,
-    "max_wait_time": 5
-  }
-  

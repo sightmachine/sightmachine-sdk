@@ -101,8 +101,8 @@ class Cycle(SmsdkEntities, MaSession):
 
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
-            # starttime = timezone.localize(starttime)
-            # starttime = starttime.astimezone(pytz.utc)
+            starttime = timezone.localize(starttime)
+            starttime = starttime.astimezone(pytz.utc)
             where.append(
                 {
                     "name": start_key.split("__")[0],
@@ -113,8 +113,8 @@ class Cycle(SmsdkEntities, MaSession):
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else etime
-            # endtime = timezone.localize(endtime)
-            # endtime = endtime.astimezone(pytz.utc)
+            endtime = timezone.localize(endtime)
+            endtime = endtime.astimezone(pytz.utc)
             where.append(
                 {
                     "name": end_key.split("__")[0],

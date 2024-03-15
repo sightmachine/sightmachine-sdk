@@ -187,9 +187,6 @@ class MaSession:
                     url_params["db_mode"] = db_mode
 
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
-                print(f"-------URL params before calling {endpoint}------")
-                print(url_params)
-                print("-------------")
                 response = None
                 try:
                     response = getattr(self.session, method.lower())(

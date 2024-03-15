@@ -82,22 +82,12 @@ class Cycle(SmsdkEntities, MaSession):
             "machine_type": machine_type,
         }
 
-        time_selection = {
-            "time_zone": kwargs.get("timezone", "UTC"),
-            "time_type": "absolute",
-        }
-        new_kwargs["time_selection"] = time_selection
-
         start_key, end_key = self.get_starttime_endtime_keys(**kwargs)
-        try:
-            del kwargs["timezone"]
-        except:
-            pass
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []
 
-        timezone = pytz.timezone(time_selection["time_zone"])
+        timezone = pytz.timezone(kwargs.get("timezone", "UTC"))
 
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
@@ -123,8 +113,6 @@ class Cycle(SmsdkEntities, MaSession):
                 }
             )
 
-        print("time_selection: ", new_kwargs["time_selection"])
-
         for kw in kwargs:
             if (
                 kw[0] != "_"
@@ -135,6 +123,7 @@ class Cycle(SmsdkEntities, MaSession):
                 and "endtime" not in kw
                 and "Start Time" not in kw
                 and "starttime" not in kw
+                and "timezone" not in kw
             ):
                 if "__" not in kw:
                     where.append({"name": kw, "op": "eq", "value": kwargs[kw]})

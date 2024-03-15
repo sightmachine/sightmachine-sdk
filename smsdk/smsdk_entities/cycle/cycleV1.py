@@ -97,7 +97,10 @@ class Cycle(SmsdkEntities, MaSession):
                 {
                     "name": start_key.split("__")[0],
                     "op": start_key.split("__")[-1],
-                    "value": starttime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+                    "value": starttime.replace(tzinfo=None).isoformat(
+                        "T", "milliseconds"
+                    )
+                    + "Z",
                 }
             )
 
@@ -109,7 +112,8 @@ class Cycle(SmsdkEntities, MaSession):
                 {
                     "name": end_key.split("__")[0],
                     "op": end_key.split("__")[-1],
-                    "value": endtime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+                    "value": endtime.replace(tzinfo=None).isoformat("T", "milliseconds")
+                    + "Z",
                 }
             )
 

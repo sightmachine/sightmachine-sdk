@@ -119,8 +119,8 @@ class Cycle(SmsdkEntities, MaSession):
         else:
             endtime = etime
 
-        end_time = timezone.localize(endtime)
-        end_time = end_time.astimezone(pytz.utc)
+        endtime = timezone.localize(endtime)
+        endtime = endtime.astimezone(pytz.utc)
         where.append(
             {
                 "name": end_key.split("__")[0],

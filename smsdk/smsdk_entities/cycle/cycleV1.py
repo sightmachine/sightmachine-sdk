@@ -101,33 +101,27 @@ class Cycle(SmsdkEntities, MaSession):
 
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
-        else:
-            starttime = stime
-
-        starttime = timezone.localize(starttime)
-        starttime = starttime.astimezone(pytz.utc)
-        where.append(
-            {
-                "name": start_key.split("__")[0],
-                "op": start_key.split("__")[-1],
-                "value": starttime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
-            }
-        )
+            # starttime = timezone.localize(starttime)
+            # starttime = starttime.astimezone(pytz.utc)
+            where.append(
+                {
+                    "name": start_key.split("__")[0],
+                    "op": start_key.split("__")[-1],
+                    "value": starttime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+                }
+            )
 
         if end_key:
             endtime = kwargs.get(end_key, "") if end_key else etime
-        else:
-            endtime = etime
-
-        endtime = timezone.localize(endtime)
-        endtime = endtime.astimezone(pytz.utc)
-        where.append(
-            {
-                "name": end_key.split("__")[0],
-                "op": end_key.split("__")[-1],
-                "value": endtime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
-            }
-        )
+            # endtime = timezone.localize(endtime)
+            # endtime = endtime.astimezone(pytz.utc)
+            where.append(
+                {
+                    "name": end_key.split("__")[0],
+                    "op": end_key.split("__")[-1],
+                    "value": endtime.replace(tzinfo=None).isoformat("T", "milliseconds") + "Z"
+                }
+            )
 
         print("time_selection: ", new_kwargs["time_selection"])
 

@@ -623,10 +623,15 @@ class Client(ClientV0):
         )
         if assets and model == "cycle" or assets and model == "kpi":
             machine_types = []
+            sourced_assets = []
             for asset in assets:
-                machine_types.append(self.get_type_from_machine(asset, **kwargs))
+                sourced_asset = self.get_machine_source_from_clean_name(
+                    {"asset_selection": {"machine_source": [asset]}}
+                )
+                sourced_assets.append(sourced_asset[0])
+                machine_types.append(self.get_type_from_machine(sourced_asset[0], **kwargs))
             assets = {
-                "machine_source": assets,
+                "machine_source": sourced_assets,
                 "machine_type": list(set(machine_types)),
             }
 

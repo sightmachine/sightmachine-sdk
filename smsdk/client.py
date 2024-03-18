@@ -629,7 +629,9 @@ class Client(ClientV0):
                     {"asset_selection": {"machine_source": [asset]}}
                 )
                 sourced_assets.append(sourced_asset[0])
-                machine_types.append(self.get_type_from_machine(sourced_asset[0], **kwargs))
+                machine_types.append(
+                    self.get_type_from_machine(sourced_asset[0], **kwargs)
+                )
             assets = {
                 "machine_source": sourced_assets,
                 "machine_type": list(set(machine_types)),

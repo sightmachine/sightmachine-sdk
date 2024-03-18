@@ -712,12 +712,9 @@ class Client(ClientV0):
         mts = self.get_data_v1("machine_type_v1", "get_machine_types", *args, **kwargs)
 
         if source_type is not None:
-            mts = mts[
-                np.logical_or(
-                    mts["source_type"] == source_type,
-                    mts["source_type_clean"] == source_type,
-                )
-            ]
+            mts = mts[mts["source_type"] == source_type]
+        if "source_type_clean" in kwargs and kwargs["source_type_clean"] is not None:
+            mts = mts[mts["source_type_clean"] == kwargs["source_type_clean"]]
 
         return mts
 

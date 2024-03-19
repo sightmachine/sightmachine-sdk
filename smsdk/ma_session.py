@@ -291,7 +291,7 @@ class MaSession:
         times = {
             i: kwargs[i]
             for i in kwargs
-            if "time" in i.lower() and i not in exclude_list
+            if "time" in i.lower() and i.lower() not in exclude_list
         }
 
         if times:

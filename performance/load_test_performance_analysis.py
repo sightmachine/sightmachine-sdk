@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import pandas as pd
 from datetime import datetime
 import time
 import random
@@ -59,21 +58,43 @@ def read_config(config_file: t_.Optional[str]) -> t_.Dict[str, t_.Any]:
     return config
 
 
-def dump_to_xml(
+def dump_to_xunit_xml(
     metrics_dict: t_.Dict[str, t_.Dict[str, t_.Any]], xml_file: str
 ) -> None:
-    root = ET.Element("performance_metrics")
-    for api_name, api_metrics in metrics_dict.items():
-        api_element = ET.SubElement(root, api_name)
-        for key, value in api_metrics.items():
-            sub_element = ET.SubElement(api_element, key)
-            sub_element.text = str(value)
 
-    # Generate prettified XML content
+    total_time = 0
+    errors = 0
+
+    for api_name, api_metrics in metrics_dict.items():
+        # Error count update
+        errors += api_metrics.get("error_rate", 0) > 0
+        # Total run time update
+        total_time += api_metrics.get("run_time", 0)
+
+    # Round total_time to nearest integer
+    total_time = int(round(total_time))
+
+    root = ET.Element(
+        "testsuites",
+        name="Performance Metrics",
+        tests=str(len(metrics_dict)),
+        failures="0",
+        errors=str(errors),
+        time=str(total_time),
+    )
+
+    for api_name, api_metrics in metrics_dict.items():
+        testcase = ET.SubElement(root, "testcase", name=api_name)
+        for metric_name, metric_value in api_metrics.items():
+            ET.SubElement(testcase, metric_name).text = str(metric_value)
+
+    # Convert the ElementTree to a string
     xml_content = ET.tostring(root, encoding="unicode", method="xml")
+
+    # Prettify the XML content
     prettified_xml = xml.dom.minidom.parseString(xml_content).toprettyxml(indent="\t")
 
-    # Write prettified XML content to the file
+    # Write the prettified XML content to the file
     with open(xml_file, "w", encoding="utf-8") as f:
         f.write(prettified_xml)
 
@@ -163,17 +184,18 @@ def perform_test(
 
     print()
     # Calculate performance metrics
-    total_response = len(response_times)
+    total_responses = len(response_times)
     avg_response_time = (
-        sum(response_times) / total_response if total_response > 0 else 0
+        sum(response_times) / total_responses if total_responses > 0 else 0
     )
-    min_response_time = min(response_times) if total_response > 0 else 0
-    max_response_time = max(response_times) if total_response > 0 else 0
-    throughput = total_response / elapsed_time if elapsed_time > 0 else 0
+    min_response_time = min(response_times) if total_responses > 0 else 0
+    max_response_time = max(response_times) if total_responses > 0 else 0
+    throughput = total_responses / elapsed_time if elapsed_time > 0 else 0
     error_rate = (len(errors) / (len(response_times) + len(errors))) * 100
 
     logger.info("Performance Metrics:")
-    logger.info(f"Number of Response: {total_response}")
+    logger.info(f"Run Time: {elapsed_time}")
+    logger.info(f"Number of Response: {total_responses}")
     logger.info(f"Average Response Time: {avg_response_time} seconds")
     logger.info(f"Minimum Response Time: {min_response_time} seconds")
     logger.info(f"Maximum Response Time: {max_response_time} seconds")
@@ -182,7 +204,8 @@ def perform_test(
 
     # Store performance metrics in XML file
     return {
-        "num_response": total_response,
+        "run_time": elapsed_time,
+        "num_response": total_responses,
         "avg_response_time": avg_response_time,
         "min_response_time": min_response_time,
         "max_response_time": max_response_time,
@@ -320,7 +343,7 @@ def main(config_file: t_.Optional[str], xml_file: t_.Optional[str]) -> None:
     metrics["get_kpi_data_viz"] = perform_get_kpi_data_viz_load_test(config, cli)
 
     if xml_file:
-        dump_to_xml(metrics, xml_file)
+        dump_to_xunit_xml(metrics, xml_file)
         logger.info(f"Performance metrics dumped to {xml_file}")
 
 

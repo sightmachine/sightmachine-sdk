@@ -9,7 +9,7 @@ Before using the script, ensure the following prerequisites are met:
 - Python 3.8.18 and above installed on your system.
 - Necessary Python packages installed. You can install the required packages using pip:
   ```
-  pip install pandas
+  pip install -r requirements.txt
   ```
 
 ## Usage
@@ -35,6 +35,14 @@ Ensure the following environment variables are set:
 - `ENV_VAR_TENANT`: Your SMSDK tenant ID.
 - `ENV_VAR_API_KEY`: Your API key.
 - `ENV_VAR_API_SECRET`: Your API secret.
+
+#### Example:
+
+```bash
+export ENV_VAR_TENANT="<Tenant Name>"
+export ENV_VAR_API_KEY="<Tenant API Key>"
+export ENV_VAR_API_SECRET="<Tenant API Secret>"
+```
 
 ### 4. Running the Script
 To run the script, execute the following command in your terminal:

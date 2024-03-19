@@ -12,6 +12,7 @@ from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
 from datetime import datetime, timedelta
+import pytz
 import numpy as np
 
 import logging
@@ -85,23 +86,32 @@ class Cycle(SmsdkEntities, MaSession):
 
         # https://37-60546292-gh.circle-artifacts.com/0/build/html/web_api/v1/datatab/index.html#get--v1-datatab-cycle
         where = []
+        timezone = pytz.timezone(kwargs.get("timezone", "UTC"))
         if start_key:
             starttime = kwargs.get(start_key, "") if start_key else stime
+            starttime = timezone.localize(starttime)
+            starttime = starttime.astimezone(pytz.utc)
             where.append(
                 {
                     "name": start_key.split("__")[0],
                     "op": start_key.split("__")[-1],
-                    "value": starttime.isoformat(),
+                    "value": starttime.replace(tzinfo=None).isoformat(
+                        "T", "milliseconds"
+                    )
+                    + "Z",
                 }
             )
 
         if end_key:
-            endtime = kwargs.get(end_key, "") if end_key else stime
+            endtime = kwargs.get(end_key, "") if end_key else etime
+            endtime = timezone.localize(endtime)
+            endtime = endtime.astimezone(pytz.utc)
             where.append(
                 {
                     "name": end_key.split("__")[0],
                     "op": end_key.split("__")[-1],
-                    "value": endtime.isoformat(),
+                    "value": endtime.replace(tzinfo=None).isoformat("T", "milliseconds")
+                    + "Z",
                 }
             )
 
@@ -115,6 +125,7 @@ class Cycle(SmsdkEntities, MaSession):
                 and "endtime" not in kw
                 and "Start Time" not in kw
                 and "starttime" not in kw
+                and "timezone" not in kw
             ):
                 if "__" not in kw:
                     where.append({"name": kw, "op": "eq", "value": kwargs[kw]})

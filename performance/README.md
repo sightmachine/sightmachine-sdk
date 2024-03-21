@@ -15,14 +15,20 @@ Before using the script, ensure the following prerequisites are met:
 ## Usage
 
 ### 1. Configuration
-If a custom configuration file is provided as a command-line argument, the script will use the parameters specified in that file. Otherwise, it will use hardcoded default values for configuration parameters. The configuration file should include the following parameters:
+A custom configuration file should be provided as a command-line argument. The script will use the parameters specified in that file for configuring the load test and fetching query data for the APIs under test.
+
+The configuration file should include the following parameters:
+
 - `num_peak_users`: Number of peak users to simulate load.
 - `ramp_up_rate`: Rate at which users are ramped up.
 - `total_run_time`: Total duration for which the load test should run.
 - `min_wait_time`: Minimum wait time between API requests.
 - `max_wait_time`: Maximum wait time between API requests. 
+- `get_cycles_query_config`: Query data for `get_cycles` API. This should include the necessary parameters required to make a request to the `get_cycles` API.
+- `get_line_data_query_config`: Query data for `get_line_data` API. This should include the necessary parameters required to make a request to the `get_line_data` API.
+- `get_kpi_data_viz_query_config`: Query data for `get_kpi_data_viz` API. This should include the necessary parameters required to make a request to the `get_kpi_data_viz` API.
 
-If any of these parameters are missing in the configuration file, the script will use hardcoded default values for them.
+If any of these parameters are missing in the configuration file, the script raises an exception to ensure that crucial configuration parameters are provided.
 
 ### 2. Command Line Arguments
 The script accepts two optional command-line arguments:
@@ -32,16 +38,16 @@ The script accepts two optional command-line arguments:
 
 ### 3. Environment Variables
 Ensure the following environment variables are set:
-- `ENV_VAR_TENANT`: Your SMSDK tenant ID.
-- `ENV_VAR_API_KEY`: Your API key.
-- `ENV_VAR_API_SECRET`: Your API secret.
+- `ENV_SDK_VAR_TENANT`: Your SMSDK tenant ID.
+- `ENV_SDK_VAR_API_KEY`: Your API key.
+- `ENV_SDK_VAR_API_SECRET`: Your API secret.
 
 #### Example:
 
 ```bash
-export ENV_VAR_TENANT="<Tenant Name>"
-export ENV_VAR_API_KEY="<Tenant API Key>"
-export ENV_VAR_API_SECRET="<Tenant API Secret>"
+export ENV_SDK_VAR_TENANT="<Tenant Name>"
+export ENV_SDK_VAR_API_KEY="<Tenant API Key>"
+export ENV_SDK_VAR_API_SECRET="<Tenant API Secret>"
 ```
 
 ### 4. Running the Script

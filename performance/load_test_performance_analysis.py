@@ -20,40 +20,33 @@ logger = logging.getLogger(__name__)
 
 # Function to read configuration from config.json
 def read_config(config_file: t_.Optional[str]) -> t_.Dict[str, t_.Any]:
-    default_config = {
-        "num_peak_users": 10,
-        "ramp_up_rate": 2,
-        "total_run_time": 50,
-        "min_wait_time": 1,
-        "max_wait_time": 5,
-    }
+    config = {}
 
     if config_file is None:
-        logger.warning("No config file specified. Using default configurations:")
-        logger.warning(default_config)
-        return default_config
+        raise ValueError("No config file specified.")
 
-    config = {}
     try:
         with open(config_file, "r") as f:
             config = json.load(f)
     except FileNotFoundError:
-        logger.warning(
-            f"Config file '{config_file}' not found. Using default configuration."
-        )
-        return default_config
+        raise FileNotFoundError(f"Config file '{config_file}' not found.")
     except json.JSONDecodeError:
-        logger.error(
-            f"Failed to read the configurations from the file '{config_file}'. Using default configuration."
-        )
-        return default_config
+        raise ValueError(f"Failed to parse JSON in config file '{config_file}'.")
 
-    missing_keys = [key for key in default_config if key not in config]
+    # Check for mandatory key-value pairs
+    mandatory_keys = {
+        "num_peak_users",
+        "ramp_up_rate",
+        "total_run_time",
+        "min_wait_time",
+        "max_wait_time",
+        "get_cycles_query_config",
+        "get_line_data_query_config",
+        "get_kpi_data_viz_query_config",
+    }
+    missing_keys = mandatory_keys - set(config.keys())
     if missing_keys:
-        logger.warning(f"Missing keys in '{config_file}'. Using default values for:")
-        for key in missing_keys:
-            logger.warning(f"\t{key}: {default_config[key]}")
-            config[key] = default_config[key]
+        raise ValueError(f"Missing mandatory keys in config file: {missing_keys}")
 
     return config
 
@@ -61,7 +54,6 @@ def read_config(config_file: t_.Optional[str]) -> t_.Dict[str, t_.Any]:
 def dump_to_xunit_xml(
     metrics_dict: t_.Dict[str, t_.Dict[str, t_.Any]], xml_file: str
 ) -> None:
-
     total_time = 0
     errors = 0
 
@@ -214,68 +206,75 @@ def perform_test(
     }
 
 
+def get_time_selection(config: t_.Dict[str, t_.Any]) -> t_.Dict[str, t_.Any]:
+    time_selection = {}
+    time_selection["time_type"] = config.get("TIME_TYPE", "relative")
+
+    if time_selection["time_type"] == "absolute":
+        time_selection["start_time"] = config.get("START_DATETIME", "")
+        time_selection["end_time"] = config.get("END_DATETIME", "")
+        time_selection["time_zone"] = config.get("TIME_ZONE", "")
+    else:
+        time_selection["time_type"] = "relative"
+        time_selection["relative_start"] = config.get("RELATIVE_START", "7")
+        time_selection["relative_unit"] = config.get("RELATIVE_UNIT", "day")
+        time_selection["ctime_tz"] = config.get("TIME_ZONE", "America/Los_Angeles")
+
+    return time_selection
+
+
 def perform_get_cycles_load_test(
     config: t_.Dict[str, t_.Any], cli: Client
 ) -> t_.Dict[str, t_.Any]:
-    # Fetch machine information
-    machine_type = cli.get_machine_type_names()[0]
-    machines = cli.get_machine_names(source_type=machine_type)
-    columns = cli.get_machine_schema(machines[0])["display"][:].to_list()
+    # Extract the 'get_cycles' configuration
+    get_cycles_config = config.get("get_cycles_query_config", {})
 
-    # Define query parameters
-    query = {
-        "Machine": machines[0],
-        "End Time__gte": datetime(2023, 4, 1),
-        "End Time__lte": datetime(2023, 4, 2),
-        "_order_by": "-End Time",
-        "_limit": 100,
-        "_only": columns,
-    }
+    # Convert datetime strings to datetime objects
+    for key, value in get_cycles_config.items():
+        if isinstance(value, str):
+            try:
+                get_cycles_config[key] = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                pass  # Handle the case where the value is not a valid datetime string
 
-    return perform_test(get_cycles, config, cli, **query)
+    return perform_test(get_cycles, config, cli, **get_cycles_config)
 
 
 def perform_get_line_data_load_test(
     config: t_.Dict[str, t_.Any], cli: Client
 ) -> t_.Dict[str, t_.Any]:
-    START_DATETIME = "2023-04-01T08:00:00.000Z"
-    END_DATETIME = "2023-04-02T23:00:00.000Z"
-    TIME_ZONE = "America/Los_Angeles"
-    MACHINE4 = "JB_NG_PickAndPlace_1_Stage4"
-    FIELD_NAME1 = "stats__BLOCKED__val"
-    FIELD_NAME2 = "stats__PneumaticPressure__val"
-    MIN_PRESSURE = 75.25
-    MAX_ROWS = 50
+    # Extract the 'get_line_data' configuration
+    line_data_config = config.get("get_line_data_query_config", {})
 
-    assets = [MACHINE4]
-    fields = [
-        {"asset": MACHINE4, "name": FIELD_NAME1},
-        {"asset": MACHINE4, "name": FIELD_NAME2},
-    ]
+    time_selection = get_time_selection(line_data_config)
 
-    time_selection = {
-        "time_type": "absolute",
-        "start_time": START_DATETIME,
-        "end_time": END_DATETIME,
-        "time_zone": TIME_ZONE,
-    }
+    assets = line_data_config.get("ASSETS", [])
 
-    filters = [
-        {
-            "asset": MACHINE4,
-            "name": FIELD_NAME2,
-            "op": "gte",
-            "value": MIN_PRESSURE,
-        }
-    ]
+    fields = []
+    for asset in assets:
+        for field in line_data_config.get("FIELDS", []):
+            fields.append({"asset": asset, "name": field})
+
+    filters = []
+    for filter in line_data_config.get("FILTERS", []):
+        filters.append(
+            {
+                "asset": filter.get("asset", ""),
+                "name": filter.get("field", ""),
+                "op": filter.get("op", ""),
+                "value": filter.get("value", ""),
+            }
+        )
 
     query = {
+        "time_selection": time_selection,
         "assets": assets,
         "fields": fields,
-        "time_selection": time_selection,
         "filters": filters,
-        "limit": MAX_ROWS,
+        "limit": line_data_config.get("MAX_ROWS", 100),
     }
+
+    print(f"DebugInf:: query - {query}")
 
     return perform_test(get_line_data, config, cli, **query)
 
@@ -283,37 +282,20 @@ def perform_get_line_data_load_test(
 def perform_get_kpi_data_viz_load_test(
     config: t_.Dict[str, t_.Any], cli: Client
 ) -> t_.Dict[str, t_.Any]:
-    machine_sources = ["Nagoya - Pick and Place 6"]
-    kpis = ["quality"]
-    i_vars = [
-        {
-            "name": "endtime",
-            "time_resolution": "day",
-            "query_tz": "America/Los_Angeles",
-            "output_tz": "America/Los_Angeles",
-            "bin_strategy": "user_defined2",
-            "bin_count": 50,
-        }
-    ]
-    time_selection = {
-        "time_type": "relative",
-        "relative_start": 7,
-        "relative_unit": "year",
-        "ctime_tz": "America/Los_Angeles",
-    }
+    # Extract the 'get_kpi_data_viz' configuration
+    kpi_data_viz_config = config.get("get_kpi_data_viz_query_config", {})
 
-    data_viz_query = {
-        "where": [],
-        "db_mode": "sql",
-    }
+    time_selection = get_time_selection(kpi_data_viz_config)
+
+    assets = kpi_data_viz_config.get("ASSETS", [])
 
     query = {
-        "machine_sources": machine_sources,
-        "kpis": kpis,
-        "i_vars": i_vars,
+        "machine_sources": assets,
+        "kpis": kpi_data_viz_config.get("KPIS", []),
+        "i_vars": kpi_data_viz_config.get("I_VARS", []),
         "time_selection": time_selection,
-        "where": [],
-        "db_mode": "sql",
+        "where": kpi_data_viz_config.get("WHERE", []),
+        "db_mode": kpi_data_viz_config.get("DB_MODE", "sql"),
     }
 
     return perform_test(get_kpi_data_viz, config, cli, **query)
@@ -325,9 +307,9 @@ def main(config_file: t_.Optional[str], xml_file: t_.Optional[str]) -> None:
     config = read_config(config_file)
 
     # Get environment variables
-    tenant = os.environ.get("ENV_VAR_TENANT", "")
-    api_key = os.environ.get("ENV_VAR_API_KEY", "")
-    api_secret = os.environ.get("ENV_VAR_API_SECRET", "")
+    tenant = os.environ.get("ENV_SDK_VAR_TENANT", "")
+    api_key = os.environ.get("ENV_SDK_VAR_API_KEY", "")
+    api_secret = os.environ.get("ENV_SDK_VAR_API_SECRET", "")
 
     # Initialize SDK client
     cli: Client = Client(tenant)
@@ -354,7 +336,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config-file",
         help="Path to the configuration file",
-        default=None,
+        required=True,
     )
     parser.add_argument(
         "--metrics-xml",

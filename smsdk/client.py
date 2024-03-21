@@ -711,13 +711,11 @@ class Client(ClientV0):
         """
         mts = self.get_data_v1("machine_type_v1", "get_machine_types", *args, **kwargs)
 
-        if source_type is not None:
-            mts = mts[
-                np.logical_or(
-                    mts["source_type"] == source_type,
-                    mts["source_type_clean"] == source_type,
-                )
-            ]
+        if source_type:  # will not match empty string
+            mts = mts[mts["source_type"] == source_type]
+        else:
+            if kwargs.get("source_type_clean"):
+                mts = mts[mts["source_type_clean"] == kwargs["source_type_clean"]]
 
         return mts
 

@@ -129,7 +129,9 @@ class Client(ClientV0):
     tenant = None
     config = None
 
-    def __init__(self, tenant, site_domain="sightmachine.io", protocol="https"):
+    def __init__(
+        self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
+    ):
         """
         Initialize the client.
 

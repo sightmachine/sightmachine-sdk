@@ -9,21 +9,30 @@ workflows:
           context: org-sightmachine
       - run-unit-tests:
           context: org-sightmachine
+      - cve-repo-scan:
+          context: org-sightmachine
+  # nightly-cve:
+  #   triggers:
+  #     - schedule:
+  #         # Should run around 6/7pm Pacific time
+  #         cron: "00 2 * * *"
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #   jobs:
+  #     - cve-image-scan:
+  #         context: org-sightmachine
 
 orbs:
   gcp-gke: circleci/gcp-gke@0.2.0
   python: circleci/python@2.1.1
-  codecov: codecov/codecov@3.3.0
+  gcp-cli: circleci/gcp-cli@3.1.1
+  slack: circleci/slack@4.13.1
+  codecov: codecov/codecov@4.0.1
+  sm-build: sightmachine/ci-orb-sm-build@0.1.0
 
 commands:
-  disable_docker_hub:
-    description: "Disable Docker Hub access for running container/VM."
-    steps:
-      - run:
-          name: Disable Docker Hub
-          command: |
-            mkdir -p ~/.docker/
-            echo '{"auths":{"https://index.docker.io/v1/":{"auth":"YTpiYWQK"}}}' > ~/.docker/config.json
   disable_build_if_not_pr:
     description: "Stop the current build if not in a PR context."
     steps:
@@ -33,6 +42,62 @@ commands:
             if [ -z "$CIRCLE_PULL_REQUEST" ]; then
               circleci-agent step halt
             fi
+
+  merge-pr-branch:
+    steps:
+      # Make sure that PR merges can never be considered releases.
+      - run:
+          name: PR Merges should never be considered releases
+          command: echo 'unset CIRCLE_TAG' >> $BASH_ENV
+      - sm-build/jq_install
+      - run:
+          name: Get PR base branch.
+          command: |
+            echo $"export CIRCLE_TARGET_BRANCH=\"$(curl -s -u ops:${GITHUB_PERSONAL_ACCESS_TOKEN} https://api.github.com/repos/sightmachine/${CIRCLE_PROJECT_REPONAME}/pulls/${CIRCLE_PULL_REQUEST##*/} | jq --raw-output '.base.ref')\"" >> $BASH_ENV
+            source $BASH_ENV
+            echo "Github target branch: $CIRCLE_TARGET_BRANCH"
+      - run:
+          name: Merge with the base branch.
+          command: |
+            git --version
+            git config --global user.email 'ops@sightmachine.com'
+            git config --global user.name 'circleci'
+            git merge -m "Prospective PR merge" origin/$CIRCLE_TARGET_BRANCH
+
+  send_slack_msg_on_fail:
+    description: "If the job fails for the master branch, send a message to the Slack channel."
+    steps:
+      - slack/notify:
+          event: fail
+          channel: monitoring-sdk
+          branch_pattern: master
+          custom: |
+            {
+              "text": "Uh-oh! *$CIRCLE_PROJECT_REPONAME* (master) - Job Failed <$CIRCLE_BUILD_URL|#$CIRCLE_BUILD_NUM>",
+              "blocks": [
+                {
+                  "text": {
+                    "text": "Uh-oh! *${CIRCLE_PROJECT_REPONAME}* (master) - Job Failed [#${CIRCLE_BUILD_NUM}]($CIRCLE_BUILD_URL)",
+                    "type": "mrkdwn"
+                  },
+                  "type": "header"
+                },
+                {
+                  "elements": [
+                    {
+                      "action_id": "basic_fail_view",
+                      "text": {
+                        "text": "View Job",
+                        "type": "plain_text"
+                      },
+                      "type": "button",
+                      "url": "${CIRCLE_BUILD_URL}"
+                    }
+                  ],
+                  "type": "actions"
+                }
+              ]
+            }
 
 
 jobs:
@@ -45,7 +110,8 @@ jobs:
     steps:
       # Make sure that the build doesn't accidentally pull images from Docker Hub.
       # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
-      - disable_docker_hub
+      - sm-build/disable_docker_hub_access
+      - sm-build/configure_gcr_docker_access
       - attach_workspace:
           at: /tmp/workspace
 
@@ -75,6 +141,8 @@ jobs:
           name: Save Unit Test Results
           path: htmlcov
 
+      - send_slack_msg_on_fail    
+
   ## ------------------ Check Black python code formate ------------------
   black-python-code-formatter:
     parameters:
@@ -100,6 +168,59 @@ jobs:
               echo "Unformatted code detected. Please run black --fast . locally and commit to format your code." >&2
               exit 1
             fi
+
+  ## ------------------ Check python code against known security issues ------------------
+  cve-repo-scan:
+    parameters:
+      with_merge: # Part of the PR-merge workflow
+        type: boolean
+        default: false
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: cimg/base:current
+    steps:
+      - when:
+          condition: << parameters.with_merge >>
+          steps:
+            - disable_build_if_not_pr
+      - checkout
+      - when:
+          condition: << parameters.with_merge >>
+          steps:
+            - merge-pr-branch
+      - sm-build/trivy_scan_filesystem:
+          report_json_name: fs_report.json
+          report_html_name: fs_report.html
+      - store_artifacts:
+          name: Save Filesystem Report
+          path: fs_report.html
+
+  # ## ------------- Check python code and container image against known security issues -----------
+  # cve-image-scan:
+  #   machine:
+  #     image: default
+  #   steps:
+  #     - sm-build/configure_gcr_docker_access
+  #     - checkout
+  #     - sm-build/trivy_scan_filesystem:
+  #         report_json_name: fs_report.json
+  #         report_html_name: fs_report.html
+  #     - store_artifacts:
+  #         name: Save Filesystem Report
+  #         path: fs_report.html
+  #     - sm-build/trivy_scan_image:
+  #         report_json_name: image_report.json
+  #         report_html_name: image_report.html
+  #         container_repo: gcr.io/sightmachine-178216/ma
+  #         container_tag: master
+  #     - store_artifacts:
+  #         name: Save Image Report
+  #         path: image_report.html
+  #     # The following will mark the build as failed if there are issues in the report.
+  #     - sm-build/trivy_notify_on_issues:
+  #         slack_channel: monitoring-ma
+  #         slack_branch_pattern: master
+  #         report_list: Repo|fs_report.json|fs_report.html,Image|image_report.json|image_report.html
 
   ## ------------------ Mypy for Static Type Checking python code ------------------
   mypy-type-checks:

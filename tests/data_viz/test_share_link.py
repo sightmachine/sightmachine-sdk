@@ -4,7 +4,8 @@ from mock import patch
 
 @patch("smsdk.ma_session.Session.post")
 @patch("smsdk.client.Client.get_type_from_machine")
-def test_cycle_share_link(mock_type, mocked):
+@patch("smsdk.client.Client.get_machine_source_from_clean_name")
+def test_cycle_share_link(mock_clean, mock_type, mocked):
     class ResponsePost:
         ok = True
         text = "Success"
@@ -16,6 +17,8 @@ def test_cycle_share_link(mock_type, mocked):
 
     mocked.return_value = ResponsePost()
     mock_type.return_value = "test_machine"
+
+    mock_clean.return_value = ["test"]
 
     dt = Client("demo-sdk-test")
 
@@ -34,7 +37,8 @@ def test_cycle_share_link(mock_type, mocked):
 
 @patch("smsdk.ma_session.Session.post")
 @patch("smsdk.client.Client.get_type_from_machine")
-def test_kpi_share_link(mock_type, mocked):
+@patch("smsdk.client.Client.get_machine_source_from_clean_name")
+def test_kpi_share_link(mock_clean, mock_type, mocked):
     class ResponsePost:
         ok = True
         text = "Success"
@@ -46,6 +50,7 @@ def test_kpi_share_link(mock_type, mocked):
 
     mocked.return_value = ResponsePost()
     mock_type.return_value = "test_machine"
+    mock_clean.return_value = ["test"]
 
     dt = Client("demo-sdk-test")
 

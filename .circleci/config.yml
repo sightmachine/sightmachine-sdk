@@ -11,18 +11,18 @@ workflows:
           context: org-sightmachine
       - cve-repo-scan:
           context: org-sightmachine
-  # nightly-cve:
-  #   triggers:
-  #     - schedule:
-  #         # Should run around 6/7pm Pacific time
-  #         cron: "00 2 * * *"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
-  #   jobs:
-  #     - cve-image-scan:
-  #         context: org-sightmachine
+  nightly-cve:
+    triggers:
+      - schedule:
+          # Should run around 6/7pm Pacific time
+          cron: "00 2 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - cve-image-scan:
+          context: org-sightmachine
 
 orbs:
   gcp-gke: circleci/gcp-gke@0.2.0
@@ -70,7 +70,7 @@ commands:
       - slack/notify:
           event: fail
           channel: monitoring-sdk
-          branch_pattern: master
+          # branch_pattern: master
           custom: |
             {
               "text": "Uh-oh! *$CIRCLE_PROJECT_REPONAME* (master) - Job Failed <$CIRCLE_BUILD_URL|#$CIRCLE_BUILD_NUM>",
@@ -195,32 +195,27 @@ jobs:
           name: Save Filesystem Report
           path: fs_report.html
 
-  # ## ------------- Check python code and container image against known security issues -----------
-  # cve-image-scan:
-  #   machine:
-  #     image: default
-  #   steps:
-  #     - sm-build/configure_gcr_docker_access
-  #     - checkout
-  #     - sm-build/trivy_scan_filesystem:
-  #         report_json_name: fs_report.json
-  #         report_html_name: fs_report.html
-  #     - store_artifacts:
-  #         name: Save Filesystem Report
-  #         path: fs_report.html
-  #     - sm-build/trivy_scan_image:
-  #         report_json_name: image_report.json
-  #         report_html_name: image_report.html
-  #         container_repo: gcr.io/sightmachine-178216/ma
-  #         container_tag: master
-  #     - store_artifacts:
-  #         name: Save Image Report
-  #         path: image_report.html
-  #     # The following will mark the build as failed if there are issues in the report.
-  #     - sm-build/trivy_notify_on_issues:
-  #         slack_channel: monitoring-ma
-  #         slack_branch_pattern: master
-  #         report_list: Repo|fs_report.json|fs_report.html,Image|image_report.json|image_report.html
+  ## ------------- Check python code and container image against known security issues -----------
+  cve-image-scan:
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: cimg/base:current
+    steps:
+      # Checkout the code from the master branch
+      - checkout
+      # Perform the security scan on the filesystem
+      - sm-build/trivy_scan_filesystem:
+          report_json_name: fs_report_master.json
+          report_html_name: fs_report_master.html
+      # Store the artifacts for the master branch scan
+      - store_artifacts:
+          name: Save Master Branch Filesystem Report
+          path: fs_report_master.html
+      # The following will mark the build as failed if there are issues in the report.
+      - sm-build/trivy_notify_on_issues:
+          slack_channel: monitoring-sdk
+          slack_branch_pattern: master
+          report_list: Repo|fs_report_master.json|fs_report_master.html
 
   ## ------------------ Mypy for Static Type Checking python code ------------------
   mypy-type-checks:

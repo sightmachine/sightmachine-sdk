@@ -1,0 +1,9 @@
+# Default settings to run trivy with
+# https://aquasecurity.github.io/trivy/v0.33/docs/references/customization/config-file/
+severity:
+  - CRITICAL
+  - HIGH
+
+scan:
+  file-patterns:
+    - 'pip:requirements.*.txt'

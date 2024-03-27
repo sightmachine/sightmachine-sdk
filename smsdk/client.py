@@ -125,10 +125,6 @@ downmapinv = {
 class Client(ClientV0):
     """Connection point to the Sight Machine platform to retrieve data"""
 
-    session = None
-    tenant = None
-    config = None
-
     def __init__(
         self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
     ):
@@ -143,16 +139,7 @@ class Client(ClientV0):
         :type site_domain: :class:`string`
         """
 
-        self.tenant = tenant
-
-        # Handle internal configuration
-        self.config = {}
-        self.config["protocol"] = protocol
-        self.config["site.domain"] = site_domain
-
-        # Setup Authenticator
-        self.auth = Authenticator(self)
-        self.session = self.auth.session
+        super().__init__(tenant, site_domain=site_domain, protocol=protocol)
 
     @version_check_decorator
     def select_db_schema(self, schema_name):

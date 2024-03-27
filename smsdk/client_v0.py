@@ -105,7 +105,9 @@ class ClientV0(object):
     tenant = None
     config = None
 
-    def __init__(self, tenant, site_domain="sightmachine.io"):
+    def __init__(
+        self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
+    ):
         """
         Initialize the client.
 
@@ -117,12 +119,26 @@ class ClientV0(object):
         :type site_domain: :class:`string`
         """
 
-        self.tenant = tenant
-
-        # Handle internal configuration
-        self.config = {}
-        self.config["protocol"] = "https"
-        self.config["site.domain"] = site_domain
+        if "://" in tenant:  # Full URL provided eg. "https://demo.sightmachine.io"
+            protocol, domain = tenant.split("://")[0], tenant.split("://")[1]
+            self.tenant = domain.split(".")[0]
+            self.config = {
+                "protocol": protocol,
+                "site.domain": ".".join(domain.split(".")[-2:]),
+            }
+        else:
+            tenant_parts = tenant.split(".")
+            if (
+                len(tenant_parts) > 1
+            ):  # Tenant with domain provided but missing protocol eg. "demo.sightmachine.io"
+                self.tenant = tenant_parts[0]
+                self.config = {
+                    "protocol": protocol,
+                    "site.domain": ".".join(tenant_parts[1:]),
+                }
+            else:  # Only tenant name provided eg. "demo"
+                self.tenant = tenant
+                self.config = {"protocol": protocol, "site.domain": site_domain}
 
         # Setup Authenticator
         self.auth = Authenticator(self)

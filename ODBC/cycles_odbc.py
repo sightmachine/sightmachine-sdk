@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import pyodbc
 import logging
@@ -21,6 +22,76 @@ from sqlalchemy import (
 
 
 log = logging.getLogger(__name__)
+
+
+def has_duplicates(lst):
+    return len(lst) != len(set(lst))
+
+
+def append_unique_suffix(column_name, seen_columns, all_columns):
+    # Convert the column name to lowercase for case insensitivity
+    column_name_lower = column_name.lower()
+
+    # If the column name is not already in the list, return it as is
+    if column_name_lower not in [name.lower() for name in seen_columns]:
+        return column_name
+
+    # Initialize the suffix counter
+    suffix_counter = 1
+
+    # Generate a new column name with a unique suffix
+    while True:
+        new_name = f"{column_name}_{suffix_counter}"
+        if new_name.lower() not in [name.lower() for name in all_columns]:
+            return new_name
+        suffix_counter += 1
+
+
+def replace_column_names(column_names, column_map):
+    replaced_column_names = []
+    for column_name in column_names:
+        # Check if the column name exists in the column map
+        original_column_name = column_map.get(column_name, column_name)
+        replaced_column_names.append(original_column_name)
+    return replaced_column_names
+
+
+def replace_duplicate_names(column_names):
+    # Check for duplicates
+    if has_duplicates(column_names):
+        raise ValueError("Input list contains duplicate entities")
+
+    # Convert all strings to lowercase for case-insensitive comparison
+    column_names_lowercase = [s.lower() for s in column_names]
+
+    if has_duplicates(column_names_lowercase):
+        unique_column_names = []
+        original_column_name_map = {}
+        seen_columns = set()
+
+        for column in column_names:
+            unique_column_name = append_unique_suffix(
+                column, seen_columns, column_names
+            )
+
+            seen_columns.add(column)
+            unique_column_names.append(unique_column_name)
+
+            if len(unique_column_name) != len(column):
+                original_column_name_map[unique_column_name] = column
+
+        return unique_column_names, original_column_name_map
+    return column_names, {}
+
+
+def replace_words(input_string, word_map):
+    # Create a regular expression pattern to match the words in the map
+    pattern = re.compile(r"\b(?:%s)\b" % "|".join(map(re.escape, word_map.keys())))
+
+    # Replace the matched words with their corresponding values from the map
+    modified_string = pattern.sub(lambda match: word_map[match.group(0)], input_string)
+
+    return modified_string
 
 
 def log_or_print(msg, log=None, type: str = None):
@@ -256,8 +327,9 @@ def get_cycles(
 
     try:
         # Create a SQLite in-memory database
-        sql_query_string = ""
         stmt = None
+        sql_query_string = ""
+        original_column_name_map = {}
 
         engine = create_engine("sqlite:///:memory:", echo=True)
         metadata = MetaData()
@@ -334,6 +406,13 @@ def get_cycles(
                     colmap.get(col, col)
                     for col in used_names.intersection(available_names)
                 ]
+
+            # # Just for debugging
+            # select_columns.append("STEAM TO HEAT EXCHANGER SECTION 3 MD")
+
+        select_columns, original_column_name_map = replace_duplicate_names(
+            select_columns
+        )
 
         # Table columns
         columns = [Column(column_name, String) for column_name in select_columns]
@@ -567,6 +646,9 @@ def get_cycles(
             sql_query_string = sql_query_string.replace(
                 f'"{machine_table_name}"', machine_table_name
             )
+
+        if len(original_column_name_map):
+            sql_query_string = replace_words(sql_query_string, original_column_name_map)
     except Exception as e:
         print(f"Error: Failed to generate the SQL query. {str(e)}")
 

@@ -23,6 +23,7 @@ from smsdk.tool_register import smsdkentities
 from datetime import datetime
 import logging
 import functools
+from urllib.parse import urlparse
 
 log = logging.getLogger(__name__)
 
@@ -118,27 +119,30 @@ class ClientV0(object):
             a non-standard environment.
         :type site_domain: :class:`string`
         """
+        # Parse the input string
+        url = tenant
+        parsed_uri = urlparse(url)
 
-        if "://" in tenant:  # Full URL provided eg. "https://demo.sightmachine.io"
-            protocol, domain = tenant.split("://")[0], tenant.split("://")[1]
-            self.tenant = domain.split(".")[0]
-            self.config = {
-                "protocol": protocol,
-                "site.domain": ".".join(domain.split(".")[-2:]),
-            }
+        # Extract tenant from the path
+        tenant = (
+            parsed_uri.netloc.split(".", 1)[0]
+            if parsed_uri.netloc
+            else url.split(".", 1)[0]
+        )
+
+        # Extract protocol
+        if parsed_uri.scheme:
+            protocol = parsed_uri.scheme
+
+        # Extract site domain
+        if parsed_uri.netloc:
+            site_domain = parsed_uri.netloc.replace(f"{tenant}.", "")
         else:
-            tenant_parts = tenant.split(".")
-            if (
-                len(tenant_parts) > 1
-            ):  # Tenant with domain provided but missing protocol eg. "demo.sightmachine.io"
-                self.tenant = tenant_parts[0]
-                self.config = {
-                    "protocol": protocol,
-                    "site.domain": ".".join(tenant_parts[1:]),
-                }
-            else:  # Only tenant name provided eg. "demo"
-                self.tenant = tenant
-                self.config = {"protocol": protocol, "site.domain": site_domain}
+            if f"{tenant}." in url:
+                site_domain = url.replace(f"{tenant}.", "", 1)
+
+        self.tenant = tenant
+        self.config = {"protocol": protocol, "site.domain": site_domain}
 
         # Setup Authenticator
         self.auth = Authenticator(self)

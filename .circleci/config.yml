@@ -131,7 +131,6 @@ jobs:
           name: Compile Coverage Report
           command: |
             coverage html -d htmlcov
-            codecov --required
 
       # Store the test results on each node so we can see failures
       - store_test_results:
@@ -140,6 +139,8 @@ jobs:
       - store_artifacts:
           name: Save Unit Test Results
           path: htmlcov
+
+      - codecov/upload
 
       - send_slack_msg_on_fail    
 

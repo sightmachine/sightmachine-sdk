@@ -155,7 +155,7 @@ class ClientV0(object):
 
     session = None
     tenant = None
-    config = None
+    config = {}
 
     def __init__(
         self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"

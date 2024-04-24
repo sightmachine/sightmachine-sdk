@@ -877,6 +877,9 @@ class ClientV0(object):
             "_only": ["source_type", "source_type_clean"],
             "_order_by": "source_type_clean",
         }
+        print("============================", query_params)
+        log.info("===========================")
+        log.warning("==========================")
         machine_types = self.get_data(
             "machine_type", "get_machine_types", normalize=True, **query_params
         )
@@ -1433,9 +1436,9 @@ class ClientV0(object):
         columns = 1  # Default value 1, so will not break any calculation in case field_count=False
         if machine_type and source_machine_map.get(machine_type):
             cycle_count_schema["model"] = "cycle:" + machine_type
-            cycle_count_schema["asset_selection"][
-                "machine_source"
-            ] = source_machine_map[machine_type]["source"]
+            cycle_count_schema["asset_selection"]["machine_source"] = (
+                source_machine_map[machine_type]["source"]
+            )
             cycle_count_records = cls.cycle_count(**cycle_count_schema)
             if field_count:
                 schema = self.get_machine_schema(

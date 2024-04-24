@@ -35,6 +35,9 @@
     "task": "/v1/datavis/task/async",
     "share_link": "/v1/obj/ui_share_state"
   },
+  "Dashboard": {
+    "url_v1" : "/v1/obj/dashboard/"
+  },
   "KPI": {
     "availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"
   },

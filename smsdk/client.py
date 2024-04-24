@@ -749,6 +749,7 @@ class Client(ClientV0):
             "machine_type_v1", "get_machine_types", True, **query_params
         )
         log.warning(machine_types)
+        print("=======================out")
         if clean_strings_out:
             return machine_types["source_type_clean"].unique().tolist()
         else:

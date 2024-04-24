@@ -153,7 +153,9 @@ class Client(ClientV0):
         # Setup Authenticator
         self.auth = Authenticator(self)
         self.session = self.auth.session
-
+        log.warning("=======================")
+        print("==========================")
+        print(self.tenant)
     @version_check_decorator
     def select_db_schema(self, schema_name):
         # remove X_SM_WRKSPACE_ID from self.session.headers

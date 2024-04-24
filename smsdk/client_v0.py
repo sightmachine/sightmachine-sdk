@@ -1436,9 +1436,9 @@ class ClientV0(object):
         columns = 1  # Default value 1, so will not break any calculation in case field_count=False
         if machine_type and source_machine_map.get(machine_type):
             cycle_count_schema["model"] = "cycle:" + machine_type
-            cycle_count_schema["asset_selection"]["machine_source"] = (
-                source_machine_map[machine_type]["source"]
-            )
+            cycle_count_schema["asset_selection"][
+                "machine_source"
+            ] = source_machine_map[machine_type]["source"]
             cycle_count_records = cls.cycle_count(**cycle_count_schema)
             if field_count:
                 schema = self.get_machine_schema(

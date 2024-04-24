@@ -742,10 +742,13 @@ class Client(ClientV0):
             "_only": ["source_type", "source_type_clean"],
             "_order_by": "source_type_clean",
         }
+        print("============================",query_params)
+        log.info("===========================")
+        log.warning("==========================")
         machine_types = self.get_data_v1(
             "machine_type_v1", "get_machine_types", True, **query_params
         )
-
+        log.warning(machine_types)
         if clean_strings_out:
             return machine_types["source_type_clean"].unique().tolist()
         else:

@@ -75,6 +75,57 @@ def dict_to_df(data, normalize=True):
     return df
 
 
+def convert_to_valid_url(
+    input_url: str,
+    default_domain: str = "sightmachine.io",
+    default_protocol: str = "https",
+):
+    port = ""
+    path = ""
+
+    # Check if the input URL has a protocol specified
+    if "://" in input_url:
+        protocol, rest_url = input_url.split("://", 1)
+    else:
+        protocol = default_protocol
+        rest_url = input_url
+
+    if not protocol:
+        protocol = default_protocol
+
+    # Split the remaining URL to check if domain is specified
+    parts = rest_url.split("/", 1)
+
+    if len(parts) == 1:
+        domain = parts[0]
+        path = ""
+    else:
+        domain, path = parts
+
+    # domain, port = domain.split(':',1)
+    splits = domain.split(":", 1)
+
+    if len(splits) == 1:
+        domain = splits[0]
+    else:
+        domain, port = splits
+
+    # Check if the domain has a TLD or not
+    if "." not in domain:
+        domain = f"{domain}.{default_domain}"
+
+    # Construct the valid URL
+    valid_url = f"{protocol}://{domain}"
+
+    if port:
+        valid_url = f"{valid_url}:{port}"
+
+    if path:
+        valid_url = f"{valid_url}/{path}"
+
+    return valid_url
+
+
 # We don't have a downtime schema, so hard code one
 downmap = {
     "machine__source": "Machine",
@@ -119,27 +170,19 @@ class ClientV0(object):
             a non-standard environment.
         :type site_domain: :class:`string`
         """
-        # Parse the input string
-        url = tenant
-        parsed_uri = urlparse(url)
 
-        # Extract tenant from the path
-        tenant = (
-            parsed_uri.netloc.split(".", 1)[0]
-            if parsed_uri.netloc
-            else url.split(".", 1)[0]
-        )
+        if tenant:
+            # Convert the input tenant into a valid url
+            url = convert_to_valid_url(
+                tenant, default_domain=site_domain, default_protocol=protocol
+            )
 
-        # Extract protocol
-        if parsed_uri.scheme:
+            # Parse the input string
+            parsed_uri = urlparse(url)
+
+            tenant = parsed_uri.netloc.split(".", 1)[0]
             protocol = parsed_uri.scheme
-
-        # Extract site domain
-        if parsed_uri.netloc:
-            site_domain = parsed_uri.netloc.replace(f"{tenant}.", "")
-        else:
-            if f"{tenant}." in url:
-                site_domain = url.replace(f"{tenant}.", "", 1)
+            site_domain = parsed_uri.netloc.split(":")[0].replace(f"{tenant}.", "")
 
         self.tenant = tenant
         self.config = {"protocol": protocol, "site.domain": site_domain}

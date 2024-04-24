@@ -156,6 +156,7 @@ class Client(ClientV0):
         log.warning("=======================")
         print("==========================")
         print(self.tenant)
+
     @version_check_decorator
     def select_db_schema(self, schema_name):
         # remove X_SM_WRKSPACE_ID from self.session.headers
@@ -346,15 +347,15 @@ class Client(ClientV0):
         )
         if "machine_type" in kwargs["asset_selection"]:
             # updating kwargs with machine_type's system name in case of user provides display name.
-            kwargs["asset_selection"][
-                "machine_type"
-            ] = self.get_machine_type_from_clean_name(kwargs)
+            kwargs["asset_selection"]["machine_type"] = (
+                self.get_machine_type_from_clean_name(kwargs)
+            )
 
         if "machine_source" in kwargs["asset_selection"]:
             # updating kwargs with machine_source's system name in case of user provides display name.
-            kwargs["asset_selection"][
-                "machine_source"
-            ] = self.get_machine_source_from_clean_name(kwargs)
+            kwargs["asset_selection"]["machine_source"] = (
+                self.get_machine_source_from_clean_name(kwargs)
+            )
 
         return kpis(self.session, base_url).get_kpis_for_asset(**kwargs)
 
@@ -393,17 +394,17 @@ class Client(ClientV0):
 
         if "asset_selection" in kwargs and "machine_type" in kwargs["asset_selection"]:
             # updating kwargs with machine_type's system name in case of user provides display name.
-            kwargs["asset_selection"][
-                "machine_type"
-            ] = self.get_machine_type_from_clean_name(kwargs)
+            kwargs["asset_selection"]["machine_type"] = (
+                self.get_machine_type_from_clean_name(kwargs)
+            )
         if (
             "asset_selection" in kwargs
             and "machine_source" in kwargs["asset_selection"]
         ):
             # updating kwargs with machine_source's system name in case of user provides display name.
-            kwargs["asset_selection"][
-                "machine_source"
-            ] = self.get_machine_source_from_clean_name(kwargs)
+            kwargs["asset_selection"]["machine_source"] = (
+                self.get_machine_source_from_clean_name(kwargs)
+            )
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
     @version_check_decorator
@@ -742,7 +743,7 @@ class Client(ClientV0):
             "_only": ["source_type", "source_type_clean"],
             "_order_by": "source_type_clean",
         }
-        print("============================",query_params)
+        print("============================", query_params)
         log.info("===========================")
         log.warning("==========================")
         machine_types = self.get_data_v1(

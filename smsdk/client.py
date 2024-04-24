@@ -734,18 +734,16 @@ class Client(ClientV0):
         return mts
 
     @version_check_decorator
-    def get_dashboard_data(self, dashboard_id=''):
-        """
-        """
+    def get_dashboard_data(self, dashboard_id=""):
+        """ """
         log.warning("++++++++++++++++++++++in get_dashboard++++++++++++++++++++")
-        query_params = {
-            "dashboard_id": dashboard_id
-        }
+        query_params = {"dashboard_id": dashboard_id}
         dashboards = self.get_data_v1(
             "dashboard_v1", "get_dashboards", True, **query_params
         )
 
         return dashboards
+
     @version_check_decorator
     def get_machine_type_names(self, clean_strings_out=True):
         """

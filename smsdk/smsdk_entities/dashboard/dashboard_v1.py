@@ -44,9 +44,8 @@ class DashboardData(SmsdkEntities, MaSession):
         url = "{}{}".format(self.base_url, ENDPOINTS["Dashboard"]["url_v1"])
         log.warning(f"=========={url}==============")
 
-        records = self._get_records_v1(
-            url, method="get", results_under="objects")
-        records_new = self._get_records(url, method='get')
+        records = self._get_records_v1(url, method="get", results_under="objects")
+        records_new = self._get_records(url, method="get")
         log.warning(f"=========={records_new}==============")
 
         if records_new:

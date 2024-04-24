@@ -1,12 +1,11 @@
 import pytest
-
 from smsdk import client
 from smsdk.utils import get_url
 
 
-def test_uri():
-    tenant = ""
-    cli = client.Client(tenant)
+def test_uri() -> None:
+    tenant: str = ""
+    cli: client.Client = client.Client(tenant)
 
     assert cli.tenant == tenant
     assert cli.config["protocol"] == "https"

@@ -127,6 +127,7 @@ jobs:
             pip install .
             mkdir test-results
             coverage run -m pytest -vvv --nbmake --nbmake-timeout=300 -n=auto --junitxml=test-results/junit.xml tests
+            coverage report
       - run:
           name: Compile Coverage Report
           command: |

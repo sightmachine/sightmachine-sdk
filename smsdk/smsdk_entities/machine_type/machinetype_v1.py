@@ -39,6 +39,7 @@ class MachineType(SmsdkEntities, MaSession):
         Recommend to use 'enable_pagination':True for larger datasets
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["MachineType"]["url_v1"])
+        url = "https://orora-wir31.sightmachine.io/v1/obj/dashboard/5f433da52540ed000c29defa"
         records = self._get_records_v1(
             url, method="get", results_under="objects", **kwargs
         )

@@ -166,6 +166,7 @@ class MaSession:
         records: t_.List[t_.Dict[str, t_.Any]] = []
         while True:
             try:
+                url_params = {}
                 if limit:
                     remaining_limit = limit - len(records)
                     this_loop_limit = min(remaining_limit, max_page_size)

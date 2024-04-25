@@ -169,7 +169,6 @@ class MaSession:
         records: t_.List[t_.Dict[str, t_.Any]] = []
         while True:
             try:
-                url_params = {}
                 if limit:
                     remaining_limit = limit - len(records)
                     this_loop_limit = min(remaining_limit, max_page_size)
@@ -183,7 +182,7 @@ class MaSession:
                     url_params["offset"] = offset
                 if db_mode:
                     url_params["db_mode"] = db_mode
-                url_params = {}
+
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = None
                 try:
@@ -192,6 +191,7 @@ class MaSession:
                     print(
                         f"==========MA SCHEMA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
                     )
+                    print("METHOD_PRINT", getattr(self.session, method.lower())(endpoint, json=url_params))
                     response = getattr(self.session, method.lower())(
                         endpoint, json=url_params
                     )

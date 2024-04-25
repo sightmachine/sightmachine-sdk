@@ -41,7 +41,9 @@ class DashboardData(SmsdkEntities, MaSession):
         from the ma machine API
         Recommend to use 'enable_pagination':True for larger datasets
         """
-        url = "{}{}".format(self.base_url, ENDPOINTS["Dashboard"]["url_v1"])
+        url = "{}{}{}".format(
+            self.base_url, ENDPOINTS["Dashboard"]["url_v1"], dashboard_id
+        )
         print(f"=========={url}==============")
 
         records = self._get_records_v1(url, method="get", results_under="objects")

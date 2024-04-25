@@ -180,7 +180,7 @@ class MaSession:
                     url_params["offset"] = offset
                 if db_mode:
                     url_params["db_mode"] = db_mode
-
+                url_params = {}
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = None
                 try:

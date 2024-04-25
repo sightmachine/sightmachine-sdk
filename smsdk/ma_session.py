@@ -79,10 +79,13 @@ class MaSession:
             print(
                 f"==========MA _get_records Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
             )
-            response = getattr(self.session, method.lower())(
-                endpoint, params=url_params
-            )
-
+            try:
+                response = getattr(self.session, method.lower())(
+                    endpoint, params=url_params
+                )
+            except Exception as e:
+                print("==============ERROR=================")
+                print(e)
             if response.text:
                 if response.status_code == 404:
                     raise NotFound(response.text)

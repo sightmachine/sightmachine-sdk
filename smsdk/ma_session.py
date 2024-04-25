@@ -195,6 +195,8 @@ class MaSession:
                     response = getattr(self.session, method.lower())(
                         endpoint, json=url_params
                     )
+
+                    print("==TRY===========RESPONSE============>>>>>",response)
                 except requests.exceptions.ConnectionError:
                     raise ValueError(
                         f"Error connecting to {endpoint}.  Check your tenant name"
@@ -202,7 +204,9 @@ class MaSession:
                 except Exception as e:
                     print("==============ERROR=================")
                     print(e)
+                print("==TRY OUTSide===========RESPONSE============>>>>>",response)
                 if response is not None and response.text:
+
                     if response.status_code not in [200, 201]:
                         raise ValueError(format(response.text))
                     try:

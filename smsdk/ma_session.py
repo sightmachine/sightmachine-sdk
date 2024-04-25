@@ -77,7 +77,7 @@ class MaSession:
             url_params["_limit"] = this_loop_limit
             print("object calling api ", self)
             print(
-                f"==========MA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
+                f"==========MA _get_records Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
             )
             response = getattr(self.session, method.lower())(
                 endpoint, params=url_params
@@ -187,7 +187,7 @@ class MaSession:
                     print("object calling api ", self)
 
                     print(
-                        f"==========MA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
+                        f"==========MA SCHEMA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
                     )
                     response = getattr(self.session, method.lower())(
                         endpoint, json=url_params
@@ -196,7 +196,9 @@ class MaSession:
                     raise ValueError(
                         f"Error connecting to {endpoint}.  Check your tenant name"
                     )
-
+                except Exception e:
+                    print("==============ERROR=================")
+                    print(e)
                 if response is not None and response.text:
                     if response.status_code not in [200, 201]:
                         raise ValueError(format(response.text))

@@ -66,52 +66,45 @@ class MaSession:
 
         records: t_.List[t_.Dict[str, t_.Any]] = []
         while True:
-            try:
-                remaining_limit = _limit - len(records)
-                this_loop_limit = int(min(remaining_limit, max_page_size))
+            remaining_limit = _limit - len(records)
+            this_loop_limit = int(min(remaining_limit, max_page_size))
 
-                # If we exactly hit our desired number of records -- limit is 0 -- then can stop
-                if this_loop_limit <= 0:
-                    return records
+            # If we exactly hit our desired number of records -- limit is 0 -- then can stop
+            if this_loop_limit <= 0:
+                return records
 
-                url_params["_offset"] = _offset
-                url_params["_limit"] = this_loop_limit
+            url_params["_offset"] = _offset
+            url_params["_limit"] = this_loop_limit
+            print(
+                f"==========MA Session{getattr(self.session, method.lower())(endpoint, params=url_params)}"
+            )
+            response = getattr(self.session, method.lower())(
+                endpoint, params=url_params
+            )
 
-                response = getattr(self.session, method.lower())(
-                    endpoint, params=url_params
-                )
+            if response.text:
+                if response.status_code == 404:
+                    raise NotFound(response.text)
+                elif response.status_code not in [200, 201]:
+                    raise ValueError("Error - {}".format(response.text))
+                try:
+                    data = response.json()
 
-                if response.text:
-                    if response.status_code == 404:
-                        raise NotFound(response.text)
-                    elif response.status_code not in [200, 201]:
-                        raise ValueError("Error - {}".format(response.text))
-                    try:
-                        data = response.json()
+                    if "results" in data:
+                        data = data["results"]
 
-                        if "results" in data:
-                            data = data["results"]
+                except JSONDecodeError as e:
+                    # No need to raise an error as this will still continue execution.
+                    print(f"No valid JSON returned, but continuing. {e}")
+                    continue
+            else:
+                return []
 
-                    except JSONDecodeError as e:
-                        # No need to raise an error as this will still continue execution.
-                        print(f"No valid JSON returned, but continuing. {e}")
-                        continue
-                else:
-                    return []
-
-                records.extend(data)
-                if len(data) < this_loop_limit:
-                    # Cursor exhausted, so just return
-                    return records
-                _offset += this_loop_limit
-
-            except NotFound as e:
-                raise e
-
-            except Exception as e:
-                # No need to raise an error as this will still continue execution.
-                print(f"Error getting data, but continuing. {e}")
-                continue
+            records.extend(data)
+            if len(data) < this_loop_limit:
+                # Cursor exhausted, so just return
+                return records
+            _offset += this_loop_limit
 
     def _get_schema(
         self, endpoint: str, method: str = "get", **url_params: t_.Any

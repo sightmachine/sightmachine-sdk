@@ -203,13 +203,14 @@ class Client(ClientV0):
         #        kwargs[key] = str(val)
 
         # check if requested util_name belong the list of
-        # registerd utilites
+        # registerd utilitesDashboardData
         if util_name in getattr(cls, "get_utilities")(*args, **kwargs):
             # call the utility function
             # all the dict params are passed as kwargs
             # dict params strictly follow {'key':'value'} format
 
             # sub_kwargs = kwargs
+            print(f"========{util_name}==========UTIL NAME")
             if util_name in ["get_cycles", "get_downtime", "get_parts"]:
                 sub_kwargs = [kwargs]
             else:

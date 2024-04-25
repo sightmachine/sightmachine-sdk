@@ -35,7 +35,7 @@ class DashboardData(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_dashboards(self) -> List:
+    def get_dashboards(self,dashboard_id) -> List:
         """
         Utility function to get the machine types
         from the ma machine API

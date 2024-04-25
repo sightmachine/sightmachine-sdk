@@ -46,8 +46,9 @@ class DashboardData(SmsdkEntities, MaSession):
         )
         print(f"=========={url}==============")
 
-        records = self._get_records_v1(url, method="get", results_under="objects")
         records_new = self._get_records(url, method="get")
+        # records = self._get_records_v1(url, method="get", results_under="objects")
+
         log.warning(f"=========={records_new}==============")
 
         if records_new:

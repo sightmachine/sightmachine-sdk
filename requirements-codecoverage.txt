@@ -2,5 +2,3 @@
 
 codecov==2.1.13
 coverage==7.3.2
-nbmake==1.4.6
-pytest-xdist==3.5.0

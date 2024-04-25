@@ -9,6 +9,10 @@ workflows:
           context: org-sightmachine
       - run-unit-tests:
           context: org-sightmachine
+      - generate-code-coverage:
+          context: org-sightmachine
+          requires:
+            - run-unit-tests
       - cve-repo-scan:
           context: org-sightmachine
   nightly-cve:
@@ -102,7 +106,6 @@ commands:
 
 jobs:
   ## ------------------ Run Unit Tests ------------------
-
   run-unit-tests:
     # Use VM over docker container
     docker:
@@ -123,27 +126,37 @@ jobs:
           name: Run Unit Tests
           command: |
             set -x
-            pip install -r requirements-codecoverage.txt
+            pip install -r requirements-pytest.txt
             pip install .
             mkdir test-results
             # coverage run -m pytest -vvv --nbmake --nbmake-timeout=300 -n=auto --junitxml=test-results/junit.xml tests
-            coverage run -m pytest -vvv -n=auto --junitxml=test-results/junit.xml tests
-
-      - run:
-          name: Compile Coverage Report
-          command: |
-            coverage html -d htmlcov
-            codecov --required
-
-      # Store the test results on each node so we can see failures
-      - store_test_results:
-          path: test-results
+            pytest -vvv --nbmake --nbmake-timeout=300 -n=auto --junitxml=test-results/junit.xml tests
       
       - store_artifacts:
           name: Save Unit Test Results
           path: htmlcov
 
-      - send_slack_msg_on_fail    
+      - send_slack_msg_on_fail  
+
+  ## ------------------ Generate Code Coverage Report ------------------
+  generate-code-coverage:
+    docker:
+      - image: cimg/python:3.11.0
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - checkout
+      - run:
+          name: Compile Coverage Report
+          command: |
+            set -x
+            pip install -r requirements-codecoverage.txt
+            pip install .
+            coverage html -d htmlcov
+            codecov --required
+      - store_artifacts:
+          name: Save Code Coverage Report
+          path: htmlcov  
 
   ## ------------------ Check Black python code formate ------------------
   black-python-code-formatter:

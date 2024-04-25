@@ -75,6 +75,7 @@ class MaSession:
 
             url_params["_offset"] = _offset
             url_params["_limit"] = this_loop_limit
+            print("object calling api ", self)
             print(
                 f"==========MA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
             )
@@ -182,6 +183,8 @@ class MaSession:
                 # print(f'Pulling up to {this_loop_limit} records ({remaining_limit} remain)')
                 response = None
                 try:
+                    print("object calling api ", self)
+
                     print(
                         f"==========MA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
                     )

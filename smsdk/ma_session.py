@@ -80,6 +80,7 @@ class MaSession:
                 f"==========MA _get_records Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"
             )
             try:
+                print("HEADERS=====",self.session.headers)
                 response = getattr(self.session, method.lower())(
                     endpoint, params=url_params
                 )
@@ -188,6 +189,7 @@ class MaSession:
                 response = None
                 try:
                     print("object calling api ", self)
+                    print("HEADERS=====", self.session.headers)
 
                     print(
                         f"==========MA SCHEMA Session{getattr(self.session, method.lower())}{url_params}{endpoint},{method}"

@@ -86,6 +86,7 @@ class MaSession:
             except Exception as e:
                 print("==============ERROR=================")
                 print(e)
+            print("=============RESOPNSE GET_RECORDS>",response)
             if response.text:
                 if response.status_code == 404:
                     raise NotFound(response.text)

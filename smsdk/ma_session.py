@@ -196,7 +196,7 @@ class MaSession:
                     raise ValueError(
                         f"Error connecting to {endpoint}.  Check your tenant name"
                     )
-                except Exception e:
+                except Exception as e:
                     print("==============ERROR=================")
                     print(e)
                 if response is not None and response.text:

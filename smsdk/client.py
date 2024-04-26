@@ -405,11 +405,11 @@ class Client(ClientV0):
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
     def get_widget_data(self, url_params):
-        kpi_entity = smsdkentities.get("dataViz")
+        widget_entity = smsdkentities.get("dataViz")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return kpi_entity(self.session, base_url).get_dashboard_widget_data(
+        return widget_entity(self.session, base_url).get_dashboard_widget_data(
             **url_params
         )
 

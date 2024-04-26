@@ -404,7 +404,7 @@ class Client(ClientV0):
             ] = self.get_machine_source_from_clean_name(kwargs)
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
-    def get_dashboard_data_viz(self, url_params):
+    def get_widget_data(self, url_params):
         kpi_entity = smsdkentities.get("dataViz")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]

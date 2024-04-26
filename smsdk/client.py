@@ -404,15 +404,14 @@ class Client(ClientV0):
             ] = self.get_machine_source_from_clean_name(kwargs)
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
-    def get_dashboard_data_viz(
-            self,
-            url_params
-    ):
+    def get_dashboard_data_viz(self, url_params):
         kpi_entity = smsdkentities.get("dataViz")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return kpi_entity(self.session, base_url).get_dashboard_widget_data(**url_params)
+        return kpi_entity(self.session, base_url).get_dashboard_widget_data(
+            **url_params
+        )
 
     @version_check_decorator
     def get_type_from_machine(self, machine_source=None, **kwargs):

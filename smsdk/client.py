@@ -404,6 +404,16 @@ class Client(ClientV0):
             ] = self.get_machine_source_from_clean_name(kwargs)
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
+    def get_dashboard_data_viz(
+            self,
+            url_params
+    ):
+        kpi_entity = smsdkentities.get("dataViz")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return kpi_entity(self.session, base_url).get_dashboard_widget_data(**url_params)
+
     @version_check_decorator
     def get_type_from_machine(self, machine_source=None, **kwargs):
         machine = smsdkentities.get("machine")
@@ -743,7 +753,6 @@ class Client(ClientV0):
         machine_types = self.get_data_v1(
             "machine_type_v1", "get_machine_types", True, **query_params
         )
-
         if clean_strings_out:
             return machine_types["source_type_clean"].unique().tolist()
         else:

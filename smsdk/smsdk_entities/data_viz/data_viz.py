@@ -141,3 +141,18 @@ class DataViz(SmsdkEntities, MaSession):
         return "{}/#/analysis/datavis/s/{}".format(
             self.base_url, response.json()["state_hash"]
         )
+
+    @mod_util
+    def get_dashboard_widget_data(self, *args, **kwargs):
+        """
+        Takes a query params from the widget in dashboard
+        Returns Data info for that query
+        """
+
+        url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["task"])
+        records = self._complete_async_task(url, **kwargs)
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+
+        return records

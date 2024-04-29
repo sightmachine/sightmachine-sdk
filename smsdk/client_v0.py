@@ -191,7 +191,7 @@ class ClientV0(object):
         self.auth = Authenticator(self)
         self.session = self.auth.session
 
-    def login(self, method: str, **kwargs: t_.Any) -> None:
+    def login(self, method: str, **kwargs: t_.Any) -> bool:
         """
         Authenticate with the configured tenant and user credentials.
 

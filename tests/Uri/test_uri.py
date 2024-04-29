@@ -15,11 +15,14 @@ def test_basic_create_client_using_tenant() -> None:
         cli.config["site.domain"] == "sightmachine.io"
     ), "Site domain should be set to sightmachine.io"
 
-    cli = client.Client(TENANT, protocol="http")
+    tenant = ""
+    if TENANT:
+        tenant = TENANT
+    cli = client.Client(tenant, protocol="http")
     login_result = cli.login("apikey", key_id=API_KEY, secret_id=API_SECRET)
 
     assert login_result is True, "Login should be successful"
-    assert cli.tenant == TENANT, "Tenant should be initialized correctly"
+    assert cli.tenant == tenant, "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "http", "Protocol should be set to HTTP"
     assert (
         cli.config["site.domain"] == "sightmachine.io"

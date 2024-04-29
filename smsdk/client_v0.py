@@ -102,12 +102,10 @@ def convert_to_valid_url(
     else:
         domain, path = parts
 
-    # domain, port = domain.split(':',1)
+    # Check if the domain has a port specified
     splits = domain.split(":", 1)
 
-    if len(splits) == 1:
-        domain = splits[0]
-    else:
+    if len(splits) == 2:
         domain, port = splits
 
     # Check if the domain has a TLD or not
@@ -118,10 +116,12 @@ def convert_to_valid_url(
     valid_url = f"{protocol}://{domain}"
 
     if port:
-        valid_url = f"{valid_url}:{port}"
+        # valid_url = f"{valid_url}:{port}"
+        log.warning(f"Ignored the user specified port.")
 
     if path:
-        valid_url = f"{valid_url}/{path}"
+        # valid_url = f"{valid_url}/{path}"
+        log.warning(f"Ignored the user specified path.")
 
     return valid_url
 

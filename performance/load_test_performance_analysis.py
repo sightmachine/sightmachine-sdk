@@ -185,6 +185,13 @@ def perform_test(
     throughput = total_responses / elapsed_time if elapsed_time > 0 else 0
     error_rate = (len(errors) / (len(response_times) + len(errors))) * 100
 
+    # Limiting the values to 6 decimal places
+    elapsed_time = round(elapsed_time, 6)
+    avg_response_time = round(avg_response_time, 6)
+    min_response_time = round(min_response_time, 6)
+    max_response_time = round(max_response_time, 6)
+    throughput = round(throughput, 6)
+
     logger.info("Performance Metrics:")
     logger.info(f"Run Time: {elapsed_time}")
     logger.info(f"Number of Response: {total_responses}")
@@ -273,8 +280,6 @@ def perform_get_line_data_load_test(
         "filters": filters,
         "limit": line_data_config.get("MAX_ROWS", 100),
     }
-
-    print(f"DebugInf:: query - {query}")
 
     return perform_test(get_line_data, config, cli, **query)
 

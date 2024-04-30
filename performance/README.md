@@ -15,7 +15,7 @@ Before using the script, ensure the following prerequisites are met:
 ## Usage
 
 ### 1. Configuration
-A custom configuration file should be provided as a command-line argument. The script will use the parameters specified in that file for configuring the load test and fetching query data for the APIs under test.
+A custom configuration file in JSON format should be provided as a command-line argument. The script will use the parameters specified in that file for configuring the load test and fetching query data for the APIs under test.
 
 The configuration file should include the following parameters:
 
@@ -30,9 +30,11 @@ The configuration file should include the following parameters:
 
 If any of these parameters are missing in the configuration file, the script raises an exception to ensure that crucial configuration parameters are provided.
 
+Additionally, a sample configuration file named 'sample_configs.json' is provided in the repository.
+
 ### 2. Command Line Arguments
 The script accepts two optional command-line arguments:
-- `--config-file`: Path to the custom configuration file (default: None). If provided, the script will use the parameters specified in this file. If not provided, the script will use hardcoded default values for configuration parameters.
+- `--config-file`: Path to the json configuration file. The script will use the parameters specified in this file. If not provided, the script will raise an error.
 - `--metrics-xml`: Path to the XML file where performance metrics will be dumped (default: None). If provided, performance metrics will be saved to this file.
 
 
@@ -53,7 +55,7 @@ export ENV_SDK_VAR_API_SECRET="<Tenant API Secret>"
 ### 4. Running the Script
 To run the script, execute the following command in your terminal:
 ```
-python load_test_performance_analysis.py --config-file <path_to_config_file> --metrics-xml <path_to_xml_file>
+python performance/load_test_performance_analysis.py --config-file <path_to_json_config_file> --metrics-xml <path_to_xml_file>
 ```
 Replace `<path_to_xml_file>` with the desired path where you want to save the performance metrics XML file. If you don't want to save the metrics, you can omit the `--metrics-xml` argument.
 

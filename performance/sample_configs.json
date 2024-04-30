@@ -1,0 +1,70 @@
+{
+    "num_peak_users": 5,
+    "ramp_up_rate": 5,
+    "total_run_time": 10,
+    "min_wait_time": 1,
+    "max_wait_time": 5,
+    "get_cycles_query_config": {
+      "Machine": "Abidjan - Lasercut 1",
+      "End Time__gte": "2023-04-01T00:00:00",
+      "End Time__lte": "2023-04-02T00:00:00",
+      "_order_by": "-End Time",
+      "_limit": 100,
+      "_only": [
+        "Machine",
+        "Cycle Start Time",
+        "Cycle End Time",
+        "Production Day",
+        "Cycle Time (Net)",
+        "Cycle Time (Gross)",
+        "Shift",
+        "Output"
+      ]
+    },
+    "get_line_data_query_config": {
+      "TIME_TYPE": "absolute",
+      "START_DATETIME": "2023-04-01T08:00:00.000Z",
+      "END_DATETIME": "2023-04-02T23:00:00.000Z",
+      "TIME_ZONE": "America/Los_Angeles",
+      "ASSETS": [
+        "JB_NG_PickAndPlace_1_Stage4"
+      ],
+      "FIELDS": [
+        "stats__BLOCKED__val",
+        "stats__PneumaticPressure__val"
+      ],
+      "FILTERS": [
+        {
+          "asset": "JB_NG_PickAndPlace_1_Stage4",
+          "field": "stats__PneumaticPressure__val",
+          "op": "gte",
+          "value": 75.25
+        }
+      ],
+      "MAX_ROWS": 50
+    },
+    "get_kpi_data_viz_query_config": {
+      "TIME_TYPE": "relative",
+      "RELATIVE_START": 7,
+      "RELATIVE_UNIT": "day",
+      "TIME_ZONE": "America/Los_Angeles",
+      "ASSETS": [
+        "JB_NG_PickAndPlace_1_Stage4"
+      ],
+      "KPIS": [
+        "quality"
+      ],
+      "I_VARS": [
+        {
+          "name": "endtime",
+          "time_resolution": "day",
+          "query_tz": "America/Los_Angeles",
+          "output_tz": "America/Los_Angeles",
+          "bin_strategy": "user_defined2",
+          "bin_count": 50
+        }
+      ],
+      "WHERE": [],
+      "DB_MODE": "sql"
+    }
+  }

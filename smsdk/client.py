@@ -665,7 +665,15 @@ class Client(ClientV0):
             if not yAxis.get("machineType"):
                 yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
         return dataViz(self.session, base_url).create_share_link(
-             asset=assets, chartType=chartType, compareByField=compareByField, yAxis=yAxis, xAxis=xAxis, model=model, time_selection=time_selection,*args, **kwargs
+            asset=assets,
+            chartType=chartType,
+            compareByField=compareByField,
+            yAxis=yAxis,
+            xAxis=xAxis,
+            model=model,
+            time_selection=time_selection,
+            *args,
+            **kwargs,
         )
 
     @version_check_decorator

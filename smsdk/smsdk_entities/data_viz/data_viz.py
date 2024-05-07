@@ -43,7 +43,7 @@ class DataViz(SmsdkEntities, MaSession):
 
     @mod_util
     def create_share_link(
-        self, asset, chartType, yAxis, xAxis, model, time_selection, *args, **kwargs
+        self, asset, chartType,compareByField, yAxis, xAxis, model, time_selection, *args, **kwargs
     ):
         """
         Creates a share link
@@ -73,6 +73,7 @@ class DataViz(SmsdkEntities, MaSession):
             "chartType": chartType,
             "xAxis": xAxis,
             "dateRange": dateRange,
+            "compareByField": compareByField
         }
         url_params["state"].update(kwargs)
         if model == "line":
@@ -156,3 +157,4 @@ class DataViz(SmsdkEntities, MaSession):
             raise ValueError("Error - {}".format(records))
 
         return records
+

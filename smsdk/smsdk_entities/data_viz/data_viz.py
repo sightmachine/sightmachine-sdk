@@ -52,6 +52,10 @@ class DataViz(SmsdkEntities, MaSession):
         url_params = {}
         url_params["state_hash"] = str(uuid.uuid4())[:8]
         url_params["context"] = "/analysis/datavis"
+        try:
+            url_params["in_use_workspace"] = self.session.headers["X-Sm-Workspace-Id"]
+        except:
+            pass
         if time_selection["time_type"] == "relative":
             dateRange = {
                 "mode": "relative",

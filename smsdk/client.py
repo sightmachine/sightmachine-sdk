@@ -621,7 +621,6 @@ class Client(ClientV0):
         self,
         assets=None,
         chartType=None,
-        compareByField=None,
         yAxis=None,
         xAxis=X_AXIS_TIME,
         model="cycle",
@@ -667,7 +666,6 @@ class Client(ClientV0):
         return dataViz(self.session, base_url).create_share_link(
             asset=assets,
             chartType=chartType,
-            compareByField=compareByField,
             yAxis=yAxis,
             xAxis=xAxis,
             model=model,

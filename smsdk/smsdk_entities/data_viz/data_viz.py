@@ -46,7 +46,6 @@ class DataViz(SmsdkEntities, MaSession):
         self,
         asset,
         chartType,
-        compareByField,
         yAxis,
         xAxis,
         model,
@@ -81,8 +80,7 @@ class DataViz(SmsdkEntities, MaSession):
             "asset": asset,
             "chartType": chartType,
             "xAxis": xAxis,
-            "dateRange": dateRange,
-            "compareByField": compareByField,
+            "dateRange": dateRange
         }
         url_params["state"].update(kwargs)
         if model == "line":

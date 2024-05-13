@@ -20,7 +20,9 @@ class ModuleUtility:
 module_utility = ModuleUtility
 
 
-def get_url(protocol: str, tenant: str, site_domain: str, port: int = None) -> str:
+def get_url(
+    protocol: str, tenant: str, site_domain: str, port: t_.Optional[int] = None
+) -> str:
     """
     Get the URL of the web address.
 

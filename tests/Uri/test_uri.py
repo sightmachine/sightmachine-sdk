@@ -1,6 +1,5 @@
 import pytest
 from smsdk import client
-from smsdk.utils import get_url
 from tests.conftest import TENANT, API_SECRET, API_KEY
 
 

@@ -125,10 +125,6 @@ downmapinv = {
 class Client(ClientV0):
     """Connection point to the Sight Machine platform to retrieve data"""
 
-    session = None
-    tenant = None
-    config = None
-
     def __init__(
         self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
     ):
@@ -143,16 +139,7 @@ class Client(ClientV0):
         :type site_domain: :class:`string`
         """
 
-        self.tenant = tenant
-
-        # Handle internal configuration
-        self.config = {}
-        self.config["protocol"] = protocol
-        self.config["site.domain"] = site_domain
-
-        # Setup Authenticator
-        self.auth = Authenticator(self)
-        self.session = self.auth.session
+        super().__init__(tenant, site_domain=site_domain, protocol=protocol)
 
     @version_check_decorator
     def select_db_schema(self, schema_name):
@@ -177,7 +164,10 @@ class Client(ClientV0):
         :return: pandas dataframe
         """
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
 
         df = pd.DataFrame()
@@ -290,7 +280,10 @@ class Client(ClientV0):
     def get_kpis(self, **kwargs):
         kpis = smsdkentities.get("kpi")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         return kpis(self.session, base_url).get_kpis(**kwargs)
 
@@ -340,7 +333,10 @@ class Client(ClientV0):
     def get_kpis_for_asset(self, **kwargs):
         kpis = smsdkentities.get("kpi")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         if "machine_type" in kwargs["asset_selection"]:
             # updating kwargs with machine_type's system name in case of user provides display name.
@@ -386,7 +382,10 @@ class Client(ClientV0):
         if time_selection:
             kwargs["time_selection"] = time_selection
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
 
         if "asset_selection" in kwargs and "machine_type" in kwargs["asset_selection"]:
@@ -408,7 +407,10 @@ class Client(ClientV0):
     def get_type_from_machine(self, machine_source=None, **kwargs):
         machine = smsdkentities.get("machine")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         return machine(self.session, base_url).get_type_from_machine_name(
             machine_source, **kwargs
@@ -426,7 +428,10 @@ class Client(ClientV0):
         machineType = smsdkentities.get("machine_type")
         machine_type = self.get_type_from_machine(machine_source)
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
         fields = [
@@ -462,7 +467,10 @@ class Client(ClientV0):
     ):
         machineType = smsdkentities.get("machine_type")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
         fields = [
@@ -485,7 +493,10 @@ class Client(ClientV0):
         """
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         return cookbook(self.session, base_url).get_cookbooks(**kwargs)
 
@@ -499,7 +510,10 @@ class Client(ClientV0):
         """
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         return cookbook(self.session, base_url).get_top_results(
             recipe_group_id, limit, **kwargs
@@ -515,7 +529,10 @@ class Client(ClientV0):
         """
         cookbook = smsdkentities.get("cookbook")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         return cookbook(self.session, base_url).get_current_value(
             variables, minutes, **kwargs
@@ -553,7 +570,10 @@ class Client(ClientV0):
         """
         lines = smsdkentities.get("line")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         return lines(self.session, base_url).get_lines(**kwargs)
 
@@ -581,7 +601,10 @@ class Client(ClientV0):
         """
         lines = smsdkentities.get("line")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
 
         asset_selection = []
@@ -621,7 +644,10 @@ class Client(ClientV0):
     ):
         dataViz = smsdkentities.get("dataViz")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         if assets and model == "cycle" or assets and model == "kpi":
             machine_types = []
@@ -762,7 +788,10 @@ class Client(ClientV0):
     ):
         raw_data = smsdkentities.get("raw_data")
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         select = [{"name": field} for field in fields]
         kwargs["asset_selection"] = {"raw_data_table": raw_data_table}

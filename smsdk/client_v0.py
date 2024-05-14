@@ -23,6 +23,7 @@ from smsdk.tool_register import smsdkentities
 from datetime import datetime
 import logging
 import functools
+from urllib.parse import urlparse
 
 log = logging.getLogger(__name__)
 
@@ -74,6 +75,57 @@ def dict_to_df(data, normalize=True):
     return df
 
 
+def convert_to_valid_url(
+    input_url: str,
+    default_domain: str = "sightmachine.io",
+    default_protocol: str = "https",
+):
+    port = ""
+    path = ""
+
+    # Check if the input URL has a protocol specified
+    if "://" in input_url:
+        protocol, rest_url = input_url.split("://", 1)
+    else:
+        protocol = default_protocol
+        rest_url = input_url
+
+    if not protocol:
+        protocol = default_protocol
+
+    # Split the remaining URL to check if domain is specified
+    parts = rest_url.split("/", 1)
+
+    if len(parts) == 1:
+        domain = parts[0]
+        path = ""
+    else:
+        domain, path = parts
+
+    # Check if the domain has a port specified
+    splits = domain.split(":", 1)
+
+    if len(splits) == 2:
+        domain, port = splits
+
+    # Check if the domain has a TLD or not
+    if "." not in domain:
+        domain = f"{domain}.{default_domain}"
+
+    # Construct the valid URL
+    valid_url = f"{protocol}://{domain}"
+
+    if port:
+        valid_url = f"{valid_url}:{port}"
+        # log.warning(f"Ignored the user specified port.")
+
+    if path:
+        # valid_url = f"{valid_url}/{path}"
+        log.warning(f"Ignored the user specified path.")
+
+    return valid_url
+
+
 # We don't have a downtime schema, so hard code one
 downmap = {
     "machine__source": "Machine",
@@ -103,9 +155,11 @@ class ClientV0(object):
 
     session = None
     tenant = None
-    config = None
+    config = {}
 
-    def __init__(self, tenant, site_domain="sightmachine.io"):
+    def __init__(
+        self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
+    ):
         """
         Initialize the client.
 
@@ -117,18 +171,31 @@ class ClientV0(object):
         :type site_domain: :class:`string`
         """
 
-        self.tenant = tenant
+        port = None
+        if tenant:
+            # Convert the input tenant into a valid url
+            url = convert_to_valid_url(
+                tenant, default_domain=site_domain, default_protocol=protocol
+            )
 
-        # Handle internal configuration
-        self.config = {}
-        self.config["protocol"] = "https"
-        self.config["site.domain"] = site_domain
+            # Parse the input string
+            parsed_uri = urlparse(url)
+
+            tenant = parsed_uri.netloc.split(".", 1)[0]
+            protocol = parsed_uri.scheme
+            site_domain = parsed_uri.netloc.split(":")[0].replace(f"{tenant}.", "")
+
+            # Extract port
+            port = parsed_uri.port
+
+        self.tenant = tenant
+        self.config = {"protocol": protocol, "site.domain": site_domain, "port": port}
 
         # Setup Authenticator
         self.auth = Authenticator(self)
         self.session = self.auth.session
 
-    def login(self, method: str, **kwargs: t_.Any) -> None:
+    def login(self, method: str, **kwargs: t_.Any) -> bool:
         """
         Authenticate with the configured tenant and user credentials.
 
@@ -203,7 +270,10 @@ class ClientV0(object):
         :return: pandas dataframe
         """
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
 
         df = pd.DataFrame()
@@ -1412,7 +1482,10 @@ class ClientV0(object):
         }
 
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         cls = smsdkentities.get("dataviz_cycle")(self.session, base_url)
 
@@ -1523,7 +1596,10 @@ class ClientV0(object):
         }
 
         base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
         )
         cls = smsdkentities.get("dataviz_part")(self.session, base_url)
 

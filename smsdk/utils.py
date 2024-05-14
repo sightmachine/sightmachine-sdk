@@ -20,7 +20,9 @@ class ModuleUtility:
 module_utility = ModuleUtility
 
 
-def get_url(protocol: str, tenant: str, site_domain: str) -> str:
+def get_url(
+    protocol: str, tenant: str, site_domain: str, port: t_.Optional[int] = None
+) -> str:
     """
     Get the URL of the web address.
 
@@ -30,6 +32,15 @@ def get_url(protocol: str, tenant: str, site_domain: str) -> str:
     :type tenant: :class:`string`
     :param site_domain: The domain name of the URL.
     :type site_domain: :class:`string`
+    :param port: The port number (defaults to None).
+    :type port: :Int
     """
 
-    return f"{protocol}://{tenant}.{site_domain}"
+    url = ""
+
+    if port is not None:
+        url = f"{protocol}://{tenant}.{site_domain}:{port}"
+    else:
+        url = f"{protocol}://{tenant}.{site_domain}"
+
+    return url

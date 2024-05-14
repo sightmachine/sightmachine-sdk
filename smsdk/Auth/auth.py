@@ -44,7 +44,10 @@ class Authenticator(MaSession):
         # Setup session and store host
         self.requests = requests
         self.host = get_url(
-            client.config["protocol"], client.tenant, client.config["site.domain"]
+            client.config["protocol"],
+            client.tenant,
+            client.config["site.domain"],
+            client.config["port"],
         )
         self.session.headers = default_headers()
 

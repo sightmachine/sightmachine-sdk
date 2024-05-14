@@ -13,7 +13,7 @@ def test_auth_init():
     authed = cli.auth
 
     assert authed.host == get_url(
-        cli.config["protocol"], tenant, cli.config["site.domain"]
+        cli.config["protocol"], tenant, cli.config["site.domain"], cli.config["port"]
     )
 
 

@@ -788,3 +788,13 @@ class Client(ClientV0):
         kwargs["offset"] = offset
 
         return self.get_data_v1("raw_data", "get_raw_data", True, *args, **kwargs)
+
+    @version_check_decorator
+    def get_dashboard_data(self, dashboard_id=""):
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        # load the entity class and initialize it
+        cls = smsdkentities.get('dashboard')(self.session, base_url)
+        panels=getattr(cls, 'get_dashboards')(dashboard_id)
+        return panels

@@ -795,6 +795,6 @@ class Client(ClientV0):
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
         # load the entity class and initialize it
-        cls = smsdkentities.get('dashboard')(self.session, base_url)
-        panels=getattr(cls, 'get_dashboards')(dashboard_id)
+        cls = smsdkentities.get("dashboard")(self.session, base_url)
+        panels = getattr(cls, "get_dashboards")(dashboard_id)
         return panels

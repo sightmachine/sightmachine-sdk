@@ -35,10 +35,12 @@ class DashboardData(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_dashboards(self,dashboard_id) -> List:
+    def get_dashboards(self, dashboard_id) -> List:
         """
         Utility function to get the panels data for dashboard
         """
-        url = "{}{}{}".format(self.base_url, ENDPOINTS["Dashboard"]["url_v1"], dashboard_id)
+        url = "{}{}{}".format(
+            self.base_url, ENDPOINTS["Dashboard"]["url_v1"], dashboard_id
+        )
         panels = self._get_dashboard_panels(url, method="get")
         return panels

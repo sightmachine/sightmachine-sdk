@@ -265,16 +265,12 @@ class MaSession:
         except Exception as e:
             raise e
 
-    def _get_dashboard_panels(
-        self,
-        endpoint: str,
-        method: str = "get"
-    ) -> t_.Any:
+    def _get_dashboard_panels(self, endpoint: str, method: str = "get") -> t_.Any:
         try:
             response = getattr(self.session, method.lower())(endpoint)
             if response.status_code not in [200, 201]:
                 raise ValueError("Error - {}".format(response.text))
-            data = response.json()['panels']
+            data = response.json()["panels"]
         except Exception as e:
             raise ValueError(e)
         return data

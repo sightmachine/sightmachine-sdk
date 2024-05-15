@@ -1,37 +1,55 @@
 {
-    "Auth": {"url": "/auth/password/login"},
-    "Cycle": {
-        "url_v1": "/v1/datatab/cycle",
-        "url": "/api/cycle",
-        "alt_url": "/api/cycle",
-    },
-    "Factory": {"url": "/api/factory"},
-    "MachineType": {
-        "url": "/api/machinetype",
-        "url_v1": "/v1/obj/machine_type",
-        "fields": "/v1/selector/datatab/cycle/{}/field",
-    },
-    "Machine": {"url": "/api/machine", "url_v1": "/v1/obj/machine"},
-    "Parts": {
-        "url": "/api/part",
-        "url_v1": "/v1/datatab/part",
-        "part_schema": "/v1/obj/part_type",
-    },
-    "Downtime": {"url": "/api/downtime", "url_v1": "/v1/datatab/downtime"},
-    "Dashboard": {"url_v1": "/v1/obj/dashboard/"},
-    "DataViz": {
-        "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
-        "estimate_part": "/v1/selector/datavis/estimate/part",
-        "task": "/v1/datavis/task/async",
-        "share_link": "/v1/obj/ui_share_state",
-    },
-    "KPI": {"availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"},
-    "Assets": {"url": "/v1/selector/assets"},
-    "Cookbook": {
-        "get_cookbooks": "/v1/obj/recipe/cookbook",
-        "top_results": "/v1/recipe/top_results/{}?limit={}",
-        "current_value": "/v1/recipe/current_value",
-    },
-    "Line": {"url": "/v1/datatab/line"},
-    "RawData": {"url": "/v1/datatab/raw_data"},
+  "Auth": {
+    "url": "/auth/password/login"
+  },
+  "Cycle": {
+    "url_v1": "/v1/datatab/cycle",
+    "url": "/api/cycle",
+    "alt_url": "/api/cycle"
+  },
+  "Factory": {
+    "url" : "/api/factory"
+  },
+  "MachineType": {
+    "url" : "/api/machinetype",
+    "url_v1" : "/v1/obj/machine_type",
+    "fields": "/v1/selector/datatab/cycle/{}/field"
+  },
+  "Machine": {
+    "url" : "/api/machine",
+    "url_v1" : "/v1/obj/machine"
+  },
+  "Parts": {
+    "url" : "/api/part",
+    "url_v1": "/v1/datatab/part",
+    "part_schema": "/v1/obj/part_type"
+  },
+  "Downtime": {
+    "url" : "/api/downtime",
+    "url_v1" : "/v1/datatab/downtime"
+
+  },
+  "DataViz": {
+    "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
+    "estimate_part": "/v1/selector/datavis/estimate/part",
+    "task": "/v1/datavis/task/async",
+    "share_link": "/v1/obj/ui_share_state"
+  },
+  "KPI": {
+    "availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"
+  },
+  "Assets": {
+    "url":"/v1/selector/assets"
+  },
+  "Cookbook": {
+    "get_cookbooks": "/v1/obj/recipe/cookbook",
+    "top_results": "/v1/recipe/top_results/{}?limit={}",
+    "current_value": "/v1/recipe/current_value"
+  },
+  "Line": {
+    "url": "/v1/datatab/line"
+  },
+  "RawData": {
+    "url": "/v1/datatab/raw_data"
+  }
 }

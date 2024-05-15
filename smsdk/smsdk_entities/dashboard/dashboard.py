@@ -39,8 +39,6 @@ class DashboardData(SmsdkEntities, MaSession):
         """
         Utility function to get the panels data for dashboard
         """
-        url = "{}{}{}".format(
-            self.base_url, '/v1/obj/dashboard/', dashboard_id
-        )
+        url = "{}{}{}".format(self.base_url, "/v1/obj/dashboard/", dashboard_id)
         panels = self._get_dashboard_panels(url, method="get")
         return panels

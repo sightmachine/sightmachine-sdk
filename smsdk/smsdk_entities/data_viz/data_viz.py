@@ -43,7 +43,7 @@ class DataViz(SmsdkEntities, MaSession):
 
     @mod_util
     def create_share_link(
-        self, asset, chartType, yAxis, xAxis, model, time_selection, *args, **kwargs
+        self, asset, chartType, yAxis, xAxis, model, time_selection, are_line_params_available=False, *args, **kwargs
     ):
         """
         Creates a share link
@@ -80,61 +80,64 @@ class DataViz(SmsdkEntities, MaSession):
         }
         url_params["state"].update(kwargs)
         if model == "line":
-            del url_params["state"]["asset"]
-            url_params["state"]["lineProcess"] = {}
-            if not isinstance(asset, List) and asset.get("assetOffsets"):
-                url_params["state"]["lineProcess"]["assetOffsets"] = asset.get(
-                    "assetOffsets"
-                )
-            if not isinstance(asset, List) and asset.get("assets"):
-                selectedMachines = []
-                for machine in asset["assets"]:
-                    selectedMachines.append({"machineName": machine})
-                url_params["state"]["lineProcess"][
-                    "selectedMachines"
-                ] = selectedMachines
+            if are_line_params_available:
+                pass
             else:
-                selectedMachines = []
-                for machine in asset:
-                    selectedMachines.append({"machineName": machine})
-                url_params["state"]["lineProcess"][
-                    "selectedMachines"
-                ] = selectedMachines
+                del url_params["state"]["asset"]
+                url_params["state"]["lineProcess"] = {}
+                if not isinstance(asset, List) and asset.get("assetOffsets"):
+                    url_params["state"]["lineProcess"]["assetOffsets"] = asset.get(
+                        "assetOffsets"
+                    )
+                if not isinstance(asset, List) and asset.get("assets"):
+                    selectedMachines = []
+                    for machine in asset["assets"]:
+                        selectedMachines.append({"machineName": machine})
+                    url_params["state"]["lineProcess"][
+                        "selectedMachines"
+                    ] = selectedMachines
+                else:
+                    selectedMachines = []
+                    for machine in asset:
+                        selectedMachines.append({"machineName": machine})
+                    url_params["state"]["lineProcess"][
+                        "selectedMachines"
+                    ] = selectedMachines
 
-            if xAxis.get("id") == "endtime":
-                url_params["state"]["lineXAxis"] = [
-                    {"field": {"name": "offset_endtime", "type": "datetime"}}
-                ]
-            else:
-                url_params["state"]["lineXAxis"] = xAxis
-            if isinstance(yAxis, List):
-                lineYAxis = []
-                for y in yAxis:
-                    lineYAxis.append(
+                if xAxis.get("id") == "endtime":
+                    url_params["state"]["lineXAxis"] = [
+                        {"field": {"name": "offset_endtime", "type": "datetime"}}
+                    ]
+                else:
+                    url_params["state"]["lineXAxis"] = xAxis
+                if isinstance(yAxis, List):
+                    lineYAxis = []
+                    for y in yAxis:
+                        lineYAxis.append(
+                            {
+                                "field": {
+                                    "name": y.get("field"),
+                                    "machine_type": {
+                                        "name": y.get("machineType"),
+                                    },
+                                },
+                                "machineName": y.get("machineName"),
+                            }
+                        )
+                    url_params["state"]["lineYAxisMulti"] = lineYAxis
+
+                else:
+                    url_params["state"]["lineYAxisMulti"] = [
                         {
                             "field": {
-                                "name": y.get("field"),
+                                "name": yAxis.get("field"),
                                 "machine_type": {
-                                    "name": y.get("machineType"),
+                                    "name": yAxis.get("machineType"),
                                 },
                             },
-                            "machineName": y.get("machineName"),
+                            "machineName": yAxis.get("machineName"),
                         }
-                    )
-                url_params["state"]["lineYAxisMulti"] = lineYAxis
-
-            else:
-                url_params["state"]["lineYAxisMulti"] = [
-                    {
-                        "field": {
-                            "name": yAxis.get("field"),
-                            "machine_type": {
-                                "name": yAxis.get("machineType"),
-                            },
-                        },
-                        "machineName": yAxis.get("machineName"),
-                    }
-                ]
+                    ]
 
         else:
             if isinstance(yAxis, List):
@@ -147,13 +150,17 @@ class DataViz(SmsdkEntities, MaSession):
         )
 
     @mod_util
-    def get_dashboard_widget_data(self, *args, **kwargs):
+    def get_dashboard_widget_data(self,model, *args, **kwargs):
         """
         Takes a query params from the widget in dashboard
         Returns Data info for that query
         """
-
-        url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["task"])
+        if model == 'line':
+            endpoint=ENDPOINTS["DataViz"]["line_task"]
+        else:
+            endpoint=ENDPOINTS["DataViz"]["task"]
+            kwargs['model']=model
+        url = "{}{}".format(self.base_url, endpoint)
         records = self._complete_async_task(url, **kwargs)
 
         if not isinstance(records, List):

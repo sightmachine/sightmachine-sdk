@@ -404,12 +404,12 @@ class Client(ClientV0):
             ] = self.get_machine_source_from_clean_name(kwargs)
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
-    def get_widget_data(self, url_params):
+    def get_widget_data(self, model, url_params):
         widget_entity = smsdkentities.get("dataViz")
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return widget_entity(self.session, base_url).get_dashboard_widget_data(
+        return widget_entity(self.session, base_url).get_dashboard_widget_data(model,
             **url_params
         )
 
@@ -625,6 +625,7 @@ class Client(ClientV0):
         xAxis=X_AXIS_TIME,
         model="cycle",
         time_selection=ONE_WEEK_RELATIVE,
+        are_line_params_available=False,
         *args,
         **kwargs,
     ):
@@ -650,19 +651,19 @@ class Client(ClientV0):
 
         if model == "kpi" and not isinstance(yAxis, list):
             yAxis = [yAxis]
-
-        if model == "line" and isinstance(yAxis, list):
-            newYAxis = []
-            for y in yAxis:
-                if y.get("machineType"):
-                    newYAxis.append(y)
-                else:
-                    y["machineType"] = self.get_type_from_machine(y["machineName"])
-                    newYAxis.append(y)
-            yAxis = newYAxis
-        elif model == "line":
-            if not yAxis.get("machineType"):
-                yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
+        if not are_line_params_available:
+            if model == "line" and isinstance(yAxis, list):
+                newYAxis = []
+                for y in yAxis:
+                    if y.get("machineType"):
+                        newYAxis.append(y)
+                    else:
+                        y["machineType"] = self.get_type_from_machine(y["machineName"])
+                        newYAxis.append(y)
+                yAxis = newYAxis
+            elif model == "line":
+                if not yAxis.get("machineType"):
+                    yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
         return dataViz(self.session, base_url).create_share_link(
             asset=assets,
             chartType=chartType,
@@ -670,6 +671,7 @@ class Client(ClientV0):
             xAxis=xAxis,
             model=model,
             time_selection=time_selection,
+            are_line_params_available=are_line_params_available,
             *args,
             **kwargs,
         )

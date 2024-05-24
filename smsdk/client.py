@@ -409,8 +409,8 @@ class Client(ClientV0):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return widget_entity(self.session, base_url).get_dashboard_widget_data(model,
-            **url_params
+        return widget_entity(self.session, base_url).get_dashboard_widget_data(
+            model, **url_params
         )
 
     @version_check_decorator
@@ -663,7 +663,9 @@ class Client(ClientV0):
                 yAxis = newYAxis
             elif model == "line":
                 if not yAxis.get("machineType"):
-                    yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
+                    yAxis["machineType"] = self.get_type_from_machine(
+                        yAxis["machineName"]
+                    )
         return dataViz(self.session, base_url).create_share_link(
             asset=assets,
             chartType=chartType,

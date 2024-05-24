@@ -43,7 +43,16 @@ class DataViz(SmsdkEntities, MaSession):
 
     @mod_util
     def create_share_link(
-        self, asset, chartType, yAxis, xAxis, model, time_selection, are_line_params_available=False, *args, **kwargs
+        self,
+        asset,
+        chartType,
+        yAxis,
+        xAxis,
+        model,
+        time_selection,
+        are_line_params_available=False,
+        *args,
+        **kwargs
     ):
         """
         Creates a share link
@@ -150,16 +159,16 @@ class DataViz(SmsdkEntities, MaSession):
         )
 
     @mod_util
-    def get_dashboard_widget_data(self,model, *args, **kwargs):
+    def get_dashboard_widget_data(self, model, *args, **kwargs):
         """
         Takes a query params from the widget in dashboard
         Returns Data info for that query
         """
-        if model == 'line':
-            endpoint=ENDPOINTS["DataViz"]["line_task"]
+        if model == "line":
+            endpoint = ENDPOINTS["DataViz"]["line_task"]
         else:
-            endpoint=ENDPOINTS["DataViz"]["task"]
-            kwargs['model']=model
+            endpoint = ENDPOINTS["DataViz"]["task"]
+            kwargs["model"] = model
         url = "{}{}".format(self.base_url, endpoint)
         records = self._complete_async_task(url, **kwargs)
 

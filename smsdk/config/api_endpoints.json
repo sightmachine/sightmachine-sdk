@@ -33,6 +33,7 @@
     "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
     "estimate_part": "/v1/selector/datavis/estimate/part",
     "task": "/v1/datavis/task/async",
+    "analytics_task": "/v1/analytics/task/async",
     "line_task": "/v1/linevis/task/async",
     "share_link": "/v1/obj/ui_share_state"
   },

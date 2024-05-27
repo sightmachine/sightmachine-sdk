@@ -237,9 +237,11 @@ class MaSession:
         db_mode: str = "sql",
         **url_params: t_.Any,
     ) -> t_.Any:
-        if url_params.get("db_mode") == None:
+        is_analytics = url_params.get('is_analytics')
+        if url_params.get("db_mode") == None and not is_analytics:
             url_params["db_mode"] = db_mode
         try:
+            url_params.pop('is_analytics',None)
             response = getattr(self.session, method.lower())(endpoint, json=url_params)
             if response.status_code not in [200, 201]:
                 raise ValueError("Error - {}".format(response.text))
@@ -256,8 +258,11 @@ class MaSession:
                     data = response.json()
                     state = data["response"]["state"]
                     if state == "SUCCESS":
-                        return data["response"]["meta"]["results"]
-
+                        if not is_analytics:
+                            return data["response"]["meta"]["results"]
+                        else:
+                            response=data["response"]['data']
+                            return response
                     if state == "FAILURE" or state == "REVOKED":
                         raise ValueError("Error - {}".format(response.text))
                 except Exception as e:

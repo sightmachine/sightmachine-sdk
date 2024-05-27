@@ -164,15 +164,20 @@ class DataViz(SmsdkEntities, MaSession):
         Takes a query params from the widget in dashboard
         Returns Data info for that query
         """
+        is_analytics=False
         if model == "line":
             endpoint = ENDPOINTS["DataViz"]["line_task"]
-        else:
+        elif model=='cycle':
             endpoint = ENDPOINTS["DataViz"]["task"]
             kwargs["model"] = model
+        else:
+            endpoint = ENDPOINTS["DataViz"]["analytics_task"]
+            kwargs["is_analytics"] = not is_analytics
+            is_analytics= True
         url = "{}{}".format(self.base_url, endpoint)
         records = self._complete_async_task(url, **kwargs)
 
-        if not isinstance(records, List):
+        if not isinstance(records, List) and not is_analytics:
             raise ValueError("Error - {}".format(records))
 
         return records

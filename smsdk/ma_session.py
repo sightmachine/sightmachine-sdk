@@ -241,6 +241,13 @@ class MaSession:
             url_params["db_mode"] = db_mode
         try:
             response = getattr(self.session, method.lower())(endpoint, json=url_params)
+            print('---URL---')
+            print(response.request.url)
+            print('---Headers---')
+            print(response.request.headers)
+            print('---Body---')
+            print(response.request.body)
+            print('---END---')
             if response.status_code not in [200, 201]:
                 raise ValueError("Error - {}".format(response.text))
             data = response.json()

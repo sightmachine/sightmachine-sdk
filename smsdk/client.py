@@ -802,3 +802,11 @@ class Client(ClientV0):
         cls = smsdkentities.get("dashboard")(self.session, base_url)
         panels = getattr(cls, "get_dashboards")(dashboard_id)
         return panels
+
+    @version_check_decorator
+    def create_widget_share_link(self, context="/analysis/datavis", **kwargs):
+        dataViz = smsdkentities.get("dataViz")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return dataViz(self.session, base_url).create_widget_share_link(context,**kwargs)

@@ -29,7 +29,12 @@ def test_get_utilities(get_session):
     # Run
     all_utilites = line.get_utilities(get_session, URL_V1)
 
-    expected_list = ["get_utilities", "get_lines", "get_line_data"]
+    expected_list = [
+        "get_utilities",
+        "get_lines",
+        "get_line_data",
+        "get_line_data_lineviz",
+    ]
 
     assert len(all_utilites) == len(expected_list)
     assert all([a == b for a, b in zip(all_utilites, expected_list)])

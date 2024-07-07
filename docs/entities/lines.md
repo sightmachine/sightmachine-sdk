@@ -175,3 +175,226 @@ print(len(df))
 # 14
 ```
 
+### Get Line Data Lineviz
+This function allows you to pull data from our line model via lineviz API.  This function can be called using either of the two methods of calling:
+
+#### Using Positional Arguments
+```
+cli.get_line_data_lineviz(assets, d_vars, i_vars, time_selection, asset_time_offset, filters)
+```
+
+#### Using Keyword Arguments
+```
+cli.get_line_data_lineviz(assets=assets, d_vars=d_vars, i_vars=i_vars, time_selection=time_selection, asset_time_offset=asset_time_offset, filters=filters)
+```
+
+It will return something like:
+```
+[
+  {
+    "i_vals": [
+      {
+        "name": "offset_endtime",
+        "asset": "SHARED",
+        "i_pos": 0,
+        "value": {
+          "bin_no": 0,
+          "bin_min": "2024-07-06T00:00:00+00:00",
+          "bin_max": "2024-07-06T00:00:00+00:00",
+          "bin_avg": "2024-07-06T00:00:00+00:00"
+        }
+      }
+    ],
+    "d_vals": [
+      {
+        "name": "quality",
+        "asset": "F3_Paper_Mill_PM1_Production_Status",
+        "d_pos": 0,
+        "value": {
+          "avg": 90.5265124361114
+        },
+        "kpi": {
+          "dependencies": {
+            "reject_tons": 0.9635,
+            "good_tons": 1380818.9,
+            "random": 1445.0002659794823
+          },
+          "formula": "good_tons / (good_tons + (reject_tons + (random * 100))) * 100 if (good_tons + (reject_tons + (random * 100))) > 0 else None",
+          "aggregates": {
+            "reject_tons": "sum",
+            "good_tons": "sum",
+            "random": "sum"
+          }
+        },
+        "type": "kpi"
+      },
+      {
+        "name": "stats__32RL1BWTACT__val",
+        "asset": "F1_Paper_Mill_PM2_Production_Status",
+        "d_pos": 1,
+        "value": {
+          "avg": 70.23743333551619
+        },
+        "type": "continuous"
+      }
+    ],
+    "_count": 2880
+  },
+  {
+    "i_vals": [
+      {
+        "name": "offset_endtime",
+        "asset": "SHARED",
+        "i_pos": 0,
+        "value": {
+          "bin_no": 1,
+          "bin_min": "2024-07-07T00:00:00+00:00",
+          "bin_max": "2024-07-07T00:00:00+00:00",
+          "bin_avg": "2024-07-07T00:00:00+00:00"
+        }
+      }
+    ],
+    "d_vals": [
+      {
+        "name": "quality",
+        "asset": "F3_Paper_Mill_PM1_Production_Status",
+        "d_pos": 0,
+        "value": {
+          "avg": 92.36746206062107
+        },
+        "kpi": {
+          "dependencies": {
+            "reject_tons": 313.66733,
+            "good_tons": 1177192.4,
+            "random": 969.6047504117041
+          },
+          "formula": "good_tons / (good_tons + (reject_tons + (random * 100))) * 100 if (good_tons + (reject_tons + (random * 100))) > 0 else None",
+          "aggregates": {
+            "reject_tons": "sum",
+            "good_tons": "sum",
+            "random": "sum"
+          }
+        },
+        "type": "kpi"
+      },
+      {
+        "name": "stats__32RL1BWTACT__val",
+        "asset": "F1_Paper_Mill_PM2_Production_Status",
+        "d_pos": 1,
+        "value": {
+          "avg": 72.70377143305424
+        },
+        "type": "continuous"
+      }
+    ],
+    "_count": 1954
+  }
+]
+```
+
+Both methods of calling the API are functionally equivalent. The first method exclusively uses positional arguments, while the second method employs named arguments. Providing both positional and keyword values for the same argument in an API call is not allowed. It will throw an error, causing the API call to fail.
+
+#### assets
+A required field, this is a list of strings where the strings used are all machine_names.  You can use machines from different lines.
+```
+["F3_Paper_Mill_PM1_Production_Status", "F1_Paper_Mill_PM2_Production_Status"]
+```
+
+#### d_vars
+The Dependent variables.  These will change depending on the entity you are trying to access.  But will always be a list in the following form:
+```
+[
+    {
+      "name": "quality",
+      "asset": "F3_Paper_Mill_PM1_Production_Status",
+      "aggregate": [
+        "avg"
+      ],
+      "type": "kpi"
+    },
+    {
+      "name": "stats__32RL1BWTACT__val",
+      "asset": "F1_Paper_Mill_PM2_Production_Status",
+      "aggregate": [
+        "avg"
+      ],
+      "type": "continuous"
+    }
+]
+```
+
+
+#### i_vars
+The indepent variables.  These should typically be time based values that are stored on the machine_type you are using. They will always be a list in the following form:
+```
+[
+    {
+      "name": "offset_endtime",
+      "asset": "SHARED",
+      "time_resolution": "day",
+      "query_tz": "UTC",
+      "output_tz": "UTC",
+      "bin_strategy": "user_defined2",
+      "bin_count": 50
+    }
+]
+```
+
+
+#### time_selection
+This is the same time selection we use in other places more details can be found [here](/docs/commonly_used_data_types/data_viz_query.md#time_selection).  It defaults to one day if none is given and can look like this:
+```
+{
+    "time_type": "relative",
+    "relative_start": 7,
+    "relative_unit": "day",
+    "ctime_tz": "America/Los_Angeles"
+}
+```
+
+
+#### asset_time_offset
+This is used to set offsets between machines in a line.  This is optional and will defualt to no offset if not given.  This is a dictionary that looks like this:
+```
+{
+    "F3_Paper_Mill_PM1_Production_Status": {
+      "interval": 0,
+      "period": "minutes"
+    },
+    "F1_Paper_Mill_PM2_Production_Status": {
+      "interval": 0,
+      "period": "minutes"
+    }
+}
+```
+
+
+#### filters
+This is optional and a way to to filter the data.  This a list of objects that each look like the following:
+```
+{
+    "asset": "F2_010_BodyMaker_1",
+    "name": "stats__0_BM 008: Cans Out__val",
+    "op": "gt",
+    "value": 35200.0
+}
+```
+
+##### asset
+The name of the asset this filter is looking at. This will be a machine_name.
+
+##### name
+The name of the field you are looking at for this machine.
+
+##### op
+The operation you are filtering with.  Options inclue:
+lt: less than
+gt: greater than
+lte: less than or equal to
+gte: greater than or equal to
+eq: equal to
+in: in
+ne: not equal to
+
+##### value
+The value you are comparing the field to.

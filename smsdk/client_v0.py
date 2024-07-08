@@ -133,9 +133,9 @@ downmap = {
     "endtime": "End Time",
     "total": "Duration",
     "shift": "Shift",
-    "metadata__reason": "Downtime Reason",
-    "metadata__category": "Downtime Category",
-    "metadata__downtime_type": "Downtime Type",
+    "reason": "Downtime Reason",
+    "category": "Downtime Category",
+    "downtime_type": "Downtime Type",
 }
 
 downmapinv = {
@@ -144,9 +144,9 @@ downmapinv = {
     "End Time": "endtime",
     "Duration": "total",
     "Shift": "shift",
-    "Downtime Reason": "metadata__reason",
-    "Downtime Category": "metadata__category",
-    "Downtime Type": "metadata__downtime_type",
+    "Downtime Reason": "reason",
+    "Downtime Category": "category",
+    "Downtime Type": "downtime_type",
 }
 
 

@@ -105,9 +105,9 @@ downmap = {
     "endtime": "End Time",
     "total": "Duration",
     "shift": "Shift",
-    "metadata__reason": "Downtime Reason",
-    "metadata__category": "Downtime Category",
-    "metadata__downtime_type": "Downtime Type",
+    "reason": "Downtime Reason",
+    "category": "Downtime Category",
+    "downtime_type": "Downtime Type",
 }
 
 downmapinv = {
@@ -116,9 +116,9 @@ downmapinv = {
     "End Time": "endtime",
     "Duration": "total",
     "Shift": "shift",
-    "Downtime Reason": "metadata__reason",
-    "Downtime Category": "metadata__category",
-    "Downtime Type": "metadata__downtime_type",
+    "Downtime Reason": "reason",
+    "Downtime Category": "category",
+    "Downtime Type": "downtime_type",
 }
 
 
@@ -629,6 +629,57 @@ class Client(ClientV0):
         return lines(self.session, base_url).get_line_data(
             limit=limit, offset=offset, **kwargs
         )
+
+    @version_check_decorator
+    def get_line_data_lineviz(
+        self,
+        assets=None,
+        d_vars=None,
+        i_vars=None,
+        time_selection=ONE_DAY_RELATIVE,
+        asset_time_offset={},
+        filters=[],
+        **kwargs,
+    ):
+        """
+        Returns all the lines for the facility
+        :param assets: A list of assets you wish to get data for
+        :param asset_time_offset: A dictionary of the time offsets to use for assets
+        :param d_vars: A list of data viz d_var objects
+        :param i_vars: A list of data viz i_var objects
+        :param time_selection: A time selection for your query defaults to one day relative
+        :param filter: A list of filters on the data
+        """
+        lines = smsdkentities.get("line")
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+
+        if i_vars:
+            kwargs["d_vars"] = d_vars
+        if i_vars:
+            kwargs["i_vars"] = i_vars
+        if time_selection:
+            kwargs["time_selection"] = time_selection
+        if assets:
+            for asset in assets:
+                if asset_time_offset.get(asset) == None:
+                    asset_time_offset[asset] = {"interval": 0, "period": "minutes"}
+
+        where = []
+        if len(filters) > 0:
+            for filter in filters:
+                where.append({"nested": [filter]})
+
+        kwargs["d_vars"] = d_vars
+        kwargs["i_vars"] = i_vars
+        kwargs["asset_time_offset"] = asset_time_offset
+        kwargs["time_selection"] = time_selection
+        kwargs["where"] = where
+        return lines(self.session, base_url).get_line_data_lineviz(**kwargs)
 
     @version_check_decorator
     def create_share_link(

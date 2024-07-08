@@ -20,6 +20,12 @@ log = logging.getLogger(__name__)
 
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
+try:
+    NPINFINITY = np.Inf
+except AttributeError:
+    # numpy 2.0
+    NPINFINITY = np.inf
+
 
 @smsdkentities.register("cycle_v1")
 class Cycle(SmsdkEntities, MaSession):
@@ -136,7 +142,7 @@ class Cycle(SmsdkEntities, MaSession):
 
         new_kwargs["select"] = [{"name": i} for i in kwargs["_only"]]
         new_kwargs["offset"] = kwargs.get("_offset", 0)
-        new_kwargs["limit"] = kwargs.get("_limit", np.Inf)
+        new_kwargs["limit"] = kwargs.get("_limit", NPINFINITY)
         new_kwargs["where"] = where
 
         if kwargs.get("_order_by", ""):

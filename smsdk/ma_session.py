@@ -34,6 +34,11 @@ X_SM_WORKSPACE_ID = RESOURCE_CONFIG["x_sm_workspace_id"]
 import logging
 
 log = logging.getLogger(__name__)
+try:
+    NPINFINITY = np.Inf
+except AttributeError:
+    # numpy 2.0
+    NPINFINITY = np.inf
 
 
 class MaSession:
@@ -45,7 +50,7 @@ class MaSession:
         self,
         endpoint: str,
         method: str = "get",
-        _limit: float = np.Inf,
+        _limit: float = NPINFINITY,
         _offset: int = 0,
         **url_params: t_.Any,
     ) -> t_.List[t_.Dict[str, t_.Any]]:
@@ -150,7 +155,7 @@ class MaSession:
         self,
         endpoint: str,
         method: str = "post",
-        limit: float = np.Inf,
+        limit: float = NPINFINITY,
         offset: float = 0,
         db_mode: str = "sql",
         results_under: str = "results",

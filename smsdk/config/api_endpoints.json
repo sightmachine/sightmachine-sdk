@@ -47,7 +47,8 @@
     "current_value": "/v1/recipe/current_value"
   },
   "Line": {
-    "url": "/v1/datatab/line"
+    "url": "/v1/datatab/line",
+    "task": "/v1/linevis/task/async"
   },
   "RawData": {
     "url": "/v1/datatab/raw_data"

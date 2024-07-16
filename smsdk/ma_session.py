@@ -291,13 +291,7 @@ class MaSession:
         starttime_key = ""
         endtime_key = ""
 
-        exclude_list = ["timezone"]
-
-        times = {
-            i: kwargs[i]
-            for i in kwargs
-            if "time" in i.lower() and i.lower() not in exclude_list
-        }
+        times = {i: kwargs[i] for i in kwargs if "time" in i.lower()}
 
         if times:
             starttime = min(times.values())

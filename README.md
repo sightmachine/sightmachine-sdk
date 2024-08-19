@@ -86,9 +86,11 @@ By default, the production pipeline schema will be considered to retrive data fr
 To select a particular development pipeline schema you can use following function call:
 
 ```
-db_schema = pipeline_id 
-cli.select_db_schema(schema_name=db_schema)
+workspace_id = pipeline_id 
+cli.select_workspace_id(workspace_id=workspace_id)
 ```
+**Note - select_db_schema() is depricated. Use select_workspace_id(workspace_id=workspace_id) instead.**
+
 
 ### Retrieving Data
 

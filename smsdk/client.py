@@ -813,10 +813,13 @@ class Client(ClientV0):
 
     @version_check_decorator
     def get_udf_items(self, udf_name, **params):
-        base_url = get_url(
-            self.config["protocol"], self.tenant, self.config["site.domain"]
-        )
-        # load the entity class and initialize it
-        cls = smsdkentities.get("dev_udf")(self.session, base_url)
-        udf_data = getattr(cls, "get_udf_data")(udf_name,params)
-        return udf_data
+        if udf_name:
+            base_url = get_url(
+                self.config["protocol"], self.tenant, self.config["site.domain"]
+            )
+            # load the entity class and initialize it
+            cls = smsdkentities.get("dev_udf")(self.session, base_url)
+            udf_data = getattr(cls, "get_udf_data")(udf_name,params)
+            return udf_data
+        else:
+            log.error('Name of user defined function is required')

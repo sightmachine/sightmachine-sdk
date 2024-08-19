@@ -53,5 +53,8 @@
   },
   "RawData": {
     "url": "/v1/datatab/raw_data"
+  },
+  "UDF_dev": {
+    "url": "/v1/udf/task/async"
   }
 }

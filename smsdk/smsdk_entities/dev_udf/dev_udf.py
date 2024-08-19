@@ -1,3 +1,4 @@
+import time
 from typing import List
 import json
 
@@ -35,11 +36,20 @@ class UDFData(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_udf_data(self, udf_name) -> List:
+    def get_udf_data(self, udf_name, params):
         """
         Utility function to get the panels data for dashboard
         """
-        url = "{}{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["url"], udf_name)
-        payload={"name": udf_name}
-        results=self.post(url,json=payload)
-        return results
+        url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["url"])
+        payload = {
+            "name": udf_name,
+            "parameters": params
+            }
+
+        results = self.session.post(url, json=payload)
+        time.sleep(10)
+        async_task_id = results.json().get('response').get('task_id')
+        results = self.session.get(url+'/'+async_task_id).json()
+        time.sleep(10)
+        data = results.get('response').get('meta')[0].get('data')
+        return data

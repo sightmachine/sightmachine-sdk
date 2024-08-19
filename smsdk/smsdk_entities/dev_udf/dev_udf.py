@@ -42,10 +42,10 @@ class UDFData(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["url"])
         payload = {
-            "name": udf_name,
-            "parameters": params
+            "name": udf_name
             }
-
+        if params:
+            payload['parameters']= params
         results = self.session.post(url, json=payload)
         time.sleep(10)
         async_task_id = results.json().get('response').get('task_id')

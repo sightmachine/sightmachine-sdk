@@ -112,6 +112,10 @@ def convert_to_valid_url(
     if "." not in domain:
         domain = f"{domain}.{default_domain}"
 
+    # Check if domain endswith default domain
+    if not domain.endswith(default_domain):
+        domain = f"{domain}.{default_domain}"
+
     # Construct the valid URL
     valid_url = f"{protocol}://{domain}"
 

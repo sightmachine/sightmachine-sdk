@@ -1,5 +1,6 @@
 import time
 from typing import List
+from bs4 import BeautifulSoup
 import json
 
 try:
@@ -35,10 +36,22 @@ class UDFData(SmsdkEntities, MaSession):
     def get_utilities(self, *args, **kwargs) -> List:
         return [*self.mod_util.all]
 
+    def get_list_of_udf(self):
+        """
+        Utility function to get list of UDF present in dev tool
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["list_url"])
+        html_content = self.session.get(url).text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        table = soup.find('table')
+        rows = table.find('tbody').find_all('tr')
+        list_of_udfs = [row.find_all('td')[0].text for row in rows]
+        return list_of_udfs
+
     @mod_util
     def get_udf_data(self, udf_name, params):
         """
-        Utility function to get the panels data for dashboard
+        Utility function to get the data after executing udf notebook
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["url"])
         payload = {

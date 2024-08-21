@@ -55,6 +55,7 @@
     "url": "/v1/datatab/raw_data"
   },
   "UDF_dev": {
-    "url": "/v1/udf/task/async"
+    "url": "/v1/udf/task/async",
+    "list_url":"/dev/udf"
   }
 }

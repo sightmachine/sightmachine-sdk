@@ -811,11 +811,12 @@ class Client(ClientV0):
         )
         return dataViz(self.session, base_url).create_widget_share_link(context,**kwargs)
 
+    @version_check_decorator
     def fetch_list_of_udf(self):
         base_url = get_url(
                 self.config["protocol"], self.tenant, self.config["site.domain"]
             )
-            # load the entity class and initialize it
+        # load the entity class and initialize it
         cls = smsdkentities.get("dev_udf")(self.session, base_url)
         udf_list = getattr(cls, "get_list_of_udf")()
         return udf_list

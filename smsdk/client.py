@@ -76,6 +76,8 @@ def dict_to_df(data, normalize=True):
                 # machine type stats are list
                 cols = [*data[0]]
                 cols.remove("stats")
+                if "part_types" in cols:
+                    cols.remove("part_types")
                 df = json_normalize(
                     data, "stats", cols, record_prefix="stats.", errors="ignore"
                 )

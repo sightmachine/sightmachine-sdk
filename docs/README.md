@@ -1,6 +1,21 @@
 # All Functions
 
-TODO table of contents
+- [Create Client](#create-client)
+- [Client Functions](#client-functions)
+    - [General](#general)
+        - [Choose Non-Production Workspace](#choose-non-production-workspace)
+        - [Machine Types](#machine-types)
+        - [Machines](#machines)
+        - [Timezones](#timezones)
+        - [Data Visualization](#data-visualization)
+        - [Lines](#lines)
+    - [Query Data](#query-data)
+        - [Cycle Data](#cycle-data)
+        - [Parts](#parts)
+        - [Downtimes](#downtimes)
+        - [KPIs](#kpis)
+        - [Raw Data](#raw-data)
+        - [Cookbooks](#cookbooks)
 
 
 ## Create Client
@@ -24,6 +39,8 @@ WRONG FUNCTION cli.select_db_schema(schema_name=db_schema)
 
 #### Machine Types
 cli.get_machine_type_names()
+
+
 cli.get_fields_of_machine_type(types[0])
 
 #### Machines
@@ -36,6 +53,8 @@ cli.get_type_from_machine(machines[0])
 cli.get_machine_timezone(machines[0])
 
 #### Data Visualization
+
+
 
 #### Lines
 

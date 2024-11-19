@@ -2,6 +2,7 @@
 
 The Sight Machine software development kit (SDK) complements the Sight Machine platform by providing advanced users with the ability to retrieve data from the platform.  It is designed primarily for data analysts or data scientists who are interested in retrieving data from Sight Machine so they can perform their own custom analytics.  
 
+For detailed documentation about each function, please refer to [docs/README.md](#docs/README.md).
 
 ## Installation
 

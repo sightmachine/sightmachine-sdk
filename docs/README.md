@@ -11,6 +11,8 @@ TODO make sure I got all important functions
 
 TODO make sure I have all the sections for each function
 
+TODO describe what errors look like for each and what can cause them
+
 
 
 
@@ -72,7 +74,7 @@ Returns:
 > - **Pandas DataFrame**
 >   - A table with full metadata about each machine type. 25 columns total.
 
-**Examples:**
+Examples:
 
 *Note that these examples are truncated because the output table is too large to display clearly.*
 
@@ -109,7 +111,7 @@ Returns:
 > - **list**
 >   - A list of machine types.
 
-**Examples:**
+Examples:
 
 
 Machine type display names
@@ -138,7 +140,7 @@ Machine type internal names
 
 #### Client.get_machines
 
-Get a list of all machines and their metadata. If you only want to get a list of available machines, see get_machine_names().
+Get a list of all machines and their metadata. Notable metadata items are machine UI-based display name, Sight Machine internal name, machine type, and factory location. If you only want to get a list of available machines, see get_machine_names().
 
 ```python
 cli.get_machines()
@@ -146,9 +148,9 @@ cli.get_machines()
 
 Returns:
 > - **Pandas DataFrame**
->   - A table with metadata about each machine. Notable info items are machine UI-based display name, Sight Machine internal name, machine type, and factory location. There are 10 total columns.
+>   - A table with metadata about each machine. There are 10 total columns.
 
-**Examples:**
+Examples:
 
 *Note that this example is truncated because the output table is too large to display clearly.*
 
@@ -181,7 +183,7 @@ Returns:
 > - **list**
 >   - A list of machine names.
 
-**Examples:**
+Examples:
 
 Machine display names
 ```python
@@ -204,60 +206,203 @@ Machine internal names
 
 #### Client.get_machine_schema
 
-
+Get a table of available tags and tag metadata for a particular machine. Notable metadata items include Sight Machine internal name, display name, and data type. 
 
 ```python
-cli.get_machine_schema()
+cli.get_machine_schema(machine_source=None)
 ```
 
+Parameters:
+> - **machine_source**: *str, default None*
+>   - UI-based display name of the machine of interest.
+
+Returns:
+> - **Pandas DataFrame**
+>   - A table with metadata about each tag available for this machine. There are 15 total columns.
+
+
+Examples:
+
+*Note that this example is truncated because the output table is too large to display clearly.*
+
+Get all machines
+```python
+>>> df = cli.get_machine_schema("Blender_1")
+>>> df.shape
+(158, 15)
+```
 
 
 
 
 #### Client.get_type_from_machine
 
-machine to machine type
+Given a machine's UI-based display name, get the Sight Machine internal machine type.
+
 ```python
-cli.get_type_from_machine(machine)
+cli.get_type_from_machine(machine_source=None)
 ```
 
+Parameters:
+> - **machine_source**: *str, default None*
+>   - UI-based display name of the machine of interest.
 
+Returns:
+> - **str**
+>   - The associated machine type. Note that this is a Sight Machine internal machine type, not a UI-based display name.
 
-#### Client.get_machine_source_from_clean_name
+Examples:
+
 ```python
-cli.get_machine_source_from_clean_name(machine)
+>>> cli.get_type_from_machine("Oven_1")
+"mt_oven"
 ```
 
-
-
-
-
-
-
-
-
-### Lines
----
 
 
 
 ### Other
 ---
 
-#### Client.get_machine_timezone
+#### Client.get_lines
+
+Get information about the lines configured for this tenant. Data returned is in a JSON-like structure.
+
 ```python
-cli.get_machine_timezone(machine)
+cli.get_lines()
+```
+
+Returns:
+> - **list**
+>   - A list of dictionaries, each of which corresponds to a configured line. The dictionary contains line metadata and an ordered list of machines in that line.
+
+
+Examples:
+
+```python
+>>> cli.get_lines()
+[{'id': 'line-401a19b5',
+  'factory_id': 'sanfrancisco',
+  'display_name': 'Line 1',
+  'display_order': [],
+  'name': 'line-401a19b5',
+  'order': 1,
+  'machine': [
+    {'name': 'Fryer_1', 'id': '1e4436e46df20d049faada54'},
+    {'name': 'Oven_1', 'id': '7cd9277327457e26fa4deac2'}]
+}]
 ```
 
 
-TODO Data Visualization Sharelinks
+
+
+
+#### Client.get_machine_timezone
+
+Get the timezone that a machine is in. Timezone format is consistent with the [IANA Time Zone Database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) naming convention and is also compatible with the [pytz package](https://pypi.org/project/pytz/).
+
+```python
+cli.get_machine_timezone(machine_source=None)
+```
+
+Parameters:
+> - **machine_source**: *str, default None*
+>   - UI-based display name of the machine of interest.
+
+Returns:
+> - **str**
+>   - The timezone of the specified machine.
+
+Examples:
+
+```python
+>>> cli.get_machine_timezone("Oven_1")
+'America/Los_Angeles'
+```
 
 
 
 
-### Use Non-Production Workspace
----
-WRONG FUNCTION cli.select_db_schema(schema_name=db_schema)
+
+
+
+#### Client.create_share_link
+
+Create a sharelink for a specific static Data Vizualization chart. **Note that a link will be generated even if the input values are invalid.**
+
+```python
+cli.create_share_link(assets=None, chartType=None, yAxis=None, xAxis={"unit": "", "type": "datetime", "data_type": "datetime", "stream_types": [], "raw_data_field": "", "id": "endtime", "title": "Time", "isEnabled": True}, model="cycle", time_selection={"time_type": "relative", "relative_start": 1, "relative_unit": "week", "ctime_tz": "America/Los_Angeles"})
+```
+
+Parameters:
+> - **assets**: *list, default None*
+>   - A list of asset IDs to include in the share link.
+TODO fix above, need internal asset names
+> - **chartType**: *str, default None*
+>   - The type of chart to create a share link for. Options are "line", "bar", "scatter", and "box".
+> - **yAxis**: *str, default None*
+>   - The variable to display on the y-axis of the chart.
+TODO fix above, need internal tag names
+> - **xAxis**: *str, default {"unit": "", "type": "datetime", "data_type": "datetime", "stream_types": [], "raw_data_field": "", "id": "endtime", "title": "Time", "isEnabled": True}*
+>   - The variable to display on the x-axis of the chart. Default value results in Cycle End Time on the X-axis.
+TODO more details about options, need internal tag names
+> - **model**: *str, default "cycle"*
+>   - The Sight Machine data model to use for source data. Options are 'cycle', 'kpi', and 'line'.
+TODO make sure these are the correct options
+> - **time_selection**: *str, default {"time_type": "relative", "relative_start": 1, "relative_unit": "week", "ctime_tz": "America/Los_Angeles"}*
+>   - The time range for the data to be displayed in the chart. Default value renders the last week of data. The default value is a relative selection. You can also do an absolute time selection with the following format: time_selection = {"time_type": "absolute" "start_time": "2024-11-11T00:00:00", "end_time": "2024-11-10T00:00:00", "time_zone": "America/Los_Angeles"}. If an absolute time range is chosen, start and end time must be in ISO format.
+> - **resolution**: *str, default None*
+>   - The time resolution that the chart should be in. Options are 'second', 'minute', 'hour', 'week', 'month', and 'year'. If None is chosen, Data Vizualization will logically choose one for you.
+> - **compareByField**: *str, default None*
+>   - The tag to color results based on. The tag name needs to be a Sight Machine internal tag name, not a UI-based display name.
+
+
+Returns:
+> - **str**
+>   - A URL string that can be used to share the specified chart.
+
+Examples:
+
+TODO fix examples 
+
+Create a share link for a cycle chart
+```python
+>>> share_link = cli.create_share_link(assets=['asset_1'], chartType='line', yAxis='Temperature', xAxis='Time', model='cycle', time_selection='ONE_WEEK_RELATIVE')
+>>> print(share_link)
+'https://demo.sightmachine.io/#/analysis/datavis/s/123456'
+```
+
+Create a share link for a downtime chart
+```python
+>>> share_link = cli.create_share_link(assets=['asset_2'], chartType='bar', yAxis='Downtime', xAxis='Time', model='downtime', time_selection='ONE_DAY_RELATIVE')
+>>> print(share_link)
+'https://demo.sightmachine.io/#/analysis/datavis/s/123456'
+```
+
+
+
+
+
+
+
+#### Client.select_workspace_id
+
+Set the SMSDK to pull all data and metadata from a non-production workspace. This setting applies to all future functions run with this client until otherwise specified.
+
+
+```python
+cli.select_workspace_id(workspace_id=None)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -322,7 +467,10 @@ cli.get_kpi_data_viz(machine_source, kpis, i_vars, time_selection, **optional_da
 ```
 
 ### Lines
-TODO
+
+```python
+cli.get_line_data()
+```
 
 
 ### Raw Data

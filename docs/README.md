@@ -7,9 +7,9 @@ Functions are split into general functions which pull general factory metadata, 
 
 TODO generate table of contents
 
-TODO make sure I got all possible functions
+TODO make sure I got all important functions
 
-TODO make sure I've actually tested all functions
+TODO make sure I have all the sections for each function
 
 
 
@@ -64,9 +64,9 @@ cli.get_machine_types(source_type=None, source_type_clean=None)
 
 Parameters:
 > - **source_type**: *str, default None*
->   - Machine source_type to filter the output to. Note that this is a machine type system name, not a display name.
+>   - Machine source_type to filter the output to. Note that this is a a Sight Machine internal machine type, not a UI-based display name.
 > - **source_type_clean**: *str, default None*
->   - Machine source_type_clean to filter the output to. Note that this is a machine type display name, not a system name.
+>   - Machine source_type_clean to filter the output to. Note that this is a UI-based display name, not a Sight Machine internal machine type.
 
 Returns:
 > - **Pandas DataFrame**
@@ -74,7 +74,7 @@ Returns:
 
 **Examples:**
 
-*Note that these example is truncated because the output table is too large to display clearly.*
+*Note that these examples are truncated because the output table is too large to display clearly.*
 
 
 See all tag info
@@ -94,29 +94,35 @@ Filter to one machine type
 
 
 #### Client.get_machine_type_names
+
+Get a list of machine type names.
+
 ```python
-cli.get_machine_type_names()
+cli.get_machine_type_names(clean_strings_out=True)
 ```
 
+Parameters:
+> - **clean_strings_out**: *boolean, default True*
+>   - If true, return the list using the UI-based display names.  If false, the list contains the Sight Machine internal machine types.
+
+Returns:
+> - **list**
+>   - A list of machine types.
+
+**Examples:**
 
 
-
-
-#### Client.get_fields_of_machine_type
+Machine type display names
 ```python
-cli.get_fields_of_machine_type(machine_type)
+>>> cli.get_machine_type_names()
+["Oven", "Fryer"]
 ```
 
-
-
-
-
-#### Client.get_machine_type_from_clean_name
+Machine type internal names
 ```python
-cli.get_machine_type_from_clean_name(machine)
+>>> cli.get_machine_type_names(clean_strings_out=False)
+["mt_oven", "mt_fryer"]
 ```
-
-
 
 
 
@@ -128,46 +134,132 @@ cli.get_machine_type_from_clean_name(machine)
 ---
 
 
+
+
+#### Client.get_machines
+
+Get a list of all machines and their metadata. If you only want to get a list of available machines, see get_machine_names().
+
 ```python
-cli.get_machine_names(source_type)
+cli.get_machines()
 ```
+
+Returns:
+> - **Pandas DataFrame**
+>   - A table with metadata about each machine. Notable info items are machine UI-based display name, Sight Machine internal name, machine type, and factory location. There are 10 total columns.
+
+**Examples:**
+
+*Note that this example is truncated because the output table is too large to display clearly.*
+
+Get all machines
+```python
+>>> df = cli.get_machines()
+>>> df.shape
+(20, 10)
+```
+
+
+
+
+
+#### Client.get_machine_names
+
+Get a list of machine names.
+
+```python
+cli.get_machine_names(source_type=None, clean_strings_out=True)
+```
+
+Parameters:
+> - **source_type**: *str, default None*
+>   - Machine source_type to filter the output to. Note that this is a Sight Machine internal machine type, not a UI-based display name.
+> - **clean_strings_out**: *boolean, default True*
+>   - If true, return the list using the UI-based display names. If false, the list contains the Sight Machine internal machine names.
+
+Returns:
+> - **list**
+>   - A list of machine names.
+
+**Examples:**
+
+Machine display names
+```python
+>>> cli.get_machine_names()
+["Oven_1", "Fryer_2"]
+```
+
+Machine internal names
+```python
+>>> cli.get_machine_names(clean_strings_out=False)
+["mt_oven_1", "mt_fryer_2"]
+```
+
+
+
+
+
+
+
+
+#### Client.get_machine_schema
+
+
+
+```python
+cli.get_machine_schema()
+```
+
+
+
+
+
+#### Client.get_type_from_machine
 
 machine to machine type
 ```python
 cli.get_type_from_machine(machine)
 ```
 
+
+
+#### Client.get_machine_source_from_clean_name
 ```python
 cli.get_machine_source_from_clean_name(machine)
 ```
 
-```python
-cli.get_machine_schema()
-```
 
-```python
-cli.get_machines()
-```
 
-```python
-cli.get_machine_names()
-```
 
-### Timezones
-```python
-cli.get_machine_timezone(machines[0])
-```
 
-### Data Visualization Sharelinks
+
 
 
 
 ### Lines
+---
 
 
 
-### Choose Non-Production Workspace
+### Other
+---
+
+#### Client.get_machine_timezone
+```python
+cli.get_machine_timezone(machine)
+```
+
+
+TODO Data Visualization Sharelinks
+
+
+
+
+### Use Non-Production Workspace
+---
 WRONG FUNCTION cli.select_db_schema(schema_name=db_schema)
+
+
 
 
 ## Data Query Functions

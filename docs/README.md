@@ -1,15 +1,22 @@
 # All Functions
 
+This document provides an overview of the various functions available in the Sight Machine SDK. These functions are designed to help you interact with and retrieve data from the Sight Machine platform efficiently. Each function is accompanied by example code snippets to demonstrate their usage and to help you integrate them into your own applications. 
+
+Functions are split into general functions which pull general factory metadata, and data queries which pull tabular data from the various data models. All functions are methods of the client object, which needs to be instantiated first.
+
+
 TODO generate table of contents
 
 TODO make sure I got all possible functions
 
+TODO make sure I've actually tested all functions
 
 
 
-## Create Client
 
-To interact with Sight Machine data, you first need to initialize a client. This client handles the connection to the Sight Machine API.
+## Instantiate Client
+
+To interact with Sight Machine data, you first need to instantiate a client. This client handles the connection to the Sight Machine API.
 
 The first step is to import the client submodule from the smsdk package. See the main [README.md](../README.md#installation) for installation instructions.
 
@@ -20,7 +27,7 @@ from smsdk import client
 Next, create an instance of the Client class. The 'tenant' argument should be set to the part of the tenant URL that preceeds '.sightmachine.io'. 
 
 ```python
-tenant = 'demo-continuous'
+tenant = 'demo'
 cli = client.Client(tenant)
 ```
 
@@ -31,70 +38,148 @@ success = cli.login('apikey',
           key_id = api_key, 
           secret_id = api_secret)
 if not success:
-    raise AsseretionError("SDK login failed.")
+    raise AssertionError("SDK login failed.")
 ```
 
 
 
 
-## Client Functions
 
-This section provides an overview of the various functions available in the Sight Machine SDK. These functions are designed to help you interact with and retrieve data from the Sight Machine platform efficiently. Each function is accompanied by example code snippets to demonstrate their usage and to help you integrate them into your own applications. Functions are split into general functions which pull general factory metadata, and data queries which pull tabular data from the various data models.
-
-
-### General
+## General Metadata Functions
 
 Functions in this section are for pulling general factory metadata.
 
 
-#### Machine Types
+### Machine Type Info
+---
 
+
+#### Client.get_machine_types
+
+Get a list of tags available for each machine type and associated metadata for each tag.  Note that this includes extensive internal metadata.  If you only want to get a list of available machine types, see get_machine_type_names().
+
+```python
+cli.get_machine_types(source_type=None, source_type_clean=None)
+```
+
+Parameters:
+> - **source_type**: *str, default None*
+>   - Machine source_type to filter the output to. Note that this is a machine type system name, not a display name.
+> - **source_type_clean**: *str, default None*
+>   - Machine source_type_clean to filter the output to. Note that this is a machine type display name, not a system name.
+
+Returns:
+> - **Pandas DataFrame**
+>   - A table with full metadata about each machine type. 25 columns total.
+
+**Examples:**
+
+*Note that these example is truncated because the output table is too large to display clearly.*
+
+
+See all tag info
+```python
+>>> df = cli.get_machine_types()
+>>> df.shape
+(2439, 25)
+```
+
+Filter to one machine type
+```python
+>>> df = cli.get_machine_types(source_type_clean="Oven")
+>>> df.shape
+(142, 25)
+```
+
+
+
+#### Client.get_machine_type_names
 ```python
 cli.get_machine_type_names()
 ```
 
+
+
+
+
+#### Client.get_fields_of_machine_type
 ```python
-cli.get_fields_of_machine_type(types[0])
+cli.get_fields_of_machine_type(machine_type)
 ```
 
-#### Machines
+
+
+
+
+#### Client.get_machine_type_from_clean_name
+```python
+cli.get_machine_type_from_clean_name(machine)
+```
+
+
+
+
+
+
+
+
+
+### Machine Info
+---
+
+
 ```python
 cli.get_machine_names(source_type)
 ```
 
 machine to machine type
 ```python
-cli.get_type_from_machine(machines[0])
+cli.get_type_from_machine(machine)
 ```
 
-#### Timezones
+```python
+cli.get_machine_source_from_clean_name(machine)
+```
+
+```python
+cli.get_machine_schema()
+```
+
+```python
+cli.get_machines()
+```
+
+```python
+cli.get_machine_names()
+```
+
+### Timezones
 ```python
 cli.get_machine_timezone(machines[0])
 ```
 
-#### Data Visualization Sharelinks
+### Data Visualization Sharelinks
 
 
 
-#### Lines
+### Lines
 
 
 
-#### Choose Non-Production Workspace
+### Choose Non-Production Workspace
 WRONG FUNCTION cli.select_db_schema(schema_name=db_schema)
 
 
-### Query Data
+## Data Query Functions
+
 Functions in this section are for querying tabular data from our common data models: Cycles, Parts, Downtimes, KPI, Lines, and Raw Data. We also have support for pulling information from Cookbooks.
 
 TODO reference Sight Machine docs for info on these models?
 TODO mention that it only works if the model is setup? what happens if the model isn't set up?
 
 
-#### Cycle Data
-```python
-cli.get_machine_schema()
-```
+### Cycle Data
+
 
 ```python
 query = {'Machine': machines[0],
@@ -105,7 +190,7 @@ TODO include other options in query
 df = cli.get_cycles(**query)
 ```
 
-#### Parts
+### Parts
 ```python
 cli.get_part_type_names()
 cli.get_part_schema(part_type)
@@ -122,7 +207,7 @@ TODO include other options in query
 df = cli.get_parts(**query)
 ```
 
-#### Downtimes
+### Downtimes
 ```python
 query = {'Machine': machines[0],
          'End Time__gte' : datetime(2023, 4, 1), 
@@ -131,7 +216,7 @@ query = {'Machine': machines[0],
 df = cli.get_downtimes(**query)
 ```
 
-#### KPIs
+### KPIs
 ```python
 cli.get_kpis()
 ```
@@ -144,15 +229,17 @@ cli.get_kpis_for_asset(**asset_selection)
 cli.get_kpi_data_viz(machine_source, kpis, i_vars, time_selection, **optional_data_viz_query)
 ```
 
-#### Lines
+### Lines
 TODO
 
 
-#### Raw Data
-TODO
+### Raw Data
+```python
+cli.get_raw_data()
+```
 
 
-#### Cookbooks
+### Cookbooks
 ```python
 cli.get_cookbooks()
 ```

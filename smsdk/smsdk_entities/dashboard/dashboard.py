@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 import json
 
 import importlib.resources as pkg_resources
@@ -21,16 +21,16 @@ class DashboardData(SmsdkEntities, MaSession):
     mod_util = module_utility()
     log = log
 
-    def __init__(self, session, base_url) -> None:
+    def __init__(self, session, base_url: str) -> None:
         self.session = session
         self.base_url = base_url
 
     @mod_util
-    def get_utilities(self, *args, **kwargs) -> List:
+    def get_utilities(self, *args, **kwargs) -> List[Any]:
         return [*self.mod_util.all]
 
     @mod_util
-    def get_dashboards(self, dashboard_id) -> List:
+    def get_dashboards(self, dashboard_id: str) -> List[Any]:
         """
         Utility function to get the panels data for dashboard
         """

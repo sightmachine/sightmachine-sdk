@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 import json
 import importlib.resources as pkg_resources
 from smsdk.tool_register import SmsdkEntities, smsdkentities
@@ -25,14 +25,14 @@ class Workspace(SmsdkEntities, MaSession):
         self.base_url = base_url
 
     @mod_util
-    def get_utilities(self, *args, **kwargs) -> List:
+    def get_utilities(self, *args, **kwargs) -> List[Any]:
         """
         Get the list of registered utilites by name
         """
         return [*self.mod_util.all]
 
     @mod_util
-    def get_cycles(self, *args, **kwargs) -> List:
+    def get_cycles(self, *args, **kwargs) -> List[Any]:
         """
         Utility function to get the cycles
         from MA API

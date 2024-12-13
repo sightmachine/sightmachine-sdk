@@ -2,13 +2,7 @@ import time
 from typing import List
 from bs4 import BeautifulSoup
 import json
-
-try:
-    import importlib.resources as pkg_resources
-except ImportError:
-    # Try backported to PY<37 `importlib_resources`.
-    import importlib_resources as pkg_resources
-
+import importlib.resources as pkg_resources
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config
@@ -49,7 +43,7 @@ class UDFData(SmsdkEntities, MaSession):
         return list_of_udfs
 
     @mod_util
-    def get_udf_data(self, udf_name, params):
+    def get_udf_data(self, udf_name, params) -> List:
         """
         Utility function to get the data after executing udf notebook
         """

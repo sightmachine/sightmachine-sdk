@@ -1,12 +1,7 @@
 from typing import List
 import json
 
-try:
-    import importlib.resources as pkg_resources
-except ImportError:
-    # Try backported to PY<37 `importlib_resources`.
-    import importlib_resources as pkg_resources
-
+import importlib.resources as pkg_resources
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config

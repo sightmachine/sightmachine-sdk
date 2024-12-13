@@ -81,7 +81,7 @@ class DataViz(SmsdkEntities, MaSession):
                 "selectedTimeZone": time_selection["time_zone"],
             }
         else:
-            dateRange={}
+            dateRange = {}
         url_params["state"] = {
             "dataModel": model,
             "asset": asset,
@@ -157,7 +157,7 @@ class DataViz(SmsdkEntities, MaSession):
                 url_params["state"]["yAxis"] = yAxis
         response = getattr(self.session, "post")(url, json=url_params)
         return "{}/#{}/s/{}".format(
-            self.base_url,url_params["context"], response.json()["state_hash"]
+            self.base_url, url_params["context"], response.json()["state_hash"]
         )
 
     @mod_util
@@ -185,7 +185,7 @@ class DataViz(SmsdkEntities, MaSession):
         return records
 
     @mod_util
-    def create_widget_share_link(self,context,**kwargs):
+    def create_widget_share_link(self, context, **kwargs):
         url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["share_link"])
         url_params = {}
         url_params["state_hash"] = str(uuid.uuid4())[:8]
@@ -194,7 +194,7 @@ class DataViz(SmsdkEntities, MaSession):
             url_params["in_use_workspace"] = self.session.headers["X-Sm-Workspace-Id"]
         except:
             pass
-        url_params["state"]=kwargs
+        url_params["state"] = kwargs
         response = getattr(self.session, "post")(url, json=url_params)
         return "{}/#{}/s/{}".format(
             self.base_url, url_params["context"], response.json()["state_hash"]

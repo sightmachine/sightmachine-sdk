@@ -897,13 +897,15 @@ class Client(ClientV0):
         base_url = get_url(
             self.config["protocol"], self.tenant, self.config["site.domain"]
         )
-        return dataViz(self.session, base_url).create_widget_share_link(context,**kwargs)
+        return dataViz(self.session, base_url).create_widget_share_link(
+            context, **kwargs
+        )
 
     @version_check_decorator
     def fetch_list_of_udf(self):
         base_url = get_url(
-                self.config["protocol"], self.tenant, self.config["site.domain"]
-            )
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
         # load the entity class and initialize it
         cls = smsdkentities.get("dev_udf")(self.session, base_url)
         udf_list = getattr(cls, "get_list_of_udf")()
@@ -919,9 +921,11 @@ class Client(ClientV0):
                 )
                 # load the entity class and initialize it
                 cls = smsdkentities.get("dev_udf")(self.session, base_url)
-                udf_data = getattr(cls, "get_udf_data")(udf_name,params)
+                udf_data = getattr(cls, "get_udf_data")(udf_name, params)
                 return udf_data
             else:
-                log.error(f'UDF named "{udf_name}" does not exist. Please check the name again')
+                log.error(
+                    f'UDF named "{udf_name}" does not exist. Please check the name again'
+                )
         else:
-            log.error('Name of user defined function is required')
+            log.error("Name of user defined function is required")

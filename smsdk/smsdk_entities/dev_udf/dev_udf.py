@@ -42,10 +42,10 @@ class UDFData(SmsdkEntities, MaSession):
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["list_url"])
         html_content = self.session.get(url).text
-        soup = BeautifulSoup(html_content, 'html.parser')
-        table = soup.find('table')
-        rows = table.find('tbody').find_all('tr')
-        list_of_udfs = [row.find_all('td')[0].text for row in rows]
+        soup = BeautifulSoup(html_content, "html.parser")
+        table = soup.find("table")
+        rows = table.find("tbody").find_all("tr")
+        list_of_udfs = [row.find_all("td")[0].text for row in rows]
         return list_of_udfs
 
     @mod_util
@@ -54,15 +54,13 @@ class UDFData(SmsdkEntities, MaSession):
         Utility function to get the data after executing udf notebook
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["url"])
-        payload = {
-            "name": udf_name
-            }
+        payload = {"name": udf_name}
         if params:
-            payload['parameters']= params
+            payload["parameters"] = params
         results = self.session.post(url, json=payload)
         time.sleep(10)
-        async_task_id = results.json().get('response').get('task_id')
-        results = self.session.get(url+'/'+async_task_id).json()
+        async_task_id = results.json().get("response").get("task_id")
+        results = self.session.get(url + "/" + async_task_id).json()
         time.sleep(10)
-        data = results.get('response').get('meta')[0].get('data')
+        data = results.get("response").get("meta")[0].get("data")
         return data

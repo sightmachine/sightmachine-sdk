@@ -21,6 +21,6 @@ def get_session():
 @pytest.fixture(scope="session")
 def get_client():
     cli = client.Client(TENANT)
-    cli.login("apikey", key_id=API_KEY, secret_id=API_SECRET)
+    assert cli.login("apikey", key_id=API_KEY, secret_id=API_SECRET)
 
     return cli

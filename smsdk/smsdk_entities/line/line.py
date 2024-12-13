@@ -65,3 +65,15 @@ class Line(SmsdkEntities, MaSession):
         if not isinstance(records, List):
             raise ValueError("Error - {}".format(records))
         return records
+
+    @mod_util
+    def get_line_data_lineviz(self, *args, **kwargs):
+        """
+        Get line data via lineviz api
+        """
+        url = "{}{}".format(self.base_url, ENDPOINTS["Line"]["task"])
+        records = self._complete_async_task(url, **kwargs)
+
+        if not isinstance(records, List):
+            raise ValueError("Error - {}".format(records))
+        return records

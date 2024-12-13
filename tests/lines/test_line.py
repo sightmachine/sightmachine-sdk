@@ -29,7 +29,12 @@ def test_get_utilities(get_session):
     # Run
     all_utilites = line.get_utilities(get_session, URL_V1)
 
-    expected_list = ["get_utilities", "get_lines", "get_line_data"]
+    expected_list = [
+        "get_utilities",
+        "get_lines",
+        "get_line_data",
+        "get_line_data_lineviz",
+    ]
 
     assert len(all_utilites) == len(expected_list)
     assert all([a == b for a, b in zip(all_utilites, expected_list)])
@@ -88,3 +93,52 @@ def test_get_line_data(get_client):
     df2 = get_client.get_line_data(**query)
 
     assert df1 == df2
+
+
+def test_get_line_data_lineviz(get_client):
+    """Test for line data from lineviz"""
+    assets = [MACHINE4]
+
+    asset_time_offset = {MACHINE4: {"interval": 0, "period": "minutes"}}
+
+    d_vars = [
+        {
+            "name": "stats__PneumaticPressure__val",
+            "asset": "JB_NG_PickAndPlace_1_Stage1",
+            "aggregate": ["avg"],
+            "type": "continuous",
+        },
+        {
+            "name": "stats__BLOCKED__val",
+            "asset": "JB_NG_PickAndPlace_1_Stage1",
+            "aggregate": ["avg"],
+            "type": "continuous",
+        },
+    ]
+
+    i_vars = [
+        {
+            "name": "offset_endtime",
+            "asset": "SHARED",
+            "time_resolution": "day",
+            "query_tz": TIME_ZONE,
+            "output_tz": TIME_ZONE,
+            "bin_strategy": "user_defined2",
+            "bin_count": 50,
+        }
+    ]
+
+    time_selection = {
+        "time_type": "absolute",
+        "start_time": START_DATETIME,
+        "end_time": END_DATETIME,
+        "time_zone": TIME_ZONE,
+    }
+
+    filters = []
+
+    result = get_client.get_line_data_lineviz(
+        assets, d_vars, i_vars, time_selection, asset_time_offset, filters
+    )
+
+    assert len(result) == 2

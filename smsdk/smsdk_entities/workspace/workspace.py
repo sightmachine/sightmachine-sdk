@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 ENDPOINTS = json.loads(pkg_resources.read_text(config, "api_endpoints.json"))
 
 
-@smsdkentities.register("cycle")
+@smsdkentities.register("workspace")
 class Workspace(SmsdkEntities, MaSession):
     # Decorator to register a function as utility
     # Only the registered utilites would be accessible
@@ -39,6 +39,11 @@ class Workspace(SmsdkEntities, MaSession):
 
     @mod_util
     def get_cycles(self, *args, **kwargs):
+        """
+        Utility function to get the cycles
+        from MA API
+        Recommend to use 'enable_pagination':True for larger datasets
+        """
         """
         Utility function to get the cycles
         from MA API

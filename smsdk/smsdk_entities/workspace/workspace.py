@@ -34,7 +34,7 @@ class Workspace(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_cycles(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]:
+    def get_cycles(self, *args: tuple[Any, ...], **kwargs: Any) -> List[Any]:
         """
         Utility function to get the cycles
         from MA API

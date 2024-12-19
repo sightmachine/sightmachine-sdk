@@ -1,5 +1,5 @@
 import time
-from typing import List, Any
+from typing import List, Any, Dict, Union
 from bs4 import BeautifulSoup
 import json
 import importlib.resources as pkg_resources
@@ -51,16 +51,33 @@ class UDFData(SmsdkEntities, MaSession):
         Utility function to get the data after executing udf notebook
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["url"])
-        payload = {"name": udf_name}
+        payload: Dict[str, Any] = {"name": udf_name}
+
         if params:
             if isinstance(params, dict):
                 payload["parameters"] = params
             else:
                 raise TypeError("Expected 'params' to be a dictionary or None.")
+
         results = self.session.post(url, json=payload)
         time.sleep(10)
-        async_task_id = results.json().get("response").get("task_id")
+
+        async_task_id: str = results.json().get("response").get("task_id")
+
         results = self.session.get(url + "/" + async_task_id).json()
         time.sleep(10)
-        data: List[Any] = results.get("response").get("meta")[0].get("data")
+
+        response = results.get("response")
+        if (
+            not response
+            or "meta" not in response
+            or not isinstance(response["meta"], list)
+        ):
+            raise ValueError("Response does not contain a valid 'meta' structure.")
+
+        meta = response["meta"]
+        if not meta or not isinstance(meta[0], dict) or "data" not in meta[0]:
+            raise ValueError("Meta does not contain a valid 'data' key.")
+
+        data: List[Any] = meta[0]["data"]
         return data

@@ -22,12 +22,14 @@ class UDFData(SmsdkEntities, MaSession):
     mod_util = module_utility()
     log = log
 
-    def __init__(self, session, base_url) -> None:
+    def __init__(self, session: Any, base_url: str) -> None:
         self.session = session
         self.base_url = base_url
 
     @mod_util
-    def get_utilities(self, *args, **kwargs) -> List[Any]:
+    def get_utilities(
+        self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+    ) -> List[Any]:
         return [*self.mod_util.all]
 
     @mod_util
@@ -57,5 +59,5 @@ class UDFData(SmsdkEntities, MaSession):
         async_task_id = results.json().get("response").get("task_id")
         results = self.session.get(url + "/" + async_task_id).json()
         time.sleep(10)
-        data = results.get("response").get("meta")[0].get("data")
+        data: List[Any] = results.get("response").get("meta")[0].get("data")
         return data

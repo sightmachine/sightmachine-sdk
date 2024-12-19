@@ -26,7 +26,9 @@ class DashboardData(SmsdkEntities, MaSession):
         self.base_url = base_url
 
     @mod_util
-    def get_utilities(self, *args: tuple, **kwargs: dict) -> List[Any]:
+    def get_utilities(
+        self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+    ) -> List[Any]:
         return [*self.mod_util.all]
 
     @mod_util

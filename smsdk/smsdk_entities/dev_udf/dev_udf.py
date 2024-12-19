@@ -46,7 +46,7 @@ class UDFData(SmsdkEntities, MaSession):
         return list_of_udfs
 
     @mod_util
-    def get_udf_data(self, udf_name: str, params: dict) -> List[Any]:
+    def get_udf_data(self, udf_name: str, params: dict[str, Any]) -> List[Any]:
         """
         Utility function to get the data after executing udf notebook
         """

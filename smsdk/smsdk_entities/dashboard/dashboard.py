@@ -21,7 +21,7 @@ class DashboardData(SmsdkEntities, MaSession):
     mod_util = module_utility()
     log = log
 
-    def __init__(self, session, base_url: str) -> None:
+    def __init__(self, session: Any, base_url: str) -> None:
         self.session = session
         self.base_url = base_url
 
@@ -37,5 +37,5 @@ class DashboardData(SmsdkEntities, MaSession):
         Utility function to get the panels data for dashboard
         """
         url = "{}{}{}".format(self.base_url, "/v1/obj/dashboard/", dashboard_id)
-        panels = self._get_dashboard_panels(url, method="get")
+        panels: List[Any] = self._get_dashboard_panels(url, method="get")
         return panels

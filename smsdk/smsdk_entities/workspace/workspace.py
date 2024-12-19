@@ -20,7 +20,7 @@ class Workspace(SmsdkEntities, MaSession):
     # to outside world via client.get_data()
     mod_util = module_utility()
 
-    def __init__(self, session, base_url:str) -> None:
+    def __init__(self, session, base_url: str) -> None:
         self.session = session
         self.base_url = base_url
 

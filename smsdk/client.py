@@ -238,6 +238,30 @@ class Client(ClientV0):
 
         return data
 
+
+    @version_check_decorator
+    def list_alerts(self, ename, util_name, normalize=True, *args, **kwargs):
+        """
+        Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
+        :param ename: Name of the entities
+        :param util_name: Name of the utility function
+        :param normalize: Flatten nested data structures
+        :return: pandas dataframe
+        """
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+
+        df = pd.DataFrame()
+        # load the entity class and initialize it
+        cls = smsdkentities.get('alert')(self.session, base_url)
+
+        data,metadata=getattr(cls, "list_alerts_df")(*args, **kwargs)
+        return data
+
     @version_check_decorator
     @ClientV0.validate_input
     @ClientV0.cycle_decorator
@@ -812,6 +836,7 @@ class Client(ClientV0):
                 mts = mts[mts["source_type_clean"] == kwargs["source_type_clean"]]
 
         return mts
+
 
     @version_check_decorator
     def get_machine_type_names(self, clean_strings_out=True):

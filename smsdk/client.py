@@ -259,8 +259,8 @@ class Client(ClientV0):
         # load the entity class and initialize it
         cls = smsdkentities.get('alert')(self.session, base_url)
         print("_________lsit df111111111111 _________________________")
-        data,metadata=getattr(cls, "list_alerts_df")()
-        return data
+        data,metadata = getattr(cls, "list_alerts_df")()
+        return data,metadata
 
     @version_check_decorator
     @ClientV0.validate_input

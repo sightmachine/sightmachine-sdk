@@ -62,6 +62,8 @@ class Alert(SmsdkEntities, MaSession):
         #     return []
 
         response = self.session.get(url)
+        print("#########################")
+        print(response.status_code)
         if response.status_code in [200,201]:
             alerts = response.json()['objects']
             alerts_df=pd.DataFrame(alerts)
@@ -85,3 +87,4 @@ class Alert(SmsdkEntities, MaSession):
                 }
                 transformed_data.append(t_data)
             return alerts_df,pd.DataFrame(transformed_data)
+        return None,None

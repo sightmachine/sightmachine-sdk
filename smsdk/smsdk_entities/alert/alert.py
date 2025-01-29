@@ -54,6 +54,7 @@ class Alert(SmsdkEntities, MaSession):
         from MA API
         Recommend to use 'enable_pagination':True for larger datasets
         """
+        print("_________lsit df _________________________")
         url = "{}{}".format(self.base_url, '/v1/obj/alert_config')
 
         # if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:

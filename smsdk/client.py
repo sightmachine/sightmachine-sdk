@@ -240,7 +240,7 @@ class Client(ClientV0):
 
 
     @version_check_decorator
-    def list_alerts(self, ename, util_name, normalize=True, *args, **kwargs):
+    def list_alerts(self):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities

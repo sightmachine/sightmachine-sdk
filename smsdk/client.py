@@ -259,7 +259,7 @@ class Client(ClientV0):
         # load the entity class and initialize it
         cls = smsdkentities.get('alert')(self.session, base_url)
 
-        data,metadata=getattr(cls, "list_alerts_df")(*args, **kwargs)
+        data,metadata=getattr(cls, "list_alerts_df")()
         return data
 
     @version_check_decorator

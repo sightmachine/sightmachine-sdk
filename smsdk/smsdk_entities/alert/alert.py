@@ -71,16 +71,15 @@ class Alert(SmsdkEntities, MaSession):
                 except:
                     creator='Undefined Undefined'
                 status="Enabled" if data.get("enabled") else "Disabled"
-                type=data["analytic"].get("plugin_id")
+                alerttype=data["analytic"].get("plugin_id")
                 incident_count=data.get("incident_total")
                 display_name=data.get("display_name").strip()
                 t_data={
                 "display_name":display_name,
+                "analytic": alerttype,
                 "Creator":creator,
                 "status": status,
-                "analytic": type,
                 "incident_count": incident_count
-
                 }
                 if display_name:
                     transformed_data.append(t_data)

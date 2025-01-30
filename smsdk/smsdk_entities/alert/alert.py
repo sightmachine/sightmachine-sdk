@@ -101,7 +101,11 @@ class Alert(SmsdkEntities, MaSession):
         if alert_id not in alerts_ids_dict:
             print("Invalid alert id.. not found in existing alerts")
         else:
-            self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
+            _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
+            if _response.status_code in [200, 201]:
+                print(f"Successfully deleted alert with id : {alert_id}")
+            else:
+                print(f"Failed to delete alert with id: {alert_id} due to: {_response.text}")
         if delete_all:
             for alert_id in alerts_ids_dict:
                 _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")

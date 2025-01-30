@@ -66,7 +66,7 @@ class Alert(SmsdkEntities, MaSession):
         mapping = {"kpi": "KPIAlerting",
                    "data_latency": "DataLatencyAlertingETL3",
                    "spc": "SPCXBarRControlChartTable"}
-        alert_plugin_id = mapping.get(alert_type, None)
+        alert_plugin_id = mapping.get(alert_type.lower(), None)
         alerts=self.fetch_alerts_data()
         if alerts:
             alerts_df=json_normalize(alerts,sep='_')

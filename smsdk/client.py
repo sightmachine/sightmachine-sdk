@@ -240,7 +240,7 @@ class Client(ClientV0):
 
 
     @version_check_decorator
-    def list_alerts(self):
+    def list_alerts(self,alert_type=None):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -255,11 +255,51 @@ class Client(ClientV0):
             self.config["port"],
         )
 
-        df = pd.DataFrame()
-        # load the entity class and initialize it
         cls = smsdkentities.get('alert')(self.session, base_url)
-        data, metadata = getattr(cls, "list_alerts_df")()
+        data, metadata = getattr(cls, "list_alerts_df")(alert_type)
         return data, metadata
+
+    def delete_alert(self,alert_id=None,delete_all=False):
+        """
+        Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
+        :param ename: Name of the entities
+        :param util_name: Name of the utility function
+        :param normalize: Flatten nested data structures
+        :return: pandas dataframe
+        """
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+        if alert_id is None and not delete_all:
+            print("Invalid input please provide Alert name or alert id or delete_all flag as true if you want to delete all the alerts.")
+            return
+        cls = smsdkentities.get('alert')(self.session, base_url)
+        getattr(cls, "delete_alert")(alert_id,delete_all)
+
+
+    @version_check_decorator
+    def create_alerts(self,alert_type=None):
+        """
+        Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
+        :param ename: Name of the entities
+        :param util_name: Name of the utility function
+        :param normalize: Flatten nested data structures
+        :return: pandas dataframe
+        """
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+
+        cls = smsdkentities.get('alert')(self.session, base_url)
+        data, metadata = getattr(cls, "list_alerts_df")(alert_type)
+        return data, metadata
+
 
     @version_check_decorator
     @ClientV0.validate_input

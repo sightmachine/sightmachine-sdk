@@ -1,4 +1,6 @@
 import json
+from pandas import json_normalize
+
 from typing import List
 
 import pandas as pd
@@ -46,37 +48,44 @@ class Alert(SmsdkEntities, MaSession):
         Get the list of registered utilites by name
         """
         return [*self.mod_util.all]
-
     @mod_util
-    def list_alerts_df(self,alert_type=''):
-        """
-        Utility function to get the cycles
-        from MA API
-        Recommend to use 'enable_pagination':True for larger datasets
-        """
+    def fetch_alerts_data(self):
         url = "{}{}".format(self.base_url, '/v1/obj/alert_config')
-
-        # if 'machine__source' not in kwargs and 'machine__source__in' not in kwargs:
-        #     log.warn('Machine source not specified.')
-        #     return []
-
         response = self.session.get(url)
-        if response.status_code in [200,201]:
+        if response.status_code in [200, 201]:
             alerts = response.json()['objects']
-            alerts_df=pd.DataFrame(alerts)
+            return alerts
+        else:
+            print(response.text)
+            return []
+    @mod_util
+    def list_alerts_df(self,alert_type):
+        """
+
+        """
+        mapping = {"kpi": "KPIAlerting",
+                   "data_latency": "DataLatencyAlertingETL3",
+                   "spc": "SPCXBarRControlChartTable"}
+        alert_plugin_id = mapping.get(alert_type, None)
+        alerts=self.fetch_alerts_data()
+        if alerts:
+            alerts_df=json_normalize(alerts,sep='_')
             transformed_data=[]
-            for _, data in alerts_df.iterrows():
+            for data in alerts:
                 try:
                     creator=f"{data['created_by']['metadata']['first_name']} {data['created_by']['metadata']['last_name']}"
                 except:
                     creator='Undefined Undefined'
                 status="Enabled" if data.get("enabled") else "Disabled"
-                alerttype=data["analytic"].get("plugin_id")
+                alert_type=data["analytic"].get("plugin_id")
+                if alert_plugin_id is not None:
+                    if alert_plugin_id != alert_type:
+                        continue
                 incident_count=data.get("incident_total")
                 display_name=data.get("display_name").strip()
                 t_data={
                 "display_name":display_name,
-                "analytic": alerttype,
+                "analytic": alert_type,
                 "Creator":creator,
                 "status": status,
                 "incident_count": incident_count
@@ -85,3 +94,18 @@ class Alert(SmsdkEntities, MaSession):
                     transformed_data.append(t_data)
             return alerts_df,pd.DataFrame(transformed_data)
         return None,None
+    @mod_util
+    def delete_alert(self,alert_id,delete_all):
+        alerts = self.fetch_alerts_data()
+        alerts_ids_dict ={alert['id']:alert for alert in alerts}
+        if alert_id not in alerts_ids_dict:
+            print("Invalid alert id.. not found in existing alerts")
+        else:
+            self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
+        if delete_all:
+            for alert_id in alerts_ids_dict:
+                _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
+                if _response.status_code in [200,201]:
+                    print(f"Successfully deleted alert with id : {alert_id}")
+                else:
+                    print(f"Failed to delete alert with id: {alert_id} due to: {_response.text}")

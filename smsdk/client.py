@@ -256,8 +256,38 @@ class Client(ClientV0):
         )
 
         cls = smsdkentities.get('alert')(self.session, base_url)
-        data, metadata = getattr(cls, "list_alerts_df")(alert_type)
-        return data, metadata
+        alert_info = getattr(cls, "list_alerts")(alert_type)
+        return alert_info
+
+    @version_check_decorator
+    def get_alert_dataframe(self,alert_type=''):
+        """
+        Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
+        :param ename: Name of the entities
+        :param util_name: Name of the utility function
+        :param normalize: Flatten nested data structures
+        :return: pandas dataframe
+        """
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+
+        cls = smsdkentities.get('alert')(self.session, base_url)
+        alert_dataframe = getattr(cls, "get_alert_dataframe")(alert_type)
+        return alert_dataframe
+
+    def update_alert(self,alert_id,params):
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+        cls = smsdkentities.get('alert')(self.session, base_url)
+        getattr(cls, "update_alert")(alert_id,params)
 
     def delete_alert(self,alert_id=None,delete_all=False):
         """
@@ -281,7 +311,7 @@ class Client(ClientV0):
 
 
     @version_check_decorator
-    def create_alerts(self,alert_type=''):
+    def create_alerts(self,dataframe,alert_type=''):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -297,8 +327,7 @@ class Client(ClientV0):
         )
 
         cls = smsdkentities.get('alert')(self.session, base_url)
-        data, metadata = getattr(cls, "list_alerts_df")(alert_type)
-        return data, metadata
+        getattr(cls, "create_alert")(alert_type,dataframe)
 
 
     @version_check_decorator

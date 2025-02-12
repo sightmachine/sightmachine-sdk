@@ -2,9 +2,9 @@ import json
 from pandas import json_normalize
 import copy
 from typing import List
-import pandas as pd
 import ast
-
+from copy import deepcopy
+from math import isnan
 import pandas as pd
 
 try:
@@ -94,6 +94,31 @@ class Alert(SmsdkEntities, MaSession):
 
         return updated_payload
 
+    @mod_util
+    def get_updated_alert(self,existing, updates):
+        """Recursively update existing dictionary with new values, handling nested structures."""
+        if not isinstance(existing, dict) or not isinstance(updates, dict):
+            return updates if not (isinstance(updates, float) and isnan(updates)) else existing
+
+        updated = deepcopy(existing)
+        for key, value in updates.items():
+            if isinstance(value, dict):  # Handle nested dictionaries
+                updated[key] = self.get_updated_alert(existing.get(key, {}), value)
+            elif isinstance(value, list):  # Handle lists
+                if all(isinstance(v, dict) for v in value):  # List of dicts
+                    updated[key] = [self.get_updated_alert(old, new) for old, new in zip(existing.get(key, []), value)]
+                else:
+                    updated[key] = value  # Replace non-dict lists completely
+            else:
+                if not (isinstance(value, float) and isnan(value)):
+                    updated[key] = value  # Replace only if not NaN
+        keys_to_remove = [
+            "incident_total", "id", "created_by", "system_fixture", "audit_keys", "tombstone_epoch",
+            "tombstone", "version", "updatelocation", "localtz", "updatetime", "capturetime_epoch", "capturetime"
+        ]
+        for key in keys_to_remove:
+            updated.pop(key, None)
+        return updated
 
     @mod_util
     def get_utilities(self, *args, **kwargs) -> List:
@@ -135,6 +160,21 @@ class Alert(SmsdkEntities, MaSession):
                 print(f"\033[91m{response.text}\033[0m")
         else:
             print("Please enter params to be updated in dict format for `updated_params`")
+
+    @mod_util
+    def update_alert_group(self, updated_dataframe):
+        dataframe = self.convert_str_to_dict(updated_dataframe)
+        json_data = self.reconstruct_json(dataframe)
+        for item in json_data:
+            alert_config=self.get_alert_config(item['id'])
+            updated_alert=self.get_updated_alert(alert_config,item)
+            url = "{}{}{}".format(self.base_url, '/v1/obj/alert_config/',item['id'])
+            response = self.session.put(url, json=updated_alert)
+            if response.status_code in [200, 201]:
+                print(f"\033[92mSuccessfully updated alert with id \033[0m`{item['id']}`.")
+            else:
+                print(f"\033[91m{response.text}\033[0m")
+
     @mod_util
     def fetch_alerts_data(self):
         url = "{}{}".format(self.base_url, '/v1/obj/alert_config')
@@ -198,14 +238,6 @@ class Alert(SmsdkEntities, MaSession):
             for id in alert_ids:
                 config = self.get_alert_config(id)
                 if config:
-                    keys_to_remove = [
-                        "incident_total", "id", "created_by", "system_fixture", "audit_keys", "tombstone_epoch",
-                        "tombstone", "version", "updatelocation", "localtz", "updatetime", "capturetime_epoch",
-                        "capturetime"
-                    ]
-                    for key in keys_to_remove:
-                        config.pop(key, None)
-
                     alert_data.append(config)
             if alert_data:
                 alerts_df = json_normalize(alert_data, sep='___', max_level=2)
@@ -287,6 +319,13 @@ class Alert(SmsdkEntities, MaSession):
             json_data = self.get_filtered_alerts_by_group(json_data,alert_type)
         if json_data:
             for new_alert in json_data:
+                keys_to_remove = [
+                    "incident_total", "id", "created_by", "system_fixture", "audit_keys", "tombstone_epoch",
+                    "tombstone", "version", "updatelocation", "localtz", "updatetime", "capturetime_epoch",
+                    "capturetime"
+                ]
+                for key in keys_to_remove:
+                    new_alert.pop(key, None)
                 new_alert=self.remove_nan_keys(new_alert)
                 url = "{}{}".format(self.base_url, '/v1/obj/alert_config')
                 response = self.session.post(url,json=new_alert)

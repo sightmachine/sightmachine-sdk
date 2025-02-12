@@ -329,6 +329,25 @@ class Client(ClientV0):
         cls = smsdkentities.get('alert')(self.session, base_url)
         getattr(cls, "create_alert")(alert_type,dataframe)
 
+    @version_check_decorator
+    def update_alert_group(self,dataframe):
+        """
+        Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
+        :param ename: Name of the entities
+        :param util_name: Name of the utility function
+        :param normalize: Flatten nested data structures
+        :return: pandas dataframe
+        """
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+
+        cls = smsdkentities.get('alert')(self.session, base_url)
+        getattr(cls, "update_alert_group")(dataframe)
+
 
     @version_check_decorator
     @ClientV0.validate_input

@@ -238,9 +238,8 @@ class Client(ClientV0):
 
         return data
 
-
     @version_check_decorator
-    def list_alerts(self,alert_type=''):
+    def list_alerts(self, alert_type=""):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -255,12 +254,12 @@ class Client(ClientV0):
             self.config["port"],
         )
 
-        cls = smsdkentities.get('alert')(self.session, base_url)
+        cls = smsdkentities.get("alert")(self.session, base_url)
         alert_info = getattr(cls, "list_alerts")(alert_type)
         return alert_info
 
     @version_check_decorator
-    def get_alert_dataframe(self,alert_type=''):
+    def get_alert_dataframe(self, alert_type=""):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -275,21 +274,21 @@ class Client(ClientV0):
             self.config["port"],
         )
 
-        cls = smsdkentities.get('alert')(self.session, base_url)
+        cls = smsdkentities.get("alert")(self.session, base_url)
         alert_dataframe = getattr(cls, "get_alert_dataframe")(alert_type)
         return alert_dataframe
 
-    def update_alert(self,alert_id,params):
+    def update_alert(self, alert_id, params):
         base_url = get_url(
             self.config["protocol"],
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
         )
-        cls = smsdkentities.get('alert')(self.session, base_url)
-        getattr(cls, "update_alert")(alert_id,params)
+        cls = smsdkentities.get("alert")(self.session, base_url)
+        getattr(cls, "update_alert")(alert_id, params)
 
-    def delete_alert(self,alert_id=None,delete_all=False,alert_group=''):
+    def delete_alert(self, alert_id=None, delete_all=False, alert_group=""):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -304,14 +303,15 @@ class Client(ClientV0):
             self.config["port"],
         )
         if alert_id is None and not delete_all and not alert_group:
-            print("Invalid input please provide alert group or alert id or delete_all flag as true if you want to delete all the alerts.")
+            print(
+                "Invalid input please provide alert group or alert id or delete_all flag as true if you want to delete all the alerts."
+            )
             return
-        cls = smsdkentities.get('alert')(self.session, base_url)
-        getattr(cls, "delete_alert")(alert_id,delete_all,alert_group)
-
+        cls = smsdkentities.get("alert")(self.session, base_url)
+        getattr(cls, "delete_alert")(alert_id, delete_all, alert_group)
 
     @version_check_decorator
-    def create_alerts(self,dataframe,alert_type=''):
+    def create_alerts(self, dataframe, alert_type=""):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -326,11 +326,11 @@ class Client(ClientV0):
             self.config["port"],
         )
 
-        cls = smsdkentities.get('alert')(self.session, base_url)
-        getattr(cls, "create_alert")(alert_type,dataframe)
+        cls = smsdkentities.get("alert")(self.session, base_url)
+        getattr(cls, "create_alert")(alert_type, dataframe)
 
     @version_check_decorator
-    def update_alert_group(self,dataframe):
+    def update_alert_group(self, dataframe):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -345,9 +345,8 @@ class Client(ClientV0):
             self.config["port"],
         )
 
-        cls = smsdkentities.get('alert')(self.session, base_url)
+        cls = smsdkentities.get("alert")(self.session, base_url)
         getattr(cls, "update_alert_group")(dataframe)
-
 
     @version_check_decorator
     @ClientV0.validate_input
@@ -923,7 +922,6 @@ class Client(ClientV0):
                 mts = mts[mts["source_type_clean"] == kwargs["source_type_clean"]]
 
         return mts
-
 
     @version_check_decorator
     def get_machine_type_names(self, clean_strings_out=True):

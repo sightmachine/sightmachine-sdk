@@ -114,6 +114,15 @@ class Alert(SmsdkEntities, MaSession):
             return None
 
     @mod_util
+    def get_filtered_alerts_by_group(self,alerts,alert_group):
+        mapping = {"kpi": "KPIAlerting",
+                   "data_latency": "DataLatencyAlertingETL3",
+                   "spc": "SPCXBarRControlChartTable"}
+        alert_plugin_id = mapping.get(alert_group.lower(), None)
+        alerts = [data for data in alerts if data["analytic"].get("plugin_id") == alert_plugin_id]
+        return alerts
+
+    @mod_util
     def update_alert(self,alert_id,updated_params):
         original_alert=self.get_alert_config(alert_id)
         if updated_params:
@@ -182,11 +191,7 @@ class Alert(SmsdkEntities, MaSession):
         alert_ids = [data['id'] for data in alerts]
 
         if alert_type:
-            mapping = {"kpi": "KPIAlerting",
-                       "data_latency": "DataLatencyAlertingETL3",
-                       "spc": "SPCXBarRControlChartTable"}
-            alert_plugin_id = mapping.get(alert_type.lower(), None)
-            alerts= [ data for data in alerts if data["analytic"].get("plugin_id")==alert_plugin_id]
+            alerts = self.get_filtered_alerts_by_group(alerts,alert_type)
             alert_ids=[data['id'] for data in alerts ]
         if alert_ids:
             alert_data=[]
@@ -209,17 +214,18 @@ class Alert(SmsdkEntities, MaSession):
 
 
     @mod_util
-    def delete_alert(self,alert_id,delete_all):
+    def delete_alert(self,alert_id,delete_all,alert_group):
         alerts = self.fetch_alerts_data()
         alerts_ids_dict ={alert['id']:alert for alert in alerts}
-        if alert_id not in alerts_ids_dict:
-            print("\033[91mInvalid alert id.. not found in existing alerts\033[0m")
-        else:
-            _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
-            if _response.status_code in [200, 201]:
-                print(f"Successfully deleted alert with id : {alert_id}")
+        if alert_id:
+            if alert_id not in alerts_ids_dict:
+                print("\033[91mInvalid alert id.. not found in existing alerts\033[0m")
             else:
-                print(f"\033[91mFailed to delete alert with id:\033[0m {alert_id} \033[91mdue to:\033[0m {_response.text}")
+                _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
+                if _response.status_code in [200, 201]:
+                    print(f"Successfully deleted alert with id : {alert_id}")
+                else:
+                    print(f"\033[91mFailed to delete alert with id:\033[0m {alert_id} \033[91mdue to:\033[0m {_response.text}")
         if delete_all:
             for alert_id in alerts_ids_dict:
                 _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
@@ -227,6 +233,17 @@ class Alert(SmsdkEntities, MaSession):
                     print(f"\033[92mSuccessfully deleted alert with id :\033[0m `{alert_id}`")
                 else:
                     print(f"\033[91mFailed to delete alert with id:\033[0m {alert_id} \033[91mdue to:\033[0m {_response.text}")
+        if alert_group:
+            alerts=self.get_filtered_alerts_by_group(alerts,alert_group)
+            alert_ids = [data['id'] for data in alerts]
+            for alert_id in alert_ids:
+                _response = self.session.delete(f"{self.base_url}/v1/obj/alert_config/{alert_id}")
+                if _response.status_code in [200, 201]:
+                    print(f"\033[92mSuccessfully deleted alert with id :\033[0m `{alert_id}`")
+                else:
+                    print(
+                        f"\033[91mFailed to delete alert with id:\033[0m {alert_id} \033[91mdue to:\033[0m {_response.text}")
+
     # Convert string representations of dictionaries back to actual dictionaries
     @mod_util
     def convert_str_to_dict(self,df):
@@ -267,11 +284,7 @@ class Alert(SmsdkEntities, MaSession):
         dataframe = self.convert_str_to_dict(dataframe)
         json_data = self.reconstruct_json(dataframe)
         if alert_type:
-            mapping = {"kpi": "KPIAlerting",
-                       "data_latency": "DataLatencyAlertingETL3",
-                       "spc": "SPCXBarRControlChartTable"}
-            alert_plugin_id = mapping.get(alert_type.lower(), None)
-            json_data= [ data for data in json_data if data["analytic"].get("plugin_id")==alert_plugin_id]
+            json_data = self.get_filtered_alerts_by_group(json_data,alert_type)
         if json_data:
             for new_alert in json_data:
                 new_alert=self.remove_nan_keys(new_alert)

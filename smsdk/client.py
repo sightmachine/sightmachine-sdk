@@ -289,7 +289,7 @@ class Client(ClientV0):
         cls = smsdkentities.get('alert')(self.session, base_url)
         getattr(cls, "update_alert")(alert_id,params)
 
-    def delete_alert(self,alert_id=None,delete_all=False):
+    def delete_alert(self,alert_id=None,delete_all=False,alert_group=''):
         """
         Main data fetching function for all the entities.  Note this is the general data fetch function.  You probably want to use the model-specific functions such as get_cycles().
         :param ename: Name of the entities
@@ -303,11 +303,11 @@ class Client(ClientV0):
             self.config["site.domain"],
             self.config["port"],
         )
-        if alert_id is None and not delete_all:
-            print("Invalid input please provide Alert name or alert id or delete_all flag as true if you want to delete all the alerts.")
+        if alert_id is None and not delete_all and not alert_group:
+            print("Invalid input please provide alert group or alert id or delete_all flag as true if you want to delete all the alerts.")
             return
         cls = smsdkentities.get('alert')(self.session, base_url)
-        getattr(cls, "delete_alert")(alert_id,delete_all)
+        getattr(cls, "delete_alert")(alert_id,delete_all,alert_group)
 
 
     @version_check_decorator

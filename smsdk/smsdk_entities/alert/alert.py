@@ -187,6 +187,7 @@ class Alert(SmsdkEntities, MaSession):
             "kpi": "KPIAlerting",
             "data_latency": "DataLatencyAlertingETL3",
             "spc": "SPCXBarRControlChartTable",
+            "pipelinesourcemonitoring":"PipelineSourceMonitoring"
         }
         alert_plugin_id = mapping.get(alert_group.lower(), None)
         alerts = [
@@ -280,23 +281,54 @@ class Alert(SmsdkEntities, MaSession):
 
     @mod_util
     def get_alert_dataframe(self, alert_type):
-        """ """
+        """Fetches and returns alerts as a structured DataFrame"""
         alerts = self.fetch_alerts_data()
-        alert_ids = [data["id"] for data in alerts]
 
         if alert_type:
             alerts = self.get_filtered_alerts_by_group(alerts, alert_type)
-            alert_ids = [data["id"] for data in alerts]
-        if alert_ids:
-            alert_data = []
-            for id in alert_ids:
-                config = self.get_alert_config(id)
-                if config:
-                    alert_data.append(config)
-            if alert_data:
-                alerts_df = json_normalize(alert_data, sep="___", max_level=2)
-                return alerts_df
-        return None
+
+        alert_ids = [data["id"] for data in alerts if "id" in data]
+
+        if not alert_ids:
+            return pd.DataFrame()  # Return empty DataFrame instead of None
+
+        alert_data = [self.get_alert_config(id) for id in alert_ids if self.get_alert_config(id)]
+
+        if not alert_data:
+            return pd.DataFrame()
+
+        # Convert list of dicts to DataFrame
+        df_main = pd.DataFrame(alert_data)
+        # Normalize different sections with different depths
+        df_created_by = pd.json_normalize(df_main['created_by'], sep="___", max_level=2).add_prefix(
+            "created_by___") if 'created_by' in df_main else None
+        df_notification = pd.json_normalize(df_main['notification'], sep="___", max_level=2).add_prefix(
+            "notification___") if 'notification' in df_main else None
+
+        df_analytic_meta = df_main[['analytic']].copy()
+        df_analytic_meta['analytic___plugin_id'] = df_analytic_meta['analytic'].apply(lambda x: x.get('plugin_id', None))
+        df_analytic_meta['analytic___plugin_version'] = df_analytic_meta['analytic'].apply(lambda x: x.get('plugin_version', None))
+        df_analytic_meta['analytic___plugin_type'] = df_analytic_meta['analytic'].apply(lambda x: x.get('plugin_type', None))
+
+        # Drop the `analytic` column after extracting meta
+        df_analytic_meta.drop(columns=['analytic'], inplace=True)
+
+        df_plugin_params = pd.json_normalize(df_main['analytic'].apply(lambda x: x.get('plugin_parameters', {})),
+                                             sep="___", max_level=1).add_prefix(
+            "analytic___plugin_parameters___") if 'analytic' in df_main else None
+        df_sidebar_params = pd.json_normalize(df_main['sidebar_params'], sep="___", max_level=1).add_prefix(
+            "sidebar_params___") if 'sidebar_params' in df_main else None
+
+        df_trigger = pd.json_normalize(df_main['trigger'], sep="___", max_level=1).add_prefix(
+            "trigger___") if 'trigger' in df_main else None
+
+        # Drop original nested columns
+        df_main = df_main.drop(columns=['created_by','trigger', 'notification', 'analytic', 'sidebar_params'], errors='ignore')
+
+        # Concatenate the processed DataFrames
+        df_final = pd.concat([df_main,df_trigger, df_created_by, df_notification,df_analytic_meta, df_plugin_params, df_sidebar_params], axis=1)
+
+        return df_final
 
     @mod_util
     def delete_alert(self, alert_id, delete_all, alert_group):

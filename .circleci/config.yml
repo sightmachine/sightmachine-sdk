@@ -30,7 +30,7 @@ orbs:
   gcp-cli: circleci/gcp-cli@3.1.1
   slack: circleci/slack@4.13.1
   codecov: codecov/codecov@4.0.1
-  sm-build: sightmachine/ci-orb-sm-build@0.1.0
+  sm-build: sightmachine/ci-orb-sm-build@0.1.4
 
 commands:
   disable_build_if_not_pr:
@@ -112,6 +112,7 @@ jobs:
       # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
       - sm-build/disable_docker_hub_access
       - sm-build/configure_gcr_docker_access
+      - sm-build/configure_acr_docker_access
       - attach_workspace:
           at: /tmp/workspace
 

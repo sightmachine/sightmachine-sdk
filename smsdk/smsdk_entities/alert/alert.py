@@ -251,7 +251,7 @@ class Alert(SmsdkEntities, MaSession):
             "kpi": "KPIAlerting",
             "data_latency": "DataLatencyAlertingETL3",
             "spc": "SPCXBarRControlChartTable",
-            "pipelinesourcemonitoring":"PipelineSourceMonitoring"
+            "pipelinesourcemonitoring": "PipelineSourceMonitoring",
         }
         alert_plugin_id = mapping.get(alert_type.lower(), None)
         alerts = self.fetch_alerts_data()
@@ -286,7 +286,7 @@ class Alert(SmsdkEntities, MaSession):
     def get_alert_dataframe(self, alert_type):
         """Fetches and returns alerts as a structured DataFrame"""
         alerts = self.fetch_alerts_data()
-        print('alerts',len(alerts))
+        print("alerts", len(alerts))
         if alert_type:
             alerts = self.get_filtered_alerts_by_group(alerts, alert_type)
 
@@ -399,7 +399,9 @@ class Alert(SmsdkEntities, MaSession):
                     f"{self.base_url}/v1/obj/alert_config/{alert_id}"
                 )
                 if _response.status_code in [200, 201]:
-                    print(f"\033[92mSuccessfully deleted alert with id :\033[0m `{alert_id}`")
+                    print(
+                        f"\033[92mSuccessfully deleted alert with id :\033[0m `{alert_id}`"
+                    )
                 else:
                     print(
                         f"\033[91mFailed to delete alert with id:\033[0m {alert_id} \033[91mdue to:\033[0m {_response.text}"

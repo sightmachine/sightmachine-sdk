@@ -1,10 +1,9 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from smsdk.smsdk_entities.alert import *
+from smsdk.smsdk_entities.alert.alert import *
 
 
 class TestAlertFunctions(unittest.TestCase):
-
     def test_update_alert_payload(self):
         payload = {"id": 1, "status": "active"}
         updates = {"status": "resolved"}
@@ -21,7 +20,7 @@ class TestAlertFunctions(unittest.TestCase):
         alerts = [
             {"id": 1, "group": "A"},
             {"id": 2, "group": "B"},
-            {"id": 3, "group": "A"}
+            {"id": 3, "group": "A"},
         ]
         expected = [{"id": 1, "group": "A"}, {"id": 3, "group": "A"}]
         self.assertEqual(get_filtered_alerts_by_group(alerts, "A"), expected)

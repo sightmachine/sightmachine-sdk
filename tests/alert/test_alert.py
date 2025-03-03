@@ -1,6 +1,14 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import sys
+print("===================",sys.path)
+
+# Check if smsdk can be imported
+import smsdk
+
 from smsdk.smsdk_entities.alert.alert import *
+
+
 
 
 class TestAlertFunctions(unittest.TestCase):
@@ -61,6 +69,3 @@ class TestAlertFunctions(unittest.TestCase):
         mock_get_alert_dataframe.return_value = mock_df
         self.assertEqual(get_alert_dataframe(), mock_df)
 
-
-if __name__ == "__main__":
-    unittest.main()

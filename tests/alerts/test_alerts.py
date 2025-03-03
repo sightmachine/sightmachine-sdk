@@ -6,11 +6,7 @@ print("===================",sys.path)
 # Check if smsdk can be imported
 import smsdk
 
-from smsdk.smsdk_entities.alert.alert import get_filtered_alerts_by_group, get_updated_alert, update_alert_payload
-
-
-
-
+from smsdk.smsdk_entities.alerts.alerts import *
 def test_update_alert_payload(self):
     payload = {"id": 1, "status": "active"}
     updates = {"status": "resolved"}

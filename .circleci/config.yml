@@ -110,9 +110,9 @@ jobs:
     steps:
       # Make sure that the build doesn't accidentally pull images from Docker Hub.
       # Pulls from Docker Hub may fail due to rate-limiting after Nov 1 2020.
+      - setup_remote_docker
       - sm-build/disable_docker_hub_access
       - sm-build/configure_gcr_docker_access
-      - setup_remote_docker
       - sm-build/configure_acr_docker_access
       - attach_workspace:
           at: /tmp/workspace

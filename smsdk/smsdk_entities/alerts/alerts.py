@@ -41,7 +41,7 @@ class Alerts(SmsdkEntities, MaSession):
     # to outside world via client.get_data()
     mod_util = module_utility()
 
-    def __init__(self, session, base_url) -> None:
+    def __init__(self, session: Any, base_url: str) -> None:
         self.session = session
         self.base_url = base_url
 
@@ -165,7 +165,7 @@ class Alerts(SmsdkEntities, MaSession):
         return updated
 
     @mod_util
-    def get_utilities(self, *args: Any, **kwargs: Any) -> List[str]:
+    def get_utilities(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]:
         """
         Get the list of registered utilites by name
         """

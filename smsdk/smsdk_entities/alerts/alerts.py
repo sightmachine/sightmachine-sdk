@@ -121,7 +121,7 @@ class Alerts(SmsdkEntities, MaSession):
         return updated_payload
 
     @mod_util
-    def get_updated_alert(self, existing, updates):
+    def get_updated_alert(self, existing: Dict[str, Any], updates: Dict[str, Any])-> Dict[str, Any]:
         """Recursively update existing dictionary with new values, handling nested structures."""
         if not isinstance(existing, dict) or not isinstance(updates, dict):
             return (
@@ -183,7 +183,7 @@ class Alerts(SmsdkEntities, MaSession):
             return None
 
     @mod_util
-    def get_filtered_alerts_by_group(self, alerts, alert_group):
+    def get_filtered_alerts_by_group(self, alerts: List[Any], alert_group: str)->List[Any] :
         mapping = {
             "kpi": "KPIAlerting",
             "data_latency": "DataLatencyAlertingETL3",
@@ -199,7 +199,7 @@ class Alerts(SmsdkEntities, MaSession):
         return alerts
 
     @mod_util
-    def update_alert(self, alert_id, updated_params):
+    def update_alert(self, alert_id : str, updated_params: List[Any])->None:
         original_alert = self.get_alert_config(alert_id)
         if updated_params:
             updated_payload = self.update_alert_payload(original_alert, updated_params)
@@ -217,7 +217,7 @@ class Alerts(SmsdkEntities, MaSession):
             )
 
     @mod_util
-    def update_alert_group(self, updated_dataframe):
+    def update_alert_group(self, updated_dataframe:pd.DataFrame)-> None:
         dataframe = self.convert_str_to_dict(updated_dataframe)
         json_data = self.reconstruct_json(dataframe)
         for item in json_data:

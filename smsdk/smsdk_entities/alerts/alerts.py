@@ -172,7 +172,7 @@ class Alerts(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_alert_config(self, alert_id: str) -> Optional[Dict[str, Any]]|None:
+    def get_alert_config(self, alert_id: str) -> Any:
         url = "{}{}{}".format(self.base_url, "/v1/obj/alert_config/", alert_id)
         response = self.session.get(url)
         if response.status_code in [200, 201]:

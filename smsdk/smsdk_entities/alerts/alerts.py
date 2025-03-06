@@ -12,6 +12,7 @@ try:
 except ImportError:
     # Try backported to PY<37 `importlib_resources`.
     import importlib_resources as pkg_resources
+from typing import Dict, Any, List, Optional
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
@@ -45,7 +46,7 @@ class Alerts(SmsdkEntities, MaSession):
         self.base_url = base_url
 
     @mod_util
-    def update_alert_payload(self, payload, updates):
+    def update_alert_payload(self, payload: Dict[str, Any], updates: Dict[str, Any]) -> Dict[str, Any]:
         """
         Update the alert payload with new values provided in the updates dictionary.
 
@@ -164,14 +165,14 @@ class Alerts(SmsdkEntities, MaSession):
         return updated
 
     @mod_util
-    def get_utilities(self, *args, **kwargs) -> List:
+    def get_utilities(self, *args: Any, **kwargs: Any) -> List[str]:
         """
         Get the list of registered utilites by name
         """
         return [*self.mod_util.all]
 
     @mod_util
-    def get_alert_config(self, alert_id):
+    def get_alert_config(self, alert_id: str) -> Optional[Dict[str, Any]]:
         url = "{}{}{}".format(self.base_url, "/v1/obj/alert_config/", alert_id)
         response = self.session.get(url)
         if response.status_code in [200, 201]:

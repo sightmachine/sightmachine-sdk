@@ -165,14 +165,14 @@ class Alerts(SmsdkEntities, MaSession):
         return updated
 
     @mod_util
-    def get_utilities(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]|None:
+    def get_utilities(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]:
         """
         Get the list of registered utilites by name
         """
         return [*self.mod_util.all]
 
     @mod_util
-    def get_alert_config(self, alert_id: str) -> Optional[Dict[str, Any]]:
+    def get_alert_config(self, alert_id: str) -> Optional[Dict[str, Any]]|None:
         url = "{}{}{}".format(self.base_url, "/v1/obj/alert_config/", alert_id)
         response = self.session.get(url)
         if response.status_code in [200, 201]:

@@ -165,7 +165,7 @@ class Alerts(SmsdkEntities, MaSession):
         return updated
 
     @mod_util
-    def get_utilities(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]:
+    def get_utilities(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]|None:
         """
         Get the list of registered utilites by name
         """

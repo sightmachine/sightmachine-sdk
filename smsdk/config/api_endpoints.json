@@ -2,6 +2,9 @@
   "Auth": {
     "url": "/auth/password/login"
   },
+  "Alert": {
+    "url": "/v1/obj/alert_config"
+  },
   "Cycle": {
     "url_v1": "/v1/datatab/cycle",
     "url": "/api/cycle",

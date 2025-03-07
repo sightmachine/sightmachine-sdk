@@ -447,7 +447,7 @@ class Alerts(SmsdkEntities, MaSession):
     def reconstruct_json(self, df:pd.DataFrame)->List[Any]:
         result = []
         for _, row in df.iterrows():
-            item = {}
+            item = {} # type: ignore
             for col, value in row.items():
                 keys = col.split("___")  # Reverse the flattening
                 temp = item

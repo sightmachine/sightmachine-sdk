@@ -239,7 +239,7 @@ class Alerts(SmsdkEntities, MaSession):
         url = "{}{}".format(self.base_url, "/v1/obj/alert_config")
         response = self.session.get(url)
         if response.status_code in [200, 201]:
-            alerts = response.json()["objects"]
+            alerts:List[Dict[str, Any]] = response.json()["objects"]
             return alerts
         else:
             print(f"\033[91m{response.text}\033[0m")

@@ -235,7 +235,7 @@ class Alerts(SmsdkEntities, MaSession):
                 print(f"\033[91m{response.text}\033[0m")
 
     @mod_util
-    def fetch_alerts_data(self):
+    def fetch_alerts_data(self)-> List[Any]:
         url = "{}{}".format(self.base_url, "/v1/obj/alert_config")
         response = self.session.get(url)
         if response.status_code in [200, 201]:
@@ -246,7 +246,7 @@ class Alerts(SmsdkEntities, MaSession):
             return []
 
     @mod_util
-    def list_alerts(self, alert_type):
+    def list_alerts(self, alert_type: str)-> Any:
         """ """
         mapping = {
             "kpi": "KPIAlerting",
@@ -284,7 +284,7 @@ class Alerts(SmsdkEntities, MaSession):
         return None
 
     @mod_util
-    def get_alert_dataframe(self, alert_type):
+    def get_alert_dataframe(self, alert_type:str)-> pd.DataFrame:
         """Fetches and returns alerts as a structured DataFrame"""
         alerts = self.fetch_alerts_data()
         print("alerts", len(alerts))
@@ -389,7 +389,7 @@ class Alerts(SmsdkEntities, MaSession):
         return df_final
 
     @mod_util
-    def delete_alert(self, alert_id, delete_all, alert_group):
+    def delete_alert(self, alert_id:str, delete_all:bool, alert_group:str)->None:
         alerts = self.fetch_alerts_data()
         alerts_ids_dict = {alert["id"]: alert for alert in alerts}
         if alert_id:
@@ -438,7 +438,7 @@ class Alerts(SmsdkEntities, MaSession):
 
     # Convert string representations of dictionaries back to actual dictionaries
     @mod_util
-    def convert_str_to_dict(self, df):
+    def convert_str_to_dict(self, df:pd.DataFrame)-> pd.DataFrame:
         for col in df.columns:
             df[col] = df[col].apply(
                 lambda x: ast.literal_eval(x)
@@ -450,7 +450,7 @@ class Alerts(SmsdkEntities, MaSession):
     # Apply conversion
     # Convert back to nested dictionary
     @mod_util
-    def reconstruct_json(self, df):
+    def reconstruct_json(self, df:pd.DataFrame)->List:
         result = []
         for _, row in df.iterrows():
             item = {}
@@ -465,7 +465,7 @@ class Alerts(SmsdkEntities, MaSession):
 
     # Get back the nested JSON
     @mod_util
-    def remove_nan_keys(self, d):
+    def remove_nan_keys(self, d:Dict)->Any:
         """Recursively remove keys with NaN values from a nested dictionary."""
         if isinstance(d, dict):
             return {
@@ -491,7 +491,7 @@ class Alerts(SmsdkEntities, MaSession):
             return d
 
     @mod_util
-    def create_alert(self, alert_type, dataframe):
+    def create_alert(self, alert_type:str, dataframe:pd.DataFrame)->None:
         dataframe = self.convert_str_to_dict(dataframe)
         json_data = self.reconstruct_json(dataframe)
         if alert_type:

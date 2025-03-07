@@ -235,7 +235,7 @@ class Alerts(SmsdkEntities, MaSession):
                 print(f"\033[91m{response.text}\033[0m")
 
     @mod_util
-    def fetch_alerts_data(self) -> List:
+    def fetch_alerts_data(self) -> List[Dict[str, Any]]:
         url = "{}{}".format(self.base_url, "/v1/obj/alert_config")
         response = self.session.get(url)
         if response.status_code in [200, 201]:

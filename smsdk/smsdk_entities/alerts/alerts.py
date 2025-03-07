@@ -40,7 +40,9 @@ class Alerts(SmsdkEntities, MaSession):
         self.base_url = base_url
 
     @mod_util
-    def update_alert_payload(self, payload: Dict[str, Any], updates: Dict[str, Any]) -> Dict[str, Any]:
+    def update_alert_payload(
+        self, payload: Dict[str, Any], updates: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Update the alert payload with new values provided in the updates dictionary.
 
@@ -115,7 +117,9 @@ class Alerts(SmsdkEntities, MaSession):
         return updated_payload
 
     @mod_util
-    def get_updated_alert(self, existing: Dict[str, Any], updates: Dict[str, Any])-> Dict[str, Any]:
+    def get_updated_alert(
+        self, existing: Dict[str, Any], updates: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Recursively update existing dictionary with new values, handling nested structures."""
         if not isinstance(existing, dict) or not isinstance(updates, dict):
             return (
@@ -159,7 +163,9 @@ class Alerts(SmsdkEntities, MaSession):
         return updated
 
     @mod_util
-    def get_utilities(self, *args: tuple[Any, ...], **kwargs: dict[str, Any]) -> List[Any]:
+    def get_utilities(
+        self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+    ) -> List[Any]:
         """
         Get the list of registered utilites by name
         """
@@ -177,7 +183,9 @@ class Alerts(SmsdkEntities, MaSession):
             return None
 
     @mod_util
-    def get_filtered_alerts_by_group(self, alerts: List[Any], alert_group: str)->List[Any] :
+    def get_filtered_alerts_by_group(
+        self, alerts: List[Any], alert_group: str
+    ) -> List[Any]:
         mapping = {
             "kpi": "KPIAlerting",
             "data_latency": "DataLatencyAlertingETL3",
@@ -193,7 +201,7 @@ class Alerts(SmsdkEntities, MaSession):
         return alerts
 
     @mod_util
-    def update_alert(self, alert_id : str, updated_params: List[Any])->None:
+    def update_alert(self, alert_id: str, updated_params: List[Any]) -> None:
         original_alert = self.get_alert_config(alert_id)
         if updated_params:
             updated_payload = self.update_alert_payload(original_alert, updated_params)
@@ -211,7 +219,7 @@ class Alerts(SmsdkEntities, MaSession):
             )
 
     @mod_util
-    def update_alert_group(self, updated_dataframe:pd.DataFrame)-> None:
+    def update_alert_group(self, updated_dataframe: pd.DataFrame) -> None:
         dataframe = self.convert_str_to_dict(updated_dataframe)
         json_data = self.reconstruct_json(dataframe)
         for item in json_data:
@@ -233,14 +241,14 @@ class Alerts(SmsdkEntities, MaSession):
         url = "{}{}".format(self.base_url, "/v1/obj/alert_config")
         response = self.session.get(url)
         if response.status_code in [200, 201]:
-            alerts:List[Dict[str, Any]] = response.json()["objects"]
+            alerts: List[Dict[str, Any]] = response.json()["objects"]
             return alerts
         else:
             print(f"\033[91m{response.text}\033[0m")
             return []
 
     @mod_util
-    def list_alerts(self, alert_type: str)-> Any:
+    def list_alerts(self, alert_type: str) -> Any:
         """ """
         mapping = {
             "kpi": "KPIAlerting",
@@ -278,7 +286,7 @@ class Alerts(SmsdkEntities, MaSession):
         return None
 
     @mod_util
-    def get_alert_dataframe(self, alert_type:str)-> pd.DataFrame:
+    def get_alert_dataframe(self, alert_type: str) -> pd.DataFrame:
         """Fetches and returns alerts as a structured DataFrame"""
         alerts = self.fetch_alerts_data()
         print("alerts", len(alerts))
@@ -383,7 +391,7 @@ class Alerts(SmsdkEntities, MaSession):
         return df_final
 
     @mod_util
-    def delete_alert(self, alert_id:str, delete_all:bool, alert_group:str)->None:
+    def delete_alert(self, alert_id: str, delete_all: bool, alert_group: str) -> None:
         alerts = self.fetch_alerts_data()
         alerts_ids_dict = {alert["id"]: alert for alert in alerts}
         if alert_id:
@@ -432,7 +440,7 @@ class Alerts(SmsdkEntities, MaSession):
 
     # Convert string representations of dictionaries back to actual dictionaries
     @mod_util
-    def convert_str_to_dict(self, df:pd.DataFrame)-> pd.DataFrame:
+    def convert_str_to_dict(self, df: pd.DataFrame) -> pd.DataFrame:
         for col in df.columns:
             df[col] = df[col].apply(
                 lambda x: ast.literal_eval(x)
@@ -444,10 +452,10 @@ class Alerts(SmsdkEntities, MaSession):
     # Apply conversion
     # Convert back to nested dictionary
     @mod_util
-    def reconstruct_json(self, df:pd.DataFrame)->List[Any]:
+    def reconstruct_json(self, df: pd.DataFrame) -> List[Any]:
         result = []
         for _, row in df.iterrows():
-            item = {} # type: ignore
+            item = {}  # type: ignore
             for col, value in row.items():
                 keys = col.split("___")  # Reverse the flattening
                 temp = item
@@ -459,7 +467,7 @@ class Alerts(SmsdkEntities, MaSession):
 
     # Get back the nested JSON
     @mod_util
-    def remove_nan_keys(self, d:Dict[str,Any])->Any:
+    def remove_nan_keys(self, d: Dict[str, Any]) -> Any:
         """Recursively remove keys with NaN values from a nested dictionary."""
         if isinstance(d, dict):
             return {
@@ -485,7 +493,7 @@ class Alerts(SmsdkEntities, MaSession):
             return d
 
     @mod_util
-    def create_alert(self, alert_type:str, dataframe:pd.DataFrame)->None:
+    def create_alert(self, alert_type: str, dataframe: pd.DataFrame) -> None:
         dataframe = self.convert_str_to_dict(dataframe)
         json_data = self.reconstruct_json(dataframe)
         if alert_type:

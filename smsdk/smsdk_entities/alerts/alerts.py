@@ -235,7 +235,7 @@ class Alerts(SmsdkEntities, MaSession):
                 print(f"\033[91m{response.text}\033[0m")
 
     @mod_util
-    def fetch_alerts_data(self)-> List[Any]:
+    def fetch_alerts_data(self) -> List:
         url = "{}{}".format(self.base_url, "/v1/obj/alert_config")
         response = self.session.get(url)
         if response.status_code in [200, 201]:
@@ -450,7 +450,7 @@ class Alerts(SmsdkEntities, MaSession):
     # Apply conversion
     # Convert back to nested dictionary
     @mod_util
-    def reconstruct_json(self, df:pd.DataFrame)->List:
+    def reconstruct_json(self, df:pd.DataFrame)->List[Any]:
         result = []
         for _, row in df.iterrows():
             item = {}

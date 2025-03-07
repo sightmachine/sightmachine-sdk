@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 from typing import List
 import uuid
+from smsdk.Auth.auth import X_SM_WORKSPACE_ID
 
 import numpy as np
 
@@ -62,8 +63,9 @@ class DataViz(SmsdkEntities, MaSession):
         url_params["state_hash"] = str(uuid.uuid4())[:8]
         url_params["context"] = "/analysis/datavis"
         try:
-            url_params["in_use_workspace"] = self.session.headers["X-Sm-Workspace-Id"]
+            url_params["in_use_workspace"] = self.session.headers[X_SM_WORKSPACE_ID]
         except:
+            print("Creating dashboard over prod since we didn't get WORKSPACE_ID from headers")
             pass
         if time_selection["time_type"] == "relative":
             dateRange = {
@@ -90,65 +92,62 @@ class DataViz(SmsdkEntities, MaSession):
             "dateRange": dateRange,
         }
         url_params["state"].update(kwargs)
-        if model == "line":
-            if are_line_params_available:
-                pass
+        if model == "line" and not are_line_params_available:
+            del url_params["state"]["asset"]
+            url_params["state"]["lineProcess"] = {}
+            if not isinstance(asset, List) and asset.get("assetOffsets"):
+                url_params["state"]["lineProcess"]["assetOffsets"] = asset.get(
+                    "assetOffsets"
+                )
+            if not isinstance(asset, List) and asset.get("assets"):
+                selectedMachines = []
+                for machine in asset["assets"]:
+                    selectedMachines.append({"machineName": machine})
+                url_params["state"]["lineProcess"][
+                    "selectedMachines"
+                ] = selectedMachines
             else:
-                del url_params["state"]["asset"]
-                url_params["state"]["lineProcess"] = {}
-                if not isinstance(asset, List) and asset.get("assetOffsets"):
-                    url_params["state"]["lineProcess"]["assetOffsets"] = asset.get(
-                        "assetOffsets"
-                    )
-                if not isinstance(asset, List) and asset.get("assets"):
-                    selectedMachines = []
-                    for machine in asset["assets"]:
-                        selectedMachines.append({"machineName": machine})
-                    url_params["state"]["lineProcess"][
-                        "selectedMachines"
-                    ] = selectedMachines
-                else:
-                    selectedMachines = []
-                    for machine in asset:
-                        selectedMachines.append({"machineName": machine})
-                    url_params["state"]["lineProcess"][
-                        "selectedMachines"
-                    ] = selectedMachines
+                selectedMachines = []
+                for machine in asset:
+                    selectedMachines.append({"machineName": machine})
+                url_params["state"]["lineProcess"][
+                    "selectedMachines"
+                ] = selectedMachines
 
-                if xAxis.get("id") == "endtime":
-                    url_params["state"]["lineXAxis"] = [
-                        {"field": {"name": "offset_endtime", "type": "datetime"}}
-                    ]
-                else:
-                    url_params["state"]["lineXAxis"] = xAxis
-                if isinstance(yAxis, List):
-                    lineYAxis = []
-                    for y in yAxis:
-                        lineYAxis.append(
-                            {
-                                "field": {
-                                    "name": y.get("field"),
-                                    "machine_type": {
-                                        "name": y.get("machineType"),
-                                    },
-                                },
-                                "machineName": y.get("machineName"),
-                            }
-                        )
-                    url_params["state"]["lineYAxisMulti"] = lineYAxis
-
-                else:
-                    url_params["state"]["lineYAxisMulti"] = [
+            if xAxis.get("id") == "endtime":
+                url_params["state"]["lineXAxis"] = [
+                    {"field": {"name": "offset_endtime", "type": "datetime"}}
+                ]
+            else:
+                url_params["state"]["lineXAxis"] = xAxis
+            if isinstance(yAxis, List):
+                lineYAxis = []
+                for y in yAxis:
+                    lineYAxis.append(
                         {
                             "field": {
-                                "name": yAxis.get("field"),
+                                "name": y.get("field"),
                                 "machine_type": {
-                                    "name": yAxis.get("machineType"),
+                                    "name": y.get("machineType"),
                                 },
                             },
-                            "machineName": yAxis.get("machineName"),
+                            "machineName": y.get("machineName"),
                         }
-                    ]
+                    )
+                url_params["state"]["lineYAxisMulti"] = lineYAxis
+
+            else:
+                url_params["state"]["lineYAxisMulti"] = [
+                    {
+                        "field": {
+                            "name": yAxis.get("field"),
+                            "machine_type": {
+                                "name": yAxis.get("machineType"),
+                            },
+                        },
+                        "machineName": yAxis.get("machineName"),
+                    }
+                ]
 
         else:
             if isinstance(yAxis, List):
@@ -191,8 +190,9 @@ class DataViz(SmsdkEntities, MaSession):
         url_params["state_hash"] = str(uuid.uuid4())[:8]
         url_params["context"] = context
         try:
-            url_params["in_use_workspace"] = self.session.headers["X-Sm-Workspace-Id"]
+            url_params["in_use_workspace"] = self.session.headers[X_SM_WORKSPACE_ID]
         except:
+            print("Creating dashboard over prod since we didn't get WORKSPACE_ID from headers")
             pass
         url_params["state"] = kwargs
         response = getattr(self.session, "post")(url, json=url_params)

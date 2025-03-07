@@ -279,10 +279,10 @@ class MaSession:
         try:
             response = getattr(self.session, method.lower())(endpoint)
             if response.status_code not in [200, 201]:
-                raise ValueError("Error - {}".format(response.text))
-            data = response.json()["panels"]
+                raise ValueError(f"Error - {response.text}")
+            data = response.json().get("panels", [])
         except Exception as e:
-            raise ValueError(e)
+            raise ValueError("Failed to fetch dashboard panels") from e
         return data
 
     def get_json_headers(self) -> CaseInsensitiveDict:

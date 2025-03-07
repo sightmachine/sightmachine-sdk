@@ -6,19 +6,13 @@ import ast
 from copy import deepcopy
 from math import isnan
 import pandas as pd
-
-try:
-    import importlib.resources as pkg_resources
-except ImportError:
-    # Try backported to PY<37 `importlib_resources`.
-    import importlib_resources as pkg_resources
-from typing import Dict, Any, List, Optional
+import importlib.resources as pkg_resources
+from typing import Dict, Any, List
 
 from smsdk.tool_register import SmsdkEntities, smsdkentities
 from smsdk.utils import module_utility
 from smsdk import config
 from smsdk.ma_session import MaSession
-from datetime import datetime, timedelta
 import numpy as np
 
 import logging
@@ -465,7 +459,7 @@ class Alerts(SmsdkEntities, MaSession):
 
     # Get back the nested JSON
     @mod_util
-    def remove_nan_keys(self, d:Dict)->Any:
+    def remove_nan_keys(self, d:Dict[str,Any])->Any:
         """Recursively remove keys with NaN values from a nested dictionary."""
         if isinstance(d, dict):
             return {

@@ -443,7 +443,7 @@ class Alerts(SmsdkEntities, MaSession):
             df[col] = df[col].apply(
                 lambda x: ast.literal_eval(x)
                 if isinstance(x, str) and (x.startswith("{") or x.startswith("["))
-                else x
+                else x  # type: ignore
             )
         return df
 

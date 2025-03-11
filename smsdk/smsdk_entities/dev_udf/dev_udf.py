@@ -1,5 +1,5 @@
 import time
-from typing import List, Any, Dict, Union
+from typing import List, Any, Dict, Union, Tuple
 from bs4 import BeautifulSoup
 import json
 import importlib.resources as pkg_resources
@@ -28,7 +28,7 @@ class UDFData(SmsdkEntities, MaSession):
 
     @mod_util
     def get_utilities(
-        self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+        self, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
     ) -> List[Any]:
         return [*self.mod_util.all]
 
@@ -38,15 +38,12 @@ class UDFData(SmsdkEntities, MaSession):
         Utility function to get list of UDF present in dev tool
         """
         url = "{}{}".format(self.base_url, ENDPOINTS["UDF_dev"]["list_url"])
-        html_content = self.session.get(url).text
-        soup = BeautifulSoup(html_content, "html.parser")
-        table = soup.find("table")
-        rows = table.find("tbody").find_all("tr")
-        list_of_udfs = [row.find_all("td")[0].text for row in rows]
+        response = self.session.get(url).json()
+        list_of_udfs = [udf["name"] for udf in response]
         return list_of_udfs
 
     @mod_util
-    def get_udf_data(self, udf_name: str, params: dict[str, Any]) -> List[Any]:
+    def get_udf_data(self, udf_name: str, params: Dict[str, Any]) -> List[Any]:
         """
         Utility function to get the data after executing udf notebook
         """

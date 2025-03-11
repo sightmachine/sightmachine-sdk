@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Dict, Tuple
 import json
 
 import importlib.resources as pkg_resources
@@ -27,7 +27,7 @@ class DashboardData(SmsdkEntities, MaSession):
 
     @mod_util
     def get_utilities(
-        self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+        self, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
     ) -> List[Any]:
         return [*self.mod_util.all]
 

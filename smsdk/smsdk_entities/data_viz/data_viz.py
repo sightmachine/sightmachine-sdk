@@ -65,7 +65,9 @@ class DataViz(SmsdkEntities, MaSession):
         try:
             url_params["in_use_workspace"] = self.session.headers[X_SM_WORKSPACE_ID]
         except:
-            print("Creating dashboard over prod since we didn't get WORKSPACE_ID from headers")
+            print(
+                "Creating dashboard over prod since we didn't get WORKSPACE_ID from headers"
+            )
             pass
         if time_selection["time_type"] == "relative":
             dateRange = {
@@ -173,8 +175,8 @@ class DataViz(SmsdkEntities, MaSession):
             kwargs["model"] = model
         else:
             endpoint = ENDPOINTS["DataViz"]["analytics_task"]
-            kwargs["is_analytics"] = not is_analytics
             is_analytics = True
+            kwargs["is_analytics"] = is_analytics
         url = "{}{}".format(self.base_url, endpoint)
         records = self._complete_async_task(url, **kwargs)
 
@@ -192,7 +194,9 @@ class DataViz(SmsdkEntities, MaSession):
         try:
             url_params["in_use_workspace"] = self.session.headers[X_SM_WORKSPACE_ID]
         except:
-            print("Creating dashboard over prod since we didn't get WORKSPACE_ID from headers")
+            print(
+                "Creating dashboard over prod since we didn't get WORKSPACE_ID from headers"
+            )
             pass
         url_params["state"] = kwargs
         response = getattr(self.session, "post")(url, json=url_params)

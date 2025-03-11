@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Tuple, Dict
 import json
 import importlib.resources as pkg_resources
 from smsdk.tool_register import SmsdkEntities, smsdkentities
@@ -26,7 +26,7 @@ class Workspace(SmsdkEntities, MaSession):
 
     @mod_util
     def get_utilities(
-        self, *args: tuple[Any, ...], **kwargs: dict[str, Any]
+        self, *args: Tuple[Any, ...], **kwargs: Dict[str, Any]
     ) -> List[Any]:
         """
         Get the list of registered utilites by name
@@ -34,7 +34,7 @@ class Workspace(SmsdkEntities, MaSession):
         return [*self.mod_util.all]
 
     @mod_util
-    def get_cycles(self, *args: tuple[Any, ...], **kwargs: Any) -> List[Any]:
+    def get_cycles(self, *args: Tuple[Any, ...], **kwargs: Any) -> List[Any]:
         """
         Utility function to get the cycles
         from MA API

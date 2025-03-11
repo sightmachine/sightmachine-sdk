@@ -57,6 +57,6 @@
   },
   "UDF_dev": {
     "url": "/v1/udf/task/async",
-    "list_url":"/dev/udf"
+    "list_url":"/dev/udf/notebooks"
   }
 }

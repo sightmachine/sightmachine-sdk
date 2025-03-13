@@ -55,14 +55,22 @@ class UDFData(SmsdkEntities, MaSession):
                 payload["parameters"] = params
             else:
                 raise TypeError("Expected 'params' to be a dictionary or None.")
-
-        results = self.session.post(url, json=payload)
-        time.sleep(10)
-
-        async_task_id: str = results.json().get("response").get("task_id")
+        MAX_WAIT_TIME = 60  # Maximum time to wait (in seconds)
+        POLL_INTERVAL = 5  # Time between polling attempts (in seconds)
+        start_time = time.time()
+        async_task_id = ""
+        while time.time() - start_time < MAX_WAIT_TIME:
+            results = self.session.post(url, json=payload)
+            if results and results.status_code in [200, 201]:
+                async_task_id: str = results.json().get("response").get("task_id")
+                break
+            time.sleep(POLL_INTERVAL)
+        if not async_task_id:
+            raise TimeoutError(
+                f"Task {async_task_id} did not complete within {MAX_WAIT_TIME} seconds"
+            )
 
         results = self.session.get(url + "/" + async_task_id).json()
-        time.sleep(10)
 
         response = results.get("response")
         if (

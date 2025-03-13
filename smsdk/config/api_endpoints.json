@@ -33,12 +33,14 @@
     "estimate_cycle": "/v1/selector/datavis/estimate/cycle",
     "estimate_part": "/v1/selector/datavis/estimate/part",
     "task": "/v1/datavis/task/async",
+    "analytics_task": "/v1/analytics/task/async",
+    "line_task": "/v1/linevis/task/async",
     "share_link": "/v1/obj/ui_share_state"
   },
   "KPI": {
     "availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"
   },
-  "Assets": { 
+  "Assets": {
     "url":"/v1/selector/assets"
   },
   "Cookbook": {
@@ -52,5 +54,9 @@
   },
   "RawData": {
     "url": "/v1/datatab/raw_data"
+  },
+  "UDF_dev": {
+    "url": "/v1/udf/task/async",
+    "list_url":"/dev/udf/notebooks"
   }
 }

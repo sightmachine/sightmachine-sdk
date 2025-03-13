@@ -58,11 +58,11 @@ class UDFData(SmsdkEntities, MaSession):
         MAX_WAIT_TIME = 60  # Maximum time to wait (in seconds)
         POLL_INTERVAL = 5  # Time between polling attempts (in seconds)
         start_time = time.time()
-        async_task_id = ""
+        async_task_id: str = ""
         while time.time() - start_time < MAX_WAIT_TIME:
             results = self.session.post(url, json=payload)
             if results and results.status_code in [200, 201]:
-                async_task_id: str = results.json().get("response").get("task_id")
+                async_task_id = results.json().get("response").get("task_id")
                 break
             time.sleep(POLL_INTERVAL)
         if not async_task_id:

@@ -1165,11 +1165,11 @@ class ClientV0(object):
 
         if not machine:
             try:
-                machine = table.loc[:, "machine__source"][0]
+                machine = table.loc[:, "machine__source"].iloc[0]
             except KeyError as e:
                 try:
                     # Maybe it was already cleaned
-                    machine = table.loc[:, "Machine"][0]
+                    machine = table.loc[:, "Machine"].iloc[0]
                 except KeyError as e:
                     log.error(f"Unable to lookup source type for schema: {e}")
                     return table

@@ -42,7 +42,7 @@ cli = client.Client(tenant)
 Sight Machine currently supports two methods of authentication via the SDK:
 - *basic*: Username and password authentication.  This is the preferred method if you are accessing the data in an interactive format such as Jupyter notebooks
 or user interactive scripts.
-- *apikey*: Using an API Key generated in the platform.  This method is used for automated data retrievals where there is no user to interact with a password prompt.  To generate an API Key:
+- *apikey (RECOMMENDED)*: Using an API Key generated in the platform.  This method is used for automated data retrievals where there is no user to interact with a password prompt.  To generate an API Key:
   - Log into the Sight Machine Platform
   - From the hamburger menu (three lines icon) on the right, click the Profile link
   - In the API Key section, click the button that says "+ Create API Key"

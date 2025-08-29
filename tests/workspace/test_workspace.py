@@ -3,6 +3,7 @@ from smsdk.client import Client
 from mock import patch, MagicMock
 import unittest
 
+
 @patch("smsdk.ma_session.Session")
 def test_get_workspace(mocked):
     class ResponseGet:

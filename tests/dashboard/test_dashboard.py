@@ -3,6 +3,7 @@ from smsdk.client import Client
 from mock import patch, MagicMock
 import unittest
 
+
 @patch("smsdk.ma_session.Session")
 def test_get_dashboard(mocked):
     class ResponseGet:
@@ -25,6 +26,7 @@ def test_get_dashboard(mocked):
     assert isinstance(panels, list)
     assert panels[0]["id"] == 1
     assert panels[0]["name"] == "Panel_1"
+
 
 @patch("smsdk.ma_session.Session")
 def test_dashboard_for_incorrect_id(mocked):

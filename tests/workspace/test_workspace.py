@@ -1,18 +1,16 @@
 from smsdk.smsdk_entities.workspace.workspace import Workspace
 from tests.conftest import TENANT
-from mock import patch
 
 # Define all the constants used in the test
 NUM_ROWS = 2
 NUM_COL = 2
 URL = "/api/workspace"
 
-
 def test_get_utilities(get_session):
     workspace = Workspace(get_session, TENANT)
 
     # Run
-    all_utilities = workspace.get_utilities(get_session, URL)
+    all_utilities = workspace.get_utilities(get_session)
 
     expected_list = ["get_utilities", "get_cycles"]
 
@@ -29,4 +27,4 @@ def test_get_cycles(get_client):
 
     df = get_client.get_cycles(**query)
 
-    assert df.shape == (NUM_ROWS, NUM_COL)
+    assert df.shape

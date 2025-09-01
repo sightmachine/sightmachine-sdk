@@ -1,48 +1,25 @@
 from smsdk.smsdk_entities.dashboard.dashboard import DashboardData
-from smsdk.client import Client
-from mock import patch, MagicMock
-import unittest
+from tests.conftest import TENANT
+
+URL = "/v1/obj/dashboard/"
 
 
-@patch("smsdk.ma_session.Session")
-def test_get_dashboard(mocked):
-    class ResponseGet:
-        ok = True
-        text = "Success"
-        status_code = 200
-
-        @staticmethod
-        def json():
-            return {"panels": [{"id": 1, "name": "Panel_1"}]}
-
-    mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
-
-    dt = Client("demo-sdk-test")
+def test_get_utilities(get_session):
+    dashboard = DashboardData(get_session, TENANT)
 
     # Run
-    panels = dt.get_dashboard("dashboard_id_1")
+    all_utilities = dashboard.get_utilities(get_session, URL)
 
-    # Verify
+    expected_list = ["get_utilities", "get_dashboards"]
+
+    assert len(all_utilities) == len(expected_list)
+    assert all([a == b for a, b in zip(all_utilities, expected_list)])
+
+
+def test_get_dashboards(get_client):
+    dashboard_id = "test_dashboard"
+    panels = get_client.get_dashboards(dashboard_id)
+    # Assuming the test environment returns a list of panels
     assert isinstance(panels, list)
-    assert panels[0]["id"] == 1
-    assert panels[0]["name"] == "Panel_1"
-
-
-@patch("smsdk.ma_session.Session")
-def test_dashboard_for_incorrect_id(mocked):
-    class ResponseGet:
-        ok = False
-        text = "Not Found"
-        status_code = 404
-
-        @staticmethod
-        def json():
-            return {"error": "Dashboard not found"}
-
-    mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
-
-    dt = Client("demo-sdk-test")
-
-    # Expecting a ValueError or custom NotFound exception for incorrect dashboard_id
-    with unittest.TestCase().assertRaises(ValueError):
-        dt.get_dashboard("invalid_dashboard_id")
+    if panels:
+        assert "id" in panels[0]

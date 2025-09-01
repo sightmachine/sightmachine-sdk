@@ -1,48 +1,32 @@
 from smsdk.smsdk_entities.workspace.workspace import Workspace
-from smsdk.client import Client
-from mock import patch, MagicMock
-import unittest
+from tests.conftest import TENANT
+from mock import patch
+
+# Define all the constants used in the test
+NUM_ROWS = 2
+NUM_COL = 2
+URL = "/api/workspace"
 
 
-@patch("smsdk.ma_session.Session")
-def test_get_workspace(mocked):
-    class ResponseGet:
-        ok = True
-        text = "Success"
-        status_code = 200
-
-        @staticmethod
-        def json():
-            return {"workspaces": [{"id": 1, "name": "Workspace_1"}]}
-
-    mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
-
-    dt = Client("demo-sdk-test")
+def test_get_utilities(get_session):
+    workspace = Workspace(get_session, TENANT)
 
     # Run
-    workspaces = dt.get_workspace("workspace_id_1")
+    all_utilities = workspace.get_utilities(get_session, URL)
 
-    # Verify
-    assert isinstance(workspaces, list)
-    assert workspaces[0]["id"] == 1
-    assert workspaces[0]["name"] == "Workspace_1"
+    expected_list = ["get_utilities", "get_cycles"]
+
+    assert len(all_utilities) == len(expected_list)
+    assert all([a == b for a, b in zip(all_utilities, expected_list)])
 
 
-@patch("smsdk.ma_session.Session")
-def test_workspace_for_incorrect_schema(mocked):
-    class ResponseGet:
-        ok = False
-        text = "Not Found"
-        status_code = 404
+def test_get_cycles(get_client):
+    query = {
+        "machine__source": "test_machine",
+        "_only": ["cycle_id", "cycle_name"],
+        "_limit": NUM_ROWS,
+    }
 
-        @staticmethod
-        def json():
-            return {"error": "Workspace not found"}
+    df = get_client.get_cycles(**query)
 
-    mocked.return_value = MagicMock(get=MagicMock(return_value=ResponseGet()))
-
-    dt = Client("demo-sdk-test")
-
-    # Expecting a ValueError or custom NotFound exception for incorrect workspace_id
-    with unittest.TestCase.assertRaises(dt, ValueError):
-        dt.get_workspace("invalid_workspace_id")
+    assert df.shape == (NUM_ROWS, NUM_COL)

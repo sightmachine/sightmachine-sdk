@@ -37,7 +37,10 @@ def test_get_updated_alert_nested_merge(get_session: Any) -> None:
 
 def test_get_filtered_alerts_by_group(get_session: Any) -> None:
     alerts = _make_alerts(get_session)
-    assert alerts.get_filtered_alerts_by_group(ALERTS_LIST, "data_latency") == FILTERED_ALERTS
+    assert (
+        alerts.get_filtered_alerts_by_group(ALERTS_LIST, "data_latency")
+        == FILTERED_ALERTS
+    )
     assert alerts.get_filtered_alerts_by_group(ALERTS_LIST, "unknown") == []
 
 
@@ -93,9 +96,7 @@ def test_update_alert_group_happy_path(get_session: Any) -> None:
     alerts.session = MagicMock()
     alerts.get_alert_config = MagicMock(return_value=ALERT_PAYLOAD)  # type: ignore
     alerts.session.put.return_value.status_code = 200
-    df = pd.DataFrame([
-        {"id": ALERT_PAYLOAD["id"], "display_name": "New Name"}
-    ])
+    df = pd.DataFrame([{"id": ALERT_PAYLOAD["id"], "display_name": "New Name"}])
     alerts.update_alert_group(df)
     alerts.session.put.assert_called_once()
 
@@ -118,7 +119,13 @@ def test_list_alerts_filters_and_transforms(get_session: Any) -> None:
     # Filter by data_latency
     df = alerts.list_alerts("data_latency")
     assert df is not None
-    assert set([*df.columns]) == {"display_name", "analytic", "Creator", "status", "incident_count"}
+    assert set([*df.columns]) == {
+        "display_name",
+        "analytic",
+        "Creator",
+        "status",
+        "incident_count",
+    }
     assert (df["analytic"] == "DataLatencyAlertingETL3").all()
     # No filter returns rows
     df_all = alerts.list_alerts("")
@@ -137,7 +144,10 @@ def test_get_alert_dataframe_empty_when_no_ids(get_session: Any) -> None:
 def test_get_alert_dataframe_happy_path(get_session: Any) -> None:
     alerts = _make_alerts(get_session)
     sample_ids = ["id1", "id2"]
-    base_list = [{"id": i, "analytic": {"plugin_id": "DataLatencyAlertingETL3"}} for i in sample_ids]
+    base_list = [
+        {"id": i, "analytic": {"plugin_id": "DataLatencyAlertingETL3"}}
+        for i in sample_ids
+    ]
     alerts.fetch_alerts_data = MagicMock(return_value=base_list)  # type: ignore
     alerts.get_alert_config = MagicMock(return_value=ALERT_PAYLOAD)  # type: ignore
     df = alerts.get_alert_dataframe("data_latency")
@@ -193,16 +203,12 @@ def test_delete_alert_group_filter(get_session: Any) -> None:
 
 def test_convert_str_to_dict_and_reconstruct_json(get_session: Any) -> None:
     alerts = _make_alerts(get_session)
-    df = pd.DataFrame([
-        {"simple": "1", "nested": "{'a': 1}", "listv": "[1,2]"}
-    ])
+    df = pd.DataFrame([{"simple": "1", "nested": "{'a': 1}", "listv": "[1,2]"}])
     converted = alerts.convert_str_to_dict(df.copy())
     assert isinstance(converted.loc[0, "nested"], dict)
     assert isinstance(converted.loc[0, "listv"], list)
     # reconstruct
-    df2 = pd.DataFrame([
-        {"a___b": 1, "c": 2}
-    ])
+    df2 = pd.DataFrame([{"a___b": 1, "c": 2}])
     obj = alerts.reconstruct_json(df2)
     assert obj == [{"a": {"b": 1}, "c": 2}]
 
@@ -220,10 +226,12 @@ def test_create_alert_posts_payloads(get_session: Any) -> None:
     alerts = _make_alerts(get_session)
     alerts.session = MagicMock()
     alerts.session.post.return_value.status_code = 200
-    df = pd.DataFrame([
-        {"display_name": "A"},
-        {"display_name": "B"},
-    ])
+    df = pd.DataFrame(
+        [
+            {"display_name": "A"},
+            {"display_name": "B"},
+        ]
+    )
     alerts.create_alert("", df)
     assert alerts.session.post.call_count == 2
 
@@ -232,9 +240,14 @@ def test_create_alert_filters_by_group(get_session: Any) -> None:
     alerts = _make_alerts(get_session)
     alerts.session = MagicMock()
     alerts.session.post.return_value.status_code = 200
-    df = pd.DataFrame([
-        {"display_name": "match", "analytic___plugin_id": "DataLatencyAlertingETL3"},
-        {"display_name": "skip", "analytic___plugin_id": "SPC"},
-    ])
+    df = pd.DataFrame(
+        [
+            {
+                "display_name": "match",
+                "analytic___plugin_id": "DataLatencyAlertingETL3",
+            },
+            {"display_name": "skip", "analytic___plugin_id": "SPC"},
+        ]
+    )
     alerts.create_alert("data_latency", df)
     assert alerts.session.post.call_count == 1

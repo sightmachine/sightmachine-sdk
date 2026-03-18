@@ -81,9 +81,9 @@ def convert_to_valid_url(
     input_url: str,
     default_domain: str = "sightmachine.io",
     default_protocol: str = "https",
-):
+) -> t_.Tuple[str, t_.Optional[str]]:
     port = ""
-    path = ""
+    path = None
 
     # Check if the input URL has a protocol specified
     if "://" in input_url:
@@ -100,9 +100,14 @@ def convert_to_valid_url(
 
     if len(parts) == 1:
         domain = parts[0]
-        path = ""
+        path = None
     else:
         domain, path = parts
+        # Only keep path if it's not empty after stripping
+        if path and path.strip():
+            path = "/" + path.rstrip("/")
+        else:
+            path = None
 
     # Check if the domain has a port specified
     splits = domain.split(":", 1)
@@ -125,11 +130,7 @@ def convert_to_valid_url(
         valid_url = f"{valid_url}:{port}"
         # log.warning(f"Ignored the user specified port.")
 
-    if path:
-        # valid_url = f"{valid_url}/{path}"
-        log.warning(f"Ignored the user specified path.")
-
-    return valid_url
+    return valid_url, path
 
 
 # We don't have a downtime schema, so hard code one
@@ -164,7 +165,11 @@ class ClientV0(object):
     config = {}
 
     def __init__(
-        self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
+        self,
+        tenant: str,
+        site_domain: str = "sightmachine.io",
+        protocol: str = "https",
+        base_path: t_.Optional[str] = None,
     ):
         """
         Initialize the client.
@@ -175,17 +180,22 @@ class ClientV0(object):
             The site domain to connect to. Necessary to change if deploying in
             a non-standard environment.
         :type site_domain: :class:`string`
+        :param protocol: Protocol to use (https or http).
+        :type protocol: :class:`string`
+        :param base_path: Optional path prefix for nested deployments (e.g., "/nested/one/two")
+        :type base_path: :class:`string` or None
         """
 
         port = None
+        extracted_path = None
         if tenant:
-            # Convert the input tenant into a valid url
-            url = convert_to_valid_url(
+            # Convert the input tenant into a valid url and extract any path
+            url_without_path, extracted_path = convert_to_valid_url(
                 tenant, default_domain=site_domain, default_protocol=protocol
             )
 
-            # Parse the input string
-            parsed_uri = urlparse(url)
+            # Parse the input string (now without path)
+            parsed_uri = urlparse(url_without_path)
 
             tenant = parsed_uri.netloc.split(".", 1)[0]
             protocol = parsed_uri.scheme
@@ -194,8 +204,16 @@ class ClientV0(object):
             # Extract port
             port = parsed_uri.port
 
+        # Determine final base_path: explicit param takes precedence over extracted
+        final_base_path = base_path if base_path is not None else extracted_path
+
         self.tenant = tenant
-        self.config = {"protocol": protocol, "site.domain": site_domain, "port": port}
+        self.config = {
+            "protocol": protocol,
+            "site.domain": site_domain,
+            "port": port,
+            "base.path": final_base_path,
+        }
 
         # Setup Authenticator
         self.auth = Authenticator(self)
@@ -280,6 +298,7 @@ class ClientV0(object):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
 
         df = pd.DataFrame()
@@ -1492,6 +1511,7 @@ class ClientV0(object):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         cls = smsdkentities.get("dataviz_cycle")(self.session, base_url)
 
@@ -1606,6 +1626,7 @@ class ClientV0(object):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         cls = smsdkentities.get("dataviz_part")(self.session, base_url)
 

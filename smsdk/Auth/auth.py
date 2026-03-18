@@ -48,6 +48,7 @@ class Authenticator(MaSession):
             client.tenant,
             client.config["site.domain"],
             client.config["port"],
+            client.config.get("base.path"),
         )
         self.session.headers = default_headers()
 

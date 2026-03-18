@@ -6,6 +6,7 @@ from smsdk.version_utils import version_check_decorator
 
 import pandas as pd
 import numpy as np
+import typing as t_
 
 try:
     # for newer pandas versions >1.X
@@ -128,7 +129,11 @@ class Client(ClientV0):
     """Connection point to the Sight Machine platform to retrieve data"""
 
     def __init__(
-        self, tenant: str, site_domain: str = "sightmachine.io", protocol: str = "https"
+        self,
+        tenant: str,
+        site_domain: str = "sightmachine.io",
+        protocol: str = "https",
+        base_path: t_.Optional[str] = None,
     ):
         """
         Initialize the client.
@@ -139,9 +144,15 @@ class Client(ClientV0):
             The site domain to connect to. Necessary to change if deploying in
             a non-standard environment.
         :type site_domain: :class:`string`
+        :param protocol: Protocol to use (https or http).
+        :type protocol: :class:`string`
+        :param base_path: Optional path prefix for nested deployments (e.g., "/nested/one/two")
+        :type base_path: :class:`string` or None
         """
 
-        super().__init__(tenant, site_domain=site_domain, protocol=protocol)
+        super().__init__(
+            tenant, site_domain=site_domain, protocol=protocol, base_path=base_path
+        )
 
     @version_check_decorator
     def select_db_schema(self, schema_name):
@@ -176,6 +187,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
 
         df = pd.DataFrame()
@@ -292,6 +304,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         return kpis(self.session, base_url).get_kpis(**kwargs)
 
@@ -345,6 +358,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         if "machine_type" in kwargs["asset_selection"]:
             # updating kwargs with machine_type's system name in case of user provides display name.
@@ -394,6 +408,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
 
         if "asset_selection" in kwargs and "machine_type" in kwargs["asset_selection"]:
@@ -419,6 +434,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         return machine(self.session, base_url).get_type_from_machine_name(
             machine_source, **kwargs
@@ -440,6 +456,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
         fields = [
@@ -479,6 +496,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         fields = machineType(self.session, base_url).get_fields(machine_type, **kwargs)
         fields = [
@@ -505,6 +523,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         return cookbook(self.session, base_url).get_cookbooks(**kwargs)
 
@@ -522,6 +541,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         return cookbook(self.session, base_url).get_top_results(
             recipe_group_id, limit, **kwargs
@@ -541,6 +561,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         return cookbook(self.session, base_url).get_current_value(
             variables, minutes, **kwargs
@@ -582,6 +603,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         return lines(self.session, base_url).get_lines(**kwargs)
 
@@ -613,6 +635,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
 
         asset_selection = []
@@ -664,6 +687,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
 
         if i_vars:
@@ -707,6 +731,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         if assets and model == "cycle" or assets and model == "kpi":
             machine_types = []
@@ -851,6 +876,7 @@ class Client(ClientV0):
             self.tenant,
             self.config["site.domain"],
             self.config["port"],
+            self.config.get("base.path"),
         )
         select = [{"name": field} for field in fields]
         kwargs["asset_selection"] = {"raw_data_table": raw_data_table}

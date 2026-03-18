@@ -261,9 +261,7 @@ def test_create_client_with_trailing_slash_in_path() -> None:
     cli = client.Client(tenant)
 
     assert cli.tenant == "demo", "Tenant should be extracted correctly"
-    assert (
-        cli.config["base.path"] == "/nested/path"
-    ), "Trailing slash should be removed"
+    assert cli.config["base.path"] == "/nested/path", "Trailing slash should be removed"
 
     # Verify URL construction normalizes path
     from smsdk.utils import get_url

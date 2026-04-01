@@ -235,7 +235,7 @@ def test_get_machine_schema(get_client):
 
     # Run
     df = get_client.get_machine_schema(machine)
-    assert df.shape == (36, 15)
+    assert df.shape == (38, 15)
 
     # Run
     df = get_client.get_machine_schema(machine, types)

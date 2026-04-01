@@ -8,11 +8,17 @@ from smsdk.smsdk_entities.parts.partsV1 import Parts
 # Define all the constants used in the test
 MACHINE_TYPE = "Lasercut"
 PART_TYPE_INDEX = 1
-START_DATETIME = datetime(2023, 4, 1)
-END_DATETIME = datetime(2023, 4, 2)
+START_DATETIME = datetime(2026, 3, 1)
+END_DATETIME = datetime(2026, 3, 2)
 NUM_ROWS = 10
-NUM_COLUMNS_FOR_QUERY = 31
+NUM_COLUMNS_FOR_QUERY = 28
 URL_V1 = "/v1/datatab/part"
+
+# These columns have never been selectable for datatab parts queries since moving to Postgres
+INVALID_PART_TYPE_COLUMNS = [
+    "Output",
+    "Machine Sources",
+]
 
 
 def test_get_utilities(get_session):
@@ -82,6 +88,7 @@ def test_get_parts(get_client):
     part_type = part_types[PART_TYPE_INDEX]
 
     columns = get_client.get_part_schema(part_type)["display"].to_list()
+    columns = [col for col in columns if col not in INVALID_PART_TYPE_COLUMNS]
 
     query = {
         "Part": part_type,
@@ -89,7 +96,7 @@ def test_get_parts(get_client):
         "End Time__lte": END_DATETIME,
         "DefectReason__exists": True,
         "_limit": NUM_ROWS,
-        "_only": columns[: NUM_COLUMNS_FOR_QUERY - 1],
+        "_only": columns[:NUM_COLUMNS_FOR_QUERY],
     }
 
     df = get_client.get_parts(**query)

@@ -1033,7 +1033,7 @@ class ClientV0(object):
 
         stats = all_parts.loc[
             (all_parts.part_type == pt) | (all_parts.part_type_clean == pt), "stats"
-        ][0]
+        ].iloc[0]
 
         for machine in stats.keys():
             m_stats = stats[machine]

@@ -1,27 +1,5 @@
-from setuptools import setup, find_packages
-from smsdk._version import version
+# retaining a minimal setup.py, but all configuration is in pyproject.toml
+# https://packaging.python.org/en/latest/guides/modernize-setup-py-project/#what-if-something-that-can-not-be-changed-expects-a-setup-py-file
+from setuptools import setup
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-with open("requirements.txt", "r") as fh:
-    install_requires = [
-        line
-        for line in (item.strip() for item in fh)
-        if line and line[:1] not in ("#", "-")
-    ]
-
-setup(
-    name="smsdk",
-    version=version,
-    packages=find_packages(exclude=["test*"]),
-    include_package_data=True,
-    install_requires=install_requires,
-    license="",
-    long_description=long_description,
-    author="Sight Machine",
-    author_email="support@sightmachine.com",
-    url="http://sightmachine.com/",
-    description="Sight Machine SDK",
-    python_requires=">=3.8",
-)
+setup()

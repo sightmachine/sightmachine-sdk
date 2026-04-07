@@ -76,6 +76,8 @@ def dict_to_df(data, normalize=True):
                 # machine type stats are list
                 cols = [*data[0]]
                 cols.remove("stats")
+                if "part_types" in cols:
+                    cols.remove("part_types")
                 df = json_normalize(
                     data, "stats", cols, record_prefix="stats.", errors="ignore"
                 )
@@ -143,6 +145,12 @@ class Client(ClientV0):
 
     @version_check_decorator
     def select_db_schema(self, schema_name):
+        """This function is deprecated."""
+        msg = (
+            "select_db_schema() is deprecated. Use"
+            " select_workspace_id(workspace_id=workspace_id) instead."
+        )
+        print(msg)
         # remove X_SM_WRKSPACE_ID from self.session.headers
         self.session.headers.update({X_SM_DB_SCHEMA: schema_name})
         if X_SM_WORKSPACE_ID in self.session.headers:

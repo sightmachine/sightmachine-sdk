@@ -55,6 +55,8 @@ def dict_to_df(data, normalize=True):
                 # machine type stats are list
                 cols = [*data[0]]
                 cols.remove("stats")
+                if "part_types" in cols:
+                    cols.remove("part_types")
                 df = json_normalize(data, "stats", cols, record_prefix="stats.")
         else:
             try:
@@ -110,6 +112,10 @@ def convert_to_valid_url(
 
     # Check if the domain has a TLD or not
     if "." not in domain:
+        domain = f"{domain}.{default_domain}"
+
+    # Check if domain endswith default domain
+    if not domain.endswith(default_domain):
         domain = f"{domain}.{default_domain}"
 
     # Construct the valid URL
@@ -1159,11 +1165,11 @@ class ClientV0(object):
 
         if not machine:
             try:
-                machine = table.loc[:, "machine__source"][0]
+                machine = table.loc[:, "machine__source"].iloc[0]
             except KeyError as e:
                 try:
                     # Maybe it was already cleaned
-                    machine = table.loc[:, "Machine"][0]
+                    machine = table.loc[:, "Machine"].iloc[0]
                 except KeyError as e:
                     log.error(f"Unable to lookup source type for schema: {e}")
                     return table

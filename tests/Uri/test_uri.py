@@ -62,7 +62,7 @@ def test_create_client_using_uri() -> None:
     assert cli.tenant == "demo-sdk-test", "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "https", "Protocol should be set to HTTPS"
     assert (
-        cli.config["site.domain"] == "localnet"
+        cli.config["site.domain"] == "localnet.sightmachine.io"
     ), "Site domain should be set to localnet"
 
     tenant = "https://demo-sdk-test.localnet"
@@ -71,7 +71,7 @@ def test_create_client_using_uri() -> None:
     assert cli.tenant == "demo-sdk-test", "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "https", "Protocol should be set to HTTPS"
     assert (
-        cli.config["site.domain"] == "localnet"
+        cli.config["site.domain"] == "localnet.sightmachine.io"
     ), "Site domain should be set to localnet"
 
     tenant = "http://demo-sdk-test.localnet:8080/"
@@ -80,7 +80,7 @@ def test_create_client_using_uri() -> None:
     assert cli.tenant == "demo-sdk-test", "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "http", "Protocol should be set to HTTP"
     assert (
-        cli.config["site.domain"] == "localnet"
+        cli.config["site.domain"] == "localnet.sightmachine.io"
     ), "Site domain should be set to localnet"
 
 
@@ -91,7 +91,7 @@ def test_create_client_uri_special_cases() -> None:
     assert cli.tenant == "demo-sdk-test", "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "https", "Protocol should be set to HTTPS"
     assert (
-        cli.config["site.domain"] == "localnet"
+        cli.config["site.domain"] == "localnet.sightmachine.io"
     ), "Site domain should be set to localnet"
 
     tenant = "http://demo-sdk-test"
@@ -109,7 +109,7 @@ def test_create_client_uri_special_cases() -> None:
     assert cli.tenant == "demo-sdk-test", "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "https", "Protocol should be set to HTTPS"
     assert (
-        cli.config["site.domain"] == "localnet"
+        cli.config["site.domain"] == "localnet.sightmachine.io"
     ), "Site domain should be set to localnet"
 
     tenant = "://demo-sdk-test.localnet:8080"
@@ -118,5 +118,5 @@ def test_create_client_uri_special_cases() -> None:
     assert cli.tenant == "demo-sdk-test", "Tenant should be initialized correctly"
     assert cli.config["protocol"] == "https", "Protocol should be set to HTTPS"
     assert (
-        cli.config["site.domain"] == "localnet"
+        cli.config["site.domain"] == "localnet.sightmachine.io"
     ), "Site domain should be set to localnet"

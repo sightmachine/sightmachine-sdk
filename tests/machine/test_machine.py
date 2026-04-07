@@ -235,21 +235,21 @@ def test_get_machine_schema(get_client):
 
     # Run
     df = get_client.get_machine_schema(machine)
-    assert df.shape == (35, 13)
+    assert df.shape == (36, 15)
 
     # Run
     df = get_client.get_machine_schema(machine, types)
-    assert df.shape == (16, 13)
+    assert df.shape == (16, 14)
 
     query = {"machine_source": machine, "types": types}
 
     # Run
     df = get_client.get_machine_schema(**query)
-    assert df.shape == (16, 13)
+    assert df.shape == (16, 14)
 
     query = {"machine_source": machine, "types": types, "return_mtype": True}
 
     # Run
     df = get_client.get_machine_schema(**query)
-    assert df[1].shape == (16, 13)
+    assert df[1].shape == (16, 14)
     assert df[0] == LASERCUT_MACHINE_TYPE

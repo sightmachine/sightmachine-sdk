@@ -176,6 +176,7 @@ cli.get_machine_names(source_type=None, clean_strings_out=True)
 Parameters:
 > - **source_type**: *str, default None*
 >   - Machine source_type to filter the output to. Note that this is a Sight Machine internal machine type, not a UI-based display name.
+TODO I think this is actually machine type display names, not internal names
 > - **clean_strings_out**: *boolean, default True*
 >   - If true, return the list using the UI-based display names. If false, the list contains the Sight Machine internal machine names.
 

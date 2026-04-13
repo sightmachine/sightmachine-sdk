@@ -25,6 +25,7 @@ Functions are split into general functions which pull general factory metadata, 
     - [Client.select_workspace_id](#clientselect_workspace_id)
 - [Data Query Functions](#data-query-functions)
   - [Common Query Parameters](#common-query-parameters)
+    - [Asset Selection Object](#asset-selection-object)
   - [Cycle Data](#cycle-data)
     - [Client.get_cycles](#clientget_cycles)
   - [Parts](#parts)
@@ -37,6 +38,7 @@ Functions are split into general functions which pull general factory metadata, 
     - [Client.get_kpis](#clientget_kpis)
     - [Client.get_kpis_for_asset](#clientget_kpis_for_asset)
     - [Client.get_kpi_data_viz](#clientget_kpi_data_viz)
+    - [Data Viz Query Object](#data-viz-query-object)
   - [Lines](#lines)
     - [Client.get_line_data](#clientget_line_data)
     - [Client.get_line_data_lineviz](#clientget_line_data_lineviz)
@@ -47,6 +49,8 @@ Functions are split into general functions which pull general factory metadata, 
     - [Client.get_cookbook_top_results](#clientget_cookbook_top_results)
     - [Client.get_cookbook_current_value](#clientget_cookbook_current_value)
     - [Client.normalize_constraints](#clientnormalize_constraints)
+    - [Cookbook Object Structure](#cookbook-object-structure)
+    - [Recipe Run Object Structure](#recipe-run-object-structure)
 
 
 
@@ -568,7 +572,7 @@ Functions in this section are for querying tabular data from the common Sight Ma
 
 Each data model must be configured on the tenant in order to query it. If a model is not set up for your tenant, the corresponding query function will return an error.
 
-For detailed information about what each data model represents, see the [Sight Machine documentation](https://docs.sightmachine.com). See also the entity-specific documentation in the [entities folder](entities/).
+For detailed information about what each data model represents, see the [Sight Machine documentation](https://docs.sightmachine.com).
 
 
 ### Common Query Parameters
@@ -648,6 +652,28 @@ These parameters are available on get_cycles, get_parts, and get_downtimes:
 > - **clean_strings_out**: *boolean, default True* - If true, the function will convert Sight Machine internal database column names in the returned DataFrame into UI-based display names.
 
 In most cases, you should leave these at their defaults. This means you can use display names (like `"Temperature"`) in your queries and the returned DataFrame will also have display name columns. If you need to work with internal names (like `"stats__Temperature__val"`), set both to False.
+
+
+#### Asset Selection Object
+
+Several functions (`get_kpis_for_asset`, `get_kpi_data_viz`, line functions) take an `asset_selection` dict that tells the API which machines or machine types to operate on.
+
+Select one or more machine types:
+```python
+asset_selection = {
+    "machine_type": ["Lasercut"]
+}
+```
+
+Select specific machines within a machine type:
+```python
+asset_selection = {
+    "machine_type": ["Lasercut"],
+    "machine_source": ["JB_AB_Lasercut_1"]
+}
+```
+
+Both fields accept lists. For KPI-related functions, `machine_type` can be given as either the internal name (`"Lasercut"`) or the UI display name (`"Laser Cutter"`) — the SDK will translate automatically. For maximum safety, use the internal name returned by `get_type_from_machine()`.
 
 
 
@@ -976,12 +1002,12 @@ Parameters:
 > - **kpis**: *list, default None*
 >   - A list of KPI name strings to retrieve (e.g., `["quality", "oee"]`). Each KPI is queried with the `"avg"` aggregation by default.
 > - **i_vars**: *list, default None*
->   - A list of independent variable dictionaries for grouping/bucketing the data. See the [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md) for the full i_vars format.
+>   - A list of independent variable dictionaries for grouping/bucketing the data. See the [Data Viz Query Object](#data-viz-query-object) section below for the full i_vars format.
 >   - Common example: `[{"name": "endtime", "time_resolution": "day", "query_tz": "America/Los_Angeles", "output_tz": "America/Los_Angeles"}]`
 > - **time_selection**: *dict, default None*
->   - The time range for the query. Supports both relative and absolute formats. See [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md) for details.
+>   - The time range for the query. Supports both relative and absolute formats. See the [Data Viz Query Object](#data-viz-query-object) section below for details.
 
-You can also pass the full Data Viz query structure directly as keyword arguments. See [commonly_used_data_types/data_viz_query.md](commonly_used_data_types/data_viz_query.md) for the complete query format.
+You can also pass the full Data Viz query structure directly as keyword arguments. See the [Data Viz Query Object](#data-viz-query-object) section below for the complete query format.
 
 Returns:
 > - **list**
@@ -1026,6 +1052,104 @@ The returned data has the following structure:
 ```
 
 
+#### Data Viz Query Object
+
+`get_kpi_data_viz` and the Lines data-viz functions accept additional Data Viz query fields as keyword arguments. A complete Data Viz query has this shape:
+
+```python
+{
+    "asset_selection": {
+        "machine_source": ["JB_AB_Lasercut_1"],
+        "machine_type": ["Lasercut"]
+    },
+    "d_vars": [
+        {"name": "quality", "aggregate": ["avg"]}
+    ],
+    "i_vars": [
+        {
+            "name": "endtime",
+            "time_resolution": "day",
+            "query_tz": "America/Los_Angeles",
+            "output_tz": "America/Los_Angeles",
+            "bin_strategy": "user_defined2",
+            "bin_count": 50
+        }
+    ],
+    "time_selection": {
+        "time_type": "relative",
+        "relative_start": 7,
+        "relative_unit": "year",
+        "ctime_tz": "America/Los_Angeles"
+    },
+    "where": [],
+    "db_mode": "sql"
+}
+```
+
+##### asset_selection
+See [Asset Selection Object](#asset-selection-object).
+
+##### d_vars — dependent variables
+A list of fields to return, each with an aggregate. The SDK builds this automatically from `get_kpi_data_viz`'s `kpis` argument but you can override it.
+
+> - **name**: *str* — name of the dependent variable (KPI name or tag name)
+> - **aggregate**: *list* — aggregation(s) to apply. Supported: `avg`, `sum`, `min`, `max`.
+
+##### i_vars — independent variables
+Typically a single time-based variable describing how to bin results along the x-axis.
+
+> - **name**: *str* — typically `"endtime"`
+> - **time_resolution**: *str, optional* — one of `year`, `quarter`, `month`, `week`, `day`, `hour`, `minute`, `second`
+> - **query_tz**: *str, optional* — time zone the query is interpreted in
+> - **output_tz**: *str, optional* — time zone the returned timestamps are expressed in
+> - **bin_strategy**: *str, optional* — one of `user_defined2`, `none`, `categorical`
+> - **bin_count**: *int, optional* — number of bins to split the data into
+
+##### time_selection
+Defines the time window for the query. Two shapes supported.
+
+Relative (go back N units from now):
+```python
+{
+    "time_type": "relative",
+    "relative_start": 7,
+    "relative_unit": "year",
+    "ctime_tz": "America/Los_Angeles"
+}
+```
+- **time_type**: `"relative"`
+- **relative_start**: *int* — how many units back
+- **relative_unit**: *str* — one of `year`, `month`, `week`, `day`, `hour`, `minute`, `second`
+- **ctime_tz**: *str* — time zone
+
+Absolute (fixed window):
+```python
+{
+    "time_type": "absolute",
+    "start_time": "2023-02-23T08:00:00.000Z",
+    "end_time": "2023-03-01T21:35:35.499Z",
+    "time_zone": "America/Los_Angeles"
+}
+```
+- **time_type**: `"absolute"`
+- **start_time** / **end_time**: ISO-8601 timestamps
+- **time_zone**: *str*
+
+##### where — record filters (optional)
+A list of filter clauses that are AND-ed together:
+```python
+{"name": "type__part_type", "op": "eq", "value": "EngineBlock"}
+```
+
+> - **name**: *str* — the field to filter on
+> - **op**: *str* — the comparison operator (e.g., `eq`, `ne`, `gt`, `gte`, `lt`, `lte`)
+> - **value**: any — the value to compare against
+
+##### db_mode (optional)
+Defaults to `"sql"`. A `"mongo"` mode exists but should rarely be needed.
+
+
+
 ### Lines
 
 Line functions query data from the Lines data model, which combines data from multiple machines in a production line into a single unified view.
@@ -1055,11 +1179,11 @@ Parameters:
 > - **fields**: *list, default []*
 >   - A list of field selection dictionaries specifying which fields to return. Each dictionary should have `"asset"` and `"name"` keys. Example: `[{"asset": "Oven_1", "name": "Temperature"}]`. If empty, default fields are returned.
 > - **time_selection**: *dict, default ONE_DAY_RELATIVE*
->   - The time range for the query. Supports both relative and absolute formats. Default is the last 24 hours relative. See [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md) for details on the format.
+>   - The time range for the query. Supports both relative and absolute formats. Default is the last 24 hours relative. See [Data Viz Query Object](#data-viz-query-object) for details on the format.
 > - **asset_time_offset**: *dict, default {}*
 >   - A dictionary mapping machine names to their time offsets within the line. Each offset is a dict with `"interval"` (number) and `"period"` (unit string, e.g. `"minutes"`). If not specified for a machine, defaults to `{"interval": 0, "period": "minutes"}`.
 > - **filters**: *list, default []*
->   - A list of filter conditions to narrow results. Each filter follows the where clause format described in the [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md).
+>   - A list of filter conditions to narrow results. Each filter follows the where clause format described in the [Data Viz Query Object](#data-viz-query-object).
 > - **limit**: *int, default 400*
 >   - Maximum number of rows to return.
 > - **offset**: *int, default 0*
@@ -1109,9 +1233,9 @@ Parameters:
 > - **assets**: *list, default None*
 >   - A list of machine display names in the line.
 > - **d_vars**: *list, default None*
->   - A list of dependent variable dictionaries. See [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md) for the d_vars format.
+>   - A list of dependent variable dictionaries. See [Data Viz Query Object](#data-viz-query-object) for the d_vars format.
 > - **i_vars**: *list, default None*
->   - A list of independent variable dictionaries. See [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md) for the i_vars format.
+>   - A list of independent variable dictionaries. See [Data Viz Query Object](#data-viz-query-object) for the i_vars format.
 > - **time_selection**: *dict, default ONE_DAY_RELATIVE*
 >   - The time range for the query. Supports both relative and absolute formats.
 > - **asset_time_offset**: *dict, default {}*
@@ -1167,7 +1291,7 @@ Parameters:
 > - **fields**: *list, default []*
 >   - A list of field name strings to include in the results. Example: `["temperature", "pressure", "speed"]`. If empty, default fields are returned.
 > - **time_selection**: *dict, default ONE_DAY_RELATIVE*
->   - The time range for the query. Default is the last 24 hours relative. Supports both relative and absolute formats. See [Data Viz Query documentation](commonly_used_data_types/data_viz_query.md) for details on the format.
+>   - The time range for the query. Default is the last 24 hours relative. Supports both relative and absolute formats. See [Data Viz Query Object](#data-viz-query-object) for details on the format.
 > - **limit**: *int, default 400*
 >   - Maximum number of rows to return.
 > - **offset**: *int, default 0*
@@ -1331,3 +1455,218 @@ Examples:
 >>> cli.normalize_constraints(constraints)
 ['[100,200]', '(50,None)']
 ```
+
+
+#### Cookbook Object Structure
+
+`get_cookbooks()` returns a list of cookbook dicts. Each dict looks like this:
+
+```python
+{
+    "hash": "...",
+    "name": "Oven Temperature Optimization",
+    "assetNames": ["JB_HM_Diecast_1"],
+    "key_constraint": {
+        "field": {
+            "fieldName": "stats__Cylinders__val",
+            "machineId": "e2df2b4f115b763f45d04fa2",
+            "machineName": "JB_HM_Diecast_1",
+            "machineDisplayName": "Hamilton - Diecast 1",
+            "fieldType": "categorical",
+            "machineType": "Diecast",
+            "fieldDisplayName": "Cylinders",
+            "fieldUnit": ""
+        },
+        "valueMap": {"4": 1, "6": 0}
+    },
+    "recipe_groups": [...],
+    "metadata": {"created_by": {...}},
+    "updatetime": "2023-03-16 17:48:55.355000",
+    "assets": [],
+    "id": "63ab6b263fa4880c06334b03"
+}
+```
+
+Top-level fields:
+
+> - **hash**: *str* — hash of the cookbook object
+> - **name**: *str* — cookbook name
+> - **assetNames**: *list* — machine names the cookbook runs against
+> - **key_constraint**: *dict* — the field whose value determines which recipe group (product) is used. `valueMap` maps each value to a recipe-group index.
+> - **recipe_groups**: *list* — one entry per product (see below)
+> - **metadata**: *dict* — `created_by` info (user ID, email, name)
+> - **updatetime**: *str* — last-updated timestamp
+> - **assets**: *list* — list of assets used in the cookbook
+> - **id**: *str* — cookbook ID
+
+##### Recipe group
+
+Each entry in `recipe_groups` represents one product within the cookbook:
+
+```python
+{
+    "id": "rg-abc",
+    "values": [1],
+    "runBoundaries": [],
+    "maxDuration": {"isEnabled": False, "minimum": 0, "unit": "second"},
+    "topRun": 10,
+    "constraints": [...],
+    "levers": [...],
+    "outcomes": [...],
+    "filters": {"duration": {...}, "recordFilters": []},
+    "dateRange": {"value": {...}, "config": {...}},
+    "computeDeployedDateRange": None,
+    "statsCalculationSetting": "default",
+    "deployed": {...}
+}
+```
+
+> - **id**: *str* — recipe-group ID (pass this to `get_cookbook_top_results`)
+> - **values**: *list* — values currently in this group
+> - **topRun**: *int* — number of top runs considered when computing lever stats
+> - **constraints**: *list* — fields + value ranges used to partition runs
+> - **levers**: *list* — fields that vary between recipes (the knobs)
+> - **outcomes**: *list* — fields being optimized
+> - **filters**: *dict* — duration threshold + record-level filters
+> - **dateRange**: *dict* — time window considered when computing recipes
+> - **deployed**: *dict* — the deployed version of this recipe group, minus this field
+> - **runBoundaries**, **maxDuration**, **computeDeployedDateRange**, **statsCalculationSetting**: currently unused or legacy
+
+##### Constraints (within a recipe group)
+
+Each constraint defines the value ranges that delimit runs:
+
+```python
+{
+    "asset": "F1_010_BodyMaker_4",
+    "name": "stats__BM 001: Cans Out__val",
+    "type": "continuous",
+    "values": [
+        {"from": None, "from_is_inclusive": False, "to": 340, "to_is_inclusive": False},
+        {"from": 340, "from_is_inclusive": True, "to": 6000, "to_is_inclusive": True},
+        {"from": 6000, "from_is_inclusive": False, "to": None, "to_is_inclusive": False}
+    ]
+}
+```
+
+> - **asset**: *str* — machine name the constraint field is on
+> - **name**: *str* — internal field name
+> - **type**: *str* — data type (typically `"continuous"` or `"categorical"`)
+> - **values**: *list* — the value bands. Pass these to `normalize_constraints()` to get compact string labels.
+
+##### Levers and outcomes
+
+Both `levers` and `outcomes` entries use the same "field descriptor" shape:
+
+```python
+{
+    "fieldName": "stats__AluminumTempAvg__val",
+    "machineId": "e2df2b4f115b763f45d04fa2",
+    "machineName": "JB_HM_Diecast_1",
+    "machineDisplayName": "Hamilton - Diecast 1",
+    "fieldType": "continuous",
+    "machineType": "Diecast",
+    "fieldDisplayName": "AluminumTemp - Average",
+    "fieldUnit": "celsius"
+}
+```
+
+Outcomes wrap that descriptor with optimization metadata:
+```python
+{
+    "field": { ...descriptor as above... },
+    "weight": 1,
+    "optimization_func": "maximize"
+}
+```
+
+> - **weight**: *number* — relative importance vs. other outcomes
+> - **optimization_func**: *str* — typically `"maximize"` or `"minimize"`
+
+
+#### Recipe Run Object Structure
+
+`get_cookbook_top_results()` returns a dict with two views: `runs` (one entry per run) and `constraint_groups` (one entry per recipe, the aggregate view). An individual run looks like:
+
+```python
+{
+    "_count": 12,
+    "_count_muted": 0,
+    "_duration_seconds": 649.0,
+    "_earliest": "2022-10-21T00:35:32+00:00",
+    "_latest": "2022-10-21T00:46:21+00:00",
+    "_score": 1.0,
+    "constraint_group_id": "0",
+    "constraints": [...],
+    "cookbook": "63ab6b263fa4880c06334b03",
+    "filters": [],
+    "i_vals": [
+        {"asset": "SHARED", "name": "group", "value": "0"},
+        {"asset": "SHARED", "name": "sequence", "value": 2}
+    ],
+    "levers": [...],
+    "outcomes": [...]
+}
+```
+
+Top-level fields:
+
+> - **_count**: *int* — total records in the run
+> - **_count_muted**: *int* — records filtered out
+> - **_duration_seconds**: *float* — run duration in seconds
+> - **_earliest** / **_latest**: *str* — ISO timestamps bounding the run
+> - **_score**: *float* — the score this run achieved under the cookbook's weighting
+> - **constraint_group_id**: *str* — which recipe group (product) the run belongs to
+> - **constraints**: *list* — the constraint values the run fell into
+> - **cookbook**: *str* — parent cookbook ID
+> - **filters**: *list* — filters applied to the run
+> - **i_vals**: *list* — constraint / run-boundary values used to delimit this run
+> - **levers**: *list* — lever values during the run (see below)
+> - **outcomes**: *list* — outcome values during the run (see below)
+
+##### Lever entry
+```python
+{
+    "asset": "JB_HM_Diecast_1",
+    "d_pos": 2,
+    "name": "stats__AluminumTempAvg__val",
+    "value": {
+        "avg": 659.84,
+        "count": 9.0,
+        "max": 671.10,
+        "min": 653.72,
+        "var_pop": 29.82
+    }
+}
+```
+
+> - **asset**: *str* — machine name
+> - **d_pos**: *int* — index of the corresponding dependent variable (internal)
+> - **name**: *str* — internal field name
+> - **value**: *dict* — measurement stats: `avg`, `count`, `max`, `min`, `var_pop`
+
+##### Outcome entry
+```python
+{
+    "asset": "JB_HM_Diecast_1",
+    "d_pos": 0,
+    "kpi": {
+        "aggregates": {"Output": "sum", "ScrapQuantity": "sum"},
+        "dependencies": {"Output": 9.0, "ScrapQuantity": 0.0},
+        "formula": "((Output) / (Output + ScrapQuantity)) * 100 if ((Output + ScrapQuantity) > 0) else None"
+    },
+    "name": "quality",
+    "value": {
+        "avg": 100.0,
+        "count": 100.0,
+        "max": 100.0,
+        "min": 100.0,
+        "normal": 1.0,
+        "var_pop": 100.0
+    }
+}
+```
+
+> - **asset**, **d_pos**, **name**: as with levers
+> - **kpi**: *dict, only present when the outcome is a KPI* — shows the KPI's formula, its input aggregations, and the dependency values during this run
+> - **value**: *dict* — measurement stats including an additional **normal** field (measure of the distribution's normality)

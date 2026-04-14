@@ -411,6 +411,15 @@ class Client(ClientV0):
             ] = self.get_machine_source_from_clean_name(kwargs)
         return kpi_entity(self.session, base_url).get_kpi_data_viz(**kwargs)
 
+    def get_widget_data(self, model, url_params):
+        widget_entity = smsdkentities.get("dataViz")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return widget_entity(self.session, base_url).get_dashboard_widget_data(
+            model, **url_params
+        )
+
     @version_check_decorator
     def get_type_from_machine(self, machine_source=None, **kwargs):
         machine = smsdkentities.get("machine")
@@ -698,6 +707,7 @@ class Client(ClientV0):
         xAxis=X_AXIS_TIME,
         model="cycle",
         time_selection=ONE_WEEK_RELATIVE,
+        are_line_params_available=False,
         *args,
         **kwargs,
     ):
@@ -726,21 +736,31 @@ class Client(ClientV0):
 
         if model == "kpi" and not isinstance(yAxis, list):
             yAxis = [yAxis]
-
-        if model == "line" and isinstance(yAxis, list):
-            newYAxis = []
-            for y in yAxis:
-                if y.get("machineType"):
-                    newYAxis.append(y)
-                else:
-                    y["machineType"] = self.get_type_from_machine(y["machineName"])
-                    newYAxis.append(y)
-            yAxis = newYAxis
-        elif model == "line":
-            if not yAxis.get("machineType"):
-                yAxis["machineType"] = self.get_type_from_machine(yAxis["machineName"])
+        if not are_line_params_available:
+            if model == "line" and isinstance(yAxis, list):
+                newYAxis = []
+                for y in yAxis:
+                    if y.get("machineType"):
+                        newYAxis.append(y)
+                    else:
+                        y["machineType"] = self.get_type_from_machine(y["machineName"])
+                        newYAxis.append(y)
+                yAxis = newYAxis
+            elif model == "line":
+                if not yAxis.get("machineType"):
+                    yAxis["machineType"] = self.get_type_from_machine(
+                        yAxis["machineName"]
+                    )
         return dataViz(self.session, base_url).create_share_link(
-            *args, assets, chartType, yAxis, xAxis, model, time_selection, **kwargs
+            asset=assets,
+            chartType=chartType,
+            yAxis=yAxis,
+            xAxis=xAxis,
+            model=model,
+            time_selection=time_selection,
+            are_line_params_available=are_line_params_available,
+            *args,
+            **kwargs,
         )
 
     @version_check_decorator
@@ -828,7 +848,6 @@ class Client(ClientV0):
         machine_types = self.get_data_v1(
             "machine_type_v1", "get_machine_types", True, **query_params
         )
-
         if clean_strings_out:
             return machine_types["source_type_clean"].unique().tolist()
         else:
@@ -861,3 +880,52 @@ class Client(ClientV0):
         kwargs["offset"] = offset
 
         return self.get_data_v1("raw_data", "get_raw_data", True, *args, **kwargs)
+
+    @version_check_decorator
+    def get_dashboard_data(self, dashboard_id=""):
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        # load the entity class and initialize it
+        cls = smsdkentities.get("dashboard")(self.session, base_url)
+        panels = getattr(cls, "get_dashboards")(dashboard_id)
+        return panels
+
+    @version_check_decorator
+    def create_widget_share_link(self, context="/analysis/datavis", **kwargs):
+        dataViz = smsdkentities.get("dataViz")
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        return dataViz(self.session, base_url).create_widget_share_link(
+            context, **kwargs
+        )
+
+    @version_check_decorator
+    def fetch_list_of_udf(self):
+        base_url = get_url(
+            self.config["protocol"], self.tenant, self.config["site.domain"]
+        )
+        # load the entity class and initialize it
+        cls = smsdkentities.get("dev_udf")(self.session, base_url)
+        udf_list = getattr(cls, "get_list_of_udf")()
+        return udf_list
+
+    @version_check_decorator
+    def get_udf_data(self, udf_name, **params):
+        if udf_name:
+            existing_udf_list = self.fetch_list_of_udf()
+            if udf_name in existing_udf_list:
+                base_url = get_url(
+                    self.config["protocol"], self.tenant, self.config["site.domain"]
+                )
+                # load the entity class and initialize it
+                cls = smsdkentities.get("dev_udf")(self.session, base_url)
+                udf_data = getattr(cls, "get_udf_data")(udf_name, params)
+                return udf_data
+            else:
+                log.error(
+                    f'UDF named "{udf_name}" does not exist. Please check the name again'
+                )
+        else:
+            log.error("Name of user defined function is required")

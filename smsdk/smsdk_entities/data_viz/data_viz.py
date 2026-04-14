@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 from typing import List
 import uuid
+from smsdk.Auth.auth import X_SM_WORKSPACE_ID
 
 import numpy as np
 
@@ -43,7 +44,16 @@ class DataViz(SmsdkEntities, MaSession):
 
     @mod_util
     def create_share_link(
-        self, asset, chartType, yAxis, xAxis, model, time_selection, *args, **kwargs
+        self,
+        asset,
+        chartType,
+        yAxis,
+        xAxis,
+        model,
+        time_selection,
+        are_line_params_available=False,
+        *args,
+        **kwargs
     ):
         """
         Creates a share link
@@ -52,6 +62,13 @@ class DataViz(SmsdkEntities, MaSession):
         url_params = {}
         url_params["state_hash"] = str(uuid.uuid4())[:8]
         url_params["context"] = "/analysis/datavis"
+        try:
+            url_params["in_use_workspace"] = self.session.headers[X_SM_WORKSPACE_ID]
+        except:
+            print(
+                "Creating dashboard over prod since we didn't get WORKSPACE_ID from headers"
+            )
+            pass
         if time_selection["time_type"] == "relative":
             dateRange = {
                 "mode": "relative",
@@ -67,6 +84,8 @@ class DataViz(SmsdkEntities, MaSession):
                 "endDate": time_selection["end_time"],
                 "selectedTimeZone": time_selection["time_zone"],
             }
+        else:
+            dateRange = {}
         url_params["state"] = {
             "dataModel": model,
             "asset": asset,
@@ -75,7 +94,7 @@ class DataViz(SmsdkEntities, MaSession):
             "dateRange": dateRange,
         }
         url_params["state"].update(kwargs)
-        if model == "line":
+        if model == "line" and not are_line_params_available:
             del url_params["state"]["asset"]
             url_params["state"]["lineProcess"] = {}
             if not isinstance(asset, List) and asset.get("assetOffsets"):
@@ -138,6 +157,49 @@ class DataViz(SmsdkEntities, MaSession):
             else:
                 url_params["state"]["yAxis"] = yAxis
         response = getattr(self.session, "post")(url, json=url_params)
-        return "{}/#/analysis/datavis/s/{}".format(
-            self.base_url, response.json()["state_hash"]
+        return "{}/#{}/s/{}".format(
+            self.base_url, url_params["context"], response.json()["state_hash"]
+        )
+
+    @mod_util
+    def get_dashboard_widget_data(self, model, *args, **kwargs):
+        """
+        Takes a query params from the widget in dashboard
+        Returns Data info for that query
+        """
+        is_analytics = False
+        if model == "line":
+            endpoint = ENDPOINTS["DataViz"]["line_task"]
+        elif model == "cycle":
+            endpoint = ENDPOINTS["DataViz"]["task"]
+            kwargs["model"] = model
+        else:
+            endpoint = ENDPOINTS["DataViz"]["analytics_task"]
+            is_analytics = True
+            kwargs["is_analytics"] = is_analytics
+        url = "{}{}".format(self.base_url, endpoint)
+        records = self._complete_async_task(url, **kwargs)
+
+        if not isinstance(records, List) and not is_analytics:
+            raise ValueError("Error - {}".format(records))
+
+        return records
+
+    @mod_util
+    def create_widget_share_link(self, context, **kwargs):
+        url = "{}{}".format(self.base_url, ENDPOINTS["DataViz"]["share_link"])
+        url_params = {}
+        url_params["state_hash"] = str(uuid.uuid4())[:8]
+        url_params["context"] = context
+        try:
+            url_params["in_use_workspace"] = self.session.headers[X_SM_WORKSPACE_ID]
+        except:
+            print(
+                "Creating dashboard over prod since we didn't get WORKSPACE_ID from headers"
+            )
+            pass
+        url_params["state"] = kwargs
+        response = getattr(self.session, "post")(url, json=url_params)
+        return "{}/#{}/s/{}".format(
+            self.base_url, url_params["context"], response.json()["state_hash"]
         )

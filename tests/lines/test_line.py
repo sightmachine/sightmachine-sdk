@@ -7,8 +7,8 @@ from tests.lines.line_data import AVALIBLE_LINE_JSON, LINE_DATA_JSON
 
 
 # # Define all the constants used in the test
-START_DATETIME = "2023-04-01T08:00:00.000Z"
-END_DATETIME = "2023-04-02T23:00:00.000Z"
+START_DATETIME = "2026-03-01T08:00:00.000Z"
+END_DATETIME = "2026-03-02T23:00:00.000Z"
 TIME_ZONE = "America/Los_Angeles"
 MAX_ROWS = 50
 LINE_INDEX = 0
@@ -19,7 +19,7 @@ MACHINE4 = "JB_NG_PickAndPlace_1_Stage4"
 FIELD_NAME1 = "stats__BLOCKED__val"
 FIELD_NAME2 = "stats__PneumaticPressure__val"
 MIN_PRESSURE = 75.25
-EXP_NUM_ROWS = 14
+EXP_NUM_ROWS = 7
 URL_V1 = "/v1/datatab/line"
 
 

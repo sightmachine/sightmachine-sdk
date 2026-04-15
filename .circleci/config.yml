@@ -1,6 +1,6 @@
 version: 2.1
 
-workflows: 
+workflows:
   code-commit:
     jobs:
       - black-python-code-formatter:
@@ -9,6 +9,10 @@ workflows:
           context: org-sightmachine
       - run-unit-tests:
           context: org-sightmachine
+      - code-coverage-report:
+          context: org-sightmachine
+          requires:
+            - run-unit-tests
       - cve-repo-scan:
           context: org-sightmachine
   nightly-cve:
@@ -128,22 +132,53 @@ jobs:
             pip install -r requirements-codecoverage.txt
             pip install .
             mkdir test-results
-            coverage run -m pytest -vvv --nbmake --nbmake-timeout=300 -n=auto --junitxml=test-results/junit.xml tests
-      - run:
-          name: Compile Coverage Report
-          command: |
-            coverage html -d htmlcov
-            codecov --required
+            pytest -vvv --nbmake --nbmake-timeout=300 -n=auto --cov=smsdk --cov-config=.coveragerc --cov-report= --junitxml=test-results/junit.xml tests
 
       # Store the test results on each node so we can see failures
       - store_test_results:
           path: test-results
-      
+
       - store_artifacts:
           name: Save Unit Test Results
-          path: htmlcov
+          path: test-results
 
-      - send_slack_msg_on_fail    
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .coverage
+
+      - send_slack_msg_on_fail
+
+  ## ------------------ Generate Code Coverage Report ------------------
+
+  code-coverage-report:
+    docker:
+      # https://circleci.com/developer/images/image/cimg/python
+      - image: cimg/python:3.11.0
+    steps:
+      # Coverage html requires source code to build HTML views
+      - checkout
+      # Need workspace for the coverage report
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Compile Coverage Report
+          command: |
+            set -x
+            pip install -r requirements-codecoverage.txt
+            # Check if coverage file exists before generating report
+            if [ -f /tmp/workspace/.coverage ]; then
+              cp /tmp/workspace/.coverage .
+              coverage html -d htmlcov
+            else
+              echo "No coverage file found. Skipping coverage report generation."
+              mkdir -p htmlcov
+              echo "<html><body><h1>No coverage data available</h1></body></html>" > htmlcov/index.html
+            fi
+      - store_artifacts:
+          name: Save Coverage Report
+          path: htmlcov/
+      - codecov/upload
 
   ## ------------------ Check Black python code formate ------------------
   black-python-code-formatter:

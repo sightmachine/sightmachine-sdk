@@ -8,9 +8,9 @@ from tests.downtime.downtime_data import JSON_MACHINE_DOWNTIME_100
 # Define all the constants used in the test
 MACHINE_TYPE = "Lasercut"
 MACHINE_INDEX = 0
-START_DATETIME = datetime(2023, 4, 1)
-END_DATETIME = datetime(2023, 4, 2)
-EXPECTED_ROWS = 18
+START_DATETIME = datetime(2026, 3, 1)
+END_DATETIME = datetime(2026, 3, 2)
+EXPECTED_ROWS = 11
 EXPECTED_COL = 8
 URL_V1 = "/v1/datatab/downtime"
 

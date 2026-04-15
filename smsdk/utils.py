@@ -21,7 +21,11 @@ module_utility = ModuleUtility
 
 
 def get_url(
-    protocol: str, tenant: str, site_domain: str, port: t_.Optional[int] = None
+    protocol: str,
+    tenant: str,
+    site_domain: str,
+    port: t_.Optional[int] = None,
+    base_path: t_.Optional[str] = None,
 ) -> str:
     """
     Get the URL of the web address.
@@ -34,6 +38,8 @@ def get_url(
     :type site_domain: :class:`string`
     :param port: The port number (defaults to None).
     :type port: :Int
+    :param base_path: Optional path prefix for nested deployments (e.g., "/nested/one/two")
+    :type base_path: :class:`string` or None
     """
 
     url = ""
@@ -42,5 +48,14 @@ def get_url(
         url = f"{protocol}://{tenant}.{site_domain}:{port}"
     else:
         url = f"{protocol}://{tenant}.{site_domain}"
+
+    # Add base_path if provided
+    if base_path:
+        # Normalize: ensure starts with / but doesn't end with /
+        normalized_path = base_path.strip()
+        if not normalized_path.startswith("/"):
+            normalized_path = "/" + normalized_path
+        normalized_path = normalized_path.rstrip("/")
+        url = f"{url}{normalized_path}"
 
     return url

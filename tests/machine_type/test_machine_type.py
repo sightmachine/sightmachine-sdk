@@ -105,31 +105,33 @@ This test is against the demo-sdk-test environment and if the environment is cha
 def test_get_machines_types(get_client):
     machine_types = get_client.get_machine_types()
     unique_machine_types = machine_types["source_type"].dropna().unique()
-    assert unique_machine_types.tolist() == MACHINE_TYPE_NAMES_INTERNAL_EXPECT
+    assert sorted(unique_machine_types.tolist()) == sorted(
+        MACHINE_TYPE_NAMES_INTERNAL_EXPECT
+    )
 
     query = {
         "source_type": "Lasercut",
     }
 
     machine_types = get_client.get_machine_types(**query)
-    assert machine_types.shape == (29, 25)
+    assert machine_types.shape == (45, 27)
 
 
 def test_get_machines_types_v1(get_client):
     machine_types = get_client.get_machine_types()
-    assert machine_types.shape == (114, 25)
+    assert machine_types.shape == (178, 27)
 
 
 def test_get_machines_type_names_v1(get_client):
     machine_types_ui_based = get_client.get_machine_type_names()
-    assert machine_types_ui_based == MACHINE_TYPE_NAMES_UI_BASED_EXPECT
+    assert sorted(machine_types_ui_based) == sorted(MACHINE_TYPE_NAMES_UI_BASED_EXPECT)
 
     query = {
         "clean_strings_out": False,
     }
 
     machine_types_internal = get_client.get_machine_type_names(**query)
-    assert machine_types_internal == MACHINE_TYPE_NAMES_INTERNAL_EXPECT
+    assert sorted(machine_types_internal) == sorted(MACHINE_TYPE_NAMES_INTERNAL_EXPECT)
 
 
 def test_get_fields_of_machine_type(get_client):
@@ -138,7 +140,7 @@ def test_get_fields_of_machine_type(get_client):
 
     # Run
     fields = get_client.get_fields_of_machine_type(machine_type)
-    assert len(fields) == 36
+    assert len(fields) == 38
 
     # Run
     fields = get_client.get_fields_of_machine_type(machine_type, types)

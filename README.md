@@ -32,13 +32,33 @@ When accessing Sight Machine via the SDK, the first step is always to initialize
 will point to the name of the tenant on Sight Machine.  For example, if you access Sight Machine at the URL *mycompany*.sightmachine.io, then *mycompany* is 
 the name of the tenant you will use. For purposes of this Quick Start documentation, we will use demo as the tenant name.
 
-To initialize a Client: 
+To initialize a Client:
 
 ```
 from smsdk import client
 tenant = 'demo'
 cli = client.Client(tenant)
 ```
+
+#### Nested Path Support
+
+For deployments where Sight Machine is hosted under a nested path (e.g., `https://tenant.sightmachine.io/nested/one/two/`), you can specify the base path in two ways:
+
+**Method 1: Explicit base_path parameter**
+```python
+cli = client.Client('demo', base_path='/nested/one/two')
+```
+
+**Method 2: Include path in tenant URL**
+```python
+cli = client.Client('https://demo.sightmachine.io/nested/one/two')
+```
+
+The SDK will automatically construct URLs with the correct path prefix for all API calls. For example:
+- Without path: `https://demo.sightmachine.io/v1/datatab/cycle`
+- With path: `https://demo.sightmachine.io/nested/one/two/v1/datatab/cycle`
+
+**Note:** The `base_path` parameter takes precedence if both methods are used.
 
 ### Authenticating
 

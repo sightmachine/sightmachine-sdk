@@ -9,8 +9,8 @@ from smsdk.custom_exception.errors import NotFound
 # Define all the constants used in the test
 MACHINE_TYPE = "Lasercut"
 MACHINE_INDEX = 5
-START_DATETIME = datetime(2023, 4, 1)
-END_DATETIME = datetime(2023, 4, 2)
+START_DATETIME = datetime(2026, 3, 1)
+END_DATETIME = datetime(2026, 3, 2)
 NUM_ROWS = 500
 URL_V1 = "/v1/datatab/cycle"
 
@@ -57,6 +57,8 @@ def test_get_cycles(get_client):
         "_limit": NUM_ROWS,
         "_only": columns,
     }
+
+    # breakpoint()
 
     df = get_client.get_cycles(**query)
 

@@ -24,8 +24,8 @@ def test_get_raw_data(get_client):
     select = []
     timeselection = {
         "time_type": "absolute",
-        "start_time": "2023-10-18T18:30:00.000Z",
-        "end_time": "2023-10-19T18:29:59.999Z",
+        "start_time": "2026-3-18T18:30:00.000Z",
+        "end_time": "2026-3-19T18:29:59.999Z",
         "time_zone": "America/Los_Angeles",
     }
     limit = 100

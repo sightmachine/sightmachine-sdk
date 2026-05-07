@@ -861,3 +861,72 @@ class Client(ClientV0):
         kwargs["offset"] = offset
 
         return self.get_data_v1("raw_data", "get_raw_data", True, *args, **kwargs)
+
+    @version_check_decorator
+    def get_app_results(
+        self,
+        deploy_id,
+        pickers=None,
+        date_picker_id="dateRange",
+        start_time=None,
+        end_time=None,
+        relative_start=None,
+        relative_end=-1,
+        relative_unit=None,
+        time_zone="Europe/Stockholm",
+        udf_revision_id=None,
+        *args,
+        **kwargs,
+    ):
+        """Run a deployed App Builder app programmatically and return its panels.
+
+        Equivalent to opening the app in the platform UI and clicking through —
+        the app's UDF runs server-side, and the panel list (Plotly figures,
+        markdown blocks, MUI DataGrids) is returned for downstream rendering or
+        analysis.
+
+        :param deploy_id: The deployed-page UUID. Find it via the platform URL
+            (``/#/app/<app_name>/page/<page_name>``) or by listing
+            ``/v1/obj/app_builder_deploy``.
+        :param pickers: Optional dict of additional pickers (choice, filter,
+            etc.) keyed by picker id. The shape mirrors what the platform UI
+            sends, e.g. ``{"fail_definition": {"picker_type": "choice",
+            "value": "bad_and_out"}}``.
+        :param date_picker_id: Picker id for the date range. Default
+            ``"dateRange"``. Pass ``None`` if your app doesn't have a date
+            picker (caller is then responsible for supplying any range needed
+            via ``pickers``).
+        :param start_time: Absolute window start (ISO 8601). Combine with
+            ``end_time``.
+        :param end_time: Absolute window end (ISO 8601).
+        :param relative_start: Relative window start as an integer count.
+        :param relative_end: Relative window end. Default ``-1`` ("ending now").
+        :param relative_unit: One of ``"day"``, ``"week"``, ``"month"``.
+        :param time_zone: IANA time zone for the date picker.
+        :param udf_revision_id: Pin to a specific UDF revision. Default ``None``
+            (latest deployed).
+        :return: List of panel dicts. Each panel has ``viz_type`` (one of
+            ``"plotly"``, ``"markdown"``, ``"mui-datagrid"``), ``viz_props``,
+            and an optional ``title``.
+        """
+        app_builder = smsdkentities.get("appBuilder")
+        base_url = get_url(
+            self.config["protocol"],
+            self.tenant,
+            self.config["site.domain"],
+            self.config["port"],
+        )
+        return app_builder(self.session, base_url).get_app_results(
+            deploy_id=deploy_id,
+            pickers=pickers,
+            date_picker_id=date_picker_id,
+            start_time=start_time,
+            end_time=end_time,
+            relative_start=relative_start,
+            relative_end=relative_end,
+            relative_unit=relative_unit,
+            time_zone=time_zone,
+            udf_revision_id=udf_revision_id,
+            *args,
+            **kwargs,
+        )

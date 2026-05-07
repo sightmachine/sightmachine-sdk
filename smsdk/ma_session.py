@@ -240,9 +240,28 @@ class MaSession:
         endpoint: str,
         method: str = "post",
         db_mode: str = "sql",
+        result_path: t_.Optional[t_.Sequence[str]] = ("meta", "results"),
+        send_db_mode: bool = True,
         **url_params: t_.Any,
     ) -> t_.Any:
-        if url_params.get("db_mode") == None:
+        """
+        Start an async task on `endpoint`, then poll until SUCCESS / FAILURE.
+
+        :param endpoint: URL of the start-task endpoint. Polling uses
+            ``f"{endpoint}/{task_id}"``.
+        :param method: HTTP method for the start request. Default ``post``.
+        :param db_mode: Value to set as ``db_mode`` in the request body when
+            ``send_db_mode`` is True.
+        :param result_path: Sequence of keys, applied left-to-right against
+            ``response`` in the SUCCESS payload, that points at the actual
+            result. Default ``("meta", "results")`` matches the datavis-style
+            envelope; pass ``("meta",)`` for the UDF / app-builder endpoint
+            which returns the result directly under ``meta``.
+        :param send_db_mode: If False, don't add ``db_mode`` to the request
+            body. UDF endpoints reject unknown fields under ``parameters``,
+            so they pass ``send_db_mode=False``.
+        """
+        if send_db_mode and url_params.get("db_mode") is None:
             url_params["db_mode"] = db_mode
         try:
             response = getattr(self.session, method.lower())(endpoint, json=url_params)
@@ -261,7 +280,10 @@ class MaSession:
                     data = response.json()
                     state = data["response"]["state"]
                     if state == "SUCCESS":
-                        return data["response"]["meta"]["results"]
+                        result: t_.Any = data["response"]
+                        for key in (result_path or ()):
+                            result = result[key]
+                        return result
 
                     if state == "FAILURE" or state == "REVOKED":
                         raise ValueError("Error - {}".format(response.text))

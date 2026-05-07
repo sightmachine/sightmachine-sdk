@@ -35,6 +35,10 @@
     "task": "/v1/datavis/task/async",
     "share_link": "/v1/obj/ui_share_state"
   },
+  "AppBuilder": {
+    "task": "/v1/udf/task/async",
+    "deployed_page": "/v1/obj/app_builder_deploy"
+  },
   "KPI": {
     "availible_kpis_for_asset": "/v1/selector/datavis/kpi/y_axis"
   },

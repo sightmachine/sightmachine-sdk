@@ -171,7 +171,7 @@ class AppBuilder(SmsdkEntities, MaSession):
         result = self._complete_async_task(
             url,
             method="post",
-            result_path=("meta",),
+            result_path=("data",),
             send_db_mode=False,
             **body,
         )

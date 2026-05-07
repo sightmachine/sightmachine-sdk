@@ -36,7 +36,7 @@
     "share_link": "/v1/obj/ui_share_state"
   },
   "AppBuilder": {
-    "task": "/v1/udf/task/async",
+    "task": "/v1/analytics/task/async",
     "deployed_page": "/v1/obj/app_builder_deploy"
   },
   "KPI": {
